@@ -13,14 +13,16 @@ Aplikasi WasteWhistle adalah aplikasi melacak dan menetapkan keberadaan sampah y
 
 ## Daftar Modul
 
-- (Justin) Authentication,
-- (Syakira) Landing Page,
+- (Justin) Authentication, menggunakan OAuth.
+- (Syakira) Landing Page, menggunakan OAuth.
 - (Adriel) Reporting and Timer, modul ini akan menggunakan API OpenStreetMap
 - (Rafa) Display Report, modul ini juga akan menggunakan API OpenStreetMap
-- (Priskila) Customer Service, sebagai sarana untuk melaporkan bug atau error pada aplikasi.
+- (Priskila) Customer Service, menggunakan OAuth, sebagai sarana untuk melaporkan bug atau error pada aplikasi.
 
 ## Dokumentasi
+Aplikasi ini akan menggunakan API dari OpenStreetMap untuk memberikan feedback pada user terkait dengan laporan sampah yang telah di laporkan.
 
+Untuk sistem authentication akan menggunakan API OAuth dari google.
 
 ## Peran Pengguna
 Siapapun yang menggunakan aplikasi ini dapat melaporkan adanya sampah yang terlihat di sekeliling mereka dan memberikan peringatan di aplikasi dengan keberadaan sampah lainnya.
