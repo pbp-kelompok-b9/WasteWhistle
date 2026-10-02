@@ -27,12 +27,7 @@ body {
   color: #11352B;
 }
 
-.leaf-icon {
-  width: 20px;
-  height: 24px;
-}
-
-/* Container */
+/* Login Page Container */
 .page-container {
   flex: 1;
   display: flex;
@@ -41,7 +36,7 @@ body {
   padding: 24px;
 }
 
-/* Card */
+/* Common Card */
 .card {
   background: #ffffff;
   width: 100%;
@@ -50,15 +45,6 @@ body {
   border: 1px solid #D8E6DE;
   padding: 40px 36px 36px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-}
-
-.card-icon {
-  margin-bottom: 20px;
-}
-
-.leaf-icon-card {
-  width: 22px;
-  height: 26px;
 }
 
 .card-title {
@@ -92,6 +78,7 @@ body {
   background-color: transparent;
   color: #2D3748;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .pill-btn.active {
@@ -100,7 +87,7 @@ body {
   color: #ffffff;
 }
 
-/* Form */
+/* Form Styles */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -132,10 +119,6 @@ body {
   transition: border-color 0.2s;
 }
 
-.form-group input::placeholder {
-  color: #8C9E96;
-}
-
 .form-group input:focus {
   border-color: #115D3F;
 }
@@ -152,13 +135,16 @@ body {
   cursor: pointer;
   margin-top: 6px;
   transition: background-color 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .submit-btn:hover {
   background-color: #0E5E40;
 }
 
-/* Footer link */
 .forgot-link {
   display: inline-block;
   margin-top: 20px;
@@ -168,212 +154,150 @@ body {
   text-decoration: none;
 }
 
-.forgot-link:hover {
-  text-decoration: underline;
+/* ==========================================
+   LANDING PAGE SPLIT HERO STYLES
+   ========================================== */
+
+.hero-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-/* Landing Page */
-
-.top-nav {
+.hero-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.nav-links {
-  display: flex;
-  gap: 20px;
-}
-
-.nav-links a {
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  color: #6C7D75;
-  transition: color 0.2s;
-}
-
-.nav-links a.active,
-.nav-links a:hover {
-  color: #115D3F;
-  font-weight: 600;
-}
-
-.nav-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-primary-pill {
-  background-color: #115D3F;
-  color: #ffffff;
-  padding: 8px 18px;
-  border-radius: 9999px;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.btn-secondary-pill {
-  background-color: #E2EFE7;
-  color: #115D3F;
-  padding: 8px 18px;
-  border-radius: 9999px;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* Landing Layout */
-.landing-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 40px 24px;
-  display: flex;
-  flex-direction: column;
   gap: 48px;
+  width: 100%;
 }
 
-/* Hero Section */
-.hero-section {
-  text-align: center;
+.hero-text-content {
+  flex: 1;
+  max-width: 580px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  max-width: 680px;
-  margin: 0 auto;
+  align-items: flex-start;
 }
 
 .hero-badge {
+  display: inline-block;
   background-color: #E2EFE7;
   color: #115D3F;
   font-size: 13px;
   font-weight: 600;
   padding: 6px 16px;
   border-radius: 9999px;
+  margin-bottom: 20px;
 }
 
 .hero-title {
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 700;
   color: #16241F;
   line-height: 1.25;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
 }
 
 .hero-description {
   font-size: 15px;
-  color: #6C7D75;
   line-height: 1.6;
+  color: #6C7D75;
+  margin-bottom: 28px;
 }
 
-.hero-buttons {
+.hero-actions {
   display: flex;
+  align-items: center;
   gap: 12px;
-  margin-top: 12px;
 }
 
 .hero-btn {
   width: auto;
   padding: 0 28px;
-  text-decoration: none;
-  display: inline-flex;
+}
+
+.hero-pill-btn {
+  padding: 12px 24px;
+}
+
+.hero-form-card {
+  flex: 0 0 420px;
+}
+
+.text-center-btn {
+  width: 100%;
+}
+
+.divider {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #8C9E96;
+  font-size: 13px;
 }
 
-/* Feature Grid */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #D8E6DE;
 }
 
-.feature-card {
-  max-width: 100%;
-  position: relative;
-  padding: 28px 24px;
+.divider span {
+  padding: 0 10px;
 }
 
-.card-badge {
-  display: inline-block;
-  background-color: #E2EFE7;
-  color: #115D3F;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  margin-bottom: 12px;
+.guest-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #21332A;
+  margin-bottom: 10px;
 }
 
-.feature-card h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #16241F;
-  margin-bottom: 8px;
-}
-
-.feature-card p {
+.guest-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   font-size: 13.5px;
   color: #6C7D75;
-  line-height: 1.5;
 }
 
-/* Learn Section Preview */
-.learn-preview-section {
-  text-align: center;
+.guest-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.quiz-card {
-  max-width: 100%;
-  text-align: left;
-  margin-top: 16px;
-}
-
-.quiz-step {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6C7D75;
-}
-
-.quiz-question {
-  font-size: 16px;
-  font-weight: 700;
-  color: #16241F;
-  margin: 8px 0 20px;
-}
-
-.bin-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.bin-btn {
-  padding: 14px 16px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.bin-btn:hover {
-  opacity: 0.9;
-}
-
-.bin-btn.organic { background-color: #11734F; }
-.bin-btn.recyclable { background-color: #2563EB; }
-.bin-btn.general { background-color: #475569; }
-.bin-btn.dropoff { background-color: #B91C1C; }
-
-/* Site Footer */
 .site-footer {
-  text-align: center;
   padding: 24px;
   font-size: 12px;
   color: #6C7D75;
+  text-align: center;
   margin-top: auto;
+}
+
+@media (max-width: 900px) {
+  .hero-container {
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .hero-text-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero-form-card {
+    width: 100%;
+    max-width: 440px;
+  }
 }
