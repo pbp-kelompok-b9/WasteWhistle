@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% block meta %}
     <title>Welcome - Waste Whistle</title>
 {% endblock meta %}
@@ -13,30 +14,35 @@
                 Waste Whistle connects neighbors to solve waste issues together. Report local waste spots, claim cleanup tasks nearby, or learn proper waste sorting in under a minute!
             </p>
             <div class="hero-actions">
-                <a href="{% url 'login' %}" class="submit-btn hero-btn">Get Started</a>
                 <a href="#about" class="pill-btn hero-pill-btn">Explore Features</a>
             </div>
         </div>
+
         <div class="card hero-form-card">
             <h2 class="card-title">Join Waste Whistle</h2>
-            <p class="card-subtitle">Ready to clean up your neighborhood? Jump right into your account or explore as a guest.</p>
+            <p class="card-subtitle">Sign up to report waste, claim tasks, and redeem rewards.</p>
 
-            <div class="landing-card-body">
-                <a href="{% url 'login' %}" class="submit-btn text-center-btn">Sign In to Your Account</a>
-                
-                <div class="divider">
-                    <span>or</span>
+            <form class="auth-form" action="#" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="fullname">Full Name</label>
+                    <input type="text" id="fullname" name="fullname" placeholder="John Doe" required />
                 </div>
 
-                <div class="guest-features">
-                    <p class="guest-title">What you can do today:</p>
-                    <ul class="guest-list">
-                        <li>📍 Report waste spots in your area</li>
-                        <li>🧹 Claim local cleanup tasks</li>
-                        <li>🎓 Learn quick waste sorting tips</li>
-                    </ul>
+                <div class="form-group">
+                    <label for="email">Username or email</label>
+                    <input type="email" id="email" name="email" placeholder="ranger@example.com" required />
                 </div>
-            </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create a password" required />
+                </div>
+
+                <button type="submit" class="submit-btn">Create account</button>
+            </form>
+            
+            <p class="form-footer-note">Already have an account? <a href="{% url 'login' %}" class="forgot-link">Log in</a></p>
         </div>
     </div>
 </main>
