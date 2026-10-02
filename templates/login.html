@@ -10,11 +10,6 @@
         <h1 class="card-title">Login</h1>
         <p class="card-subtitle">Log in to report waste, claim tasks and redeem rewards.</p>
 
-        <div class="pill-tabs">
-            <button type="button" class="pill-btn active">Sign in</button>
-            <button type="button" class="pill-btn">Create account</button>
-        </div>
-
         <form class="auth-form">
             <div class="form-group">
                 <label for="username">Username or email</label>
@@ -29,7 +24,10 @@
             <button type="submit" class="submit-btn">Sign in</button>
         </form>
 
-        <a href="#" class="forgot-link">Forgot your password?</a>
+        <div class="auth-links">
+            <a href="#" class="forgot-link">Forgot your password?</a>
+            <p class="form-footer-note">Don't have an account? <a href="{% url 'landing_page' %}" class="forgot-link">Sign up</a></p>
+        </div>
     </div>
 </main>
 {% endblock content %}
