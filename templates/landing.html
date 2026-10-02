@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block meta %}
+    <title>Welcome to Waste Whistle</title>
+{% endblock meta %}
+
+{% block content %}
+<main class="landing-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-badge">🌱 Welcome Newcomers!</div>
+        <h1 class="hero-title">Clean your community, earn rewards, and learn recycling.</h1>
+        <p class="hero-description">
+            Waste Whistle connects neighbors to solve waste issues together. Report local waste spots, claim cleanup tasks nearby, or learn proper waste sorting in under a minute!
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'login' %}" class="submit-btn hero-btn">Get Started</a>
+            <a href="#learn" class="pill-btn">Explore Learning Hub</a>
+        </div>
+    </section>
+
+    <!-- Quick Stats Grid -->
+    <section class="features-grid">
+        <div class="card feature-card">
+            <div class="card-badge">+60 pts</div>
+            <h3>1. Spot & Report</h3>
+            <p>Take a photo of dumped waste or overflowing bins to alert local volunteers and crews.</p>
+        </div>
+        <div class="card feature-card">
+            <div class="card-badge">+40 pts</div>
+            <h3>2. Claim Tasks</h3>
+            <p>Pick up small cleanup jobs in your neighborhood and submit proof to claim Eco-Points.</p>
+        </div>
+        <div class="card feature-card">
+            <div class="card-badge">Learn</div>
+            <h3>3. Sort It Right</h3>
+            <p>Interactive quick quizzes to help you separate Organic, Recyclable, and General waste properly.</p>
+        </div>
+    </section>
+
+    <!-- Learn Section Preview -->
+    <section id="learn" class="learn-preview-section">
+        <h2 class="card-title">Sort it right in one minute</h2>
+        <p class="card-subtitle">Short lessons and interactive quizzes. Quizzes yield bonus Eco-Points.</p>
+
+        <div class="card quiz-card">
+            <span class="quiz-step">Item 1 of 3: Greasy pizza box</span>
+            <h4 class="quiz-question">Which bin does this belong to?</h4>
+            <div class="bin-buttons">
+                <button type="button" class="bin-btn organic">Organic</button>
+                <button type="button" class="bin-btn recyclable">Recyclable</button>
+                <button type="button" class="bin-btn general">General waste</button>
+                <button type="button" class="bin-btn dropoff">Drop-off hub</button>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock content %}
