@@ -17,9 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from WasteWhistle.views import landing_page
+from WasteWhistle.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', landing_page, name='landing_page'),
+    path('login/', login, name='login')
 ]
