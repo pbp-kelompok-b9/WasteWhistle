@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+    <title>Welcome - Waste Whistle</title>
+{% endblock meta %}
+
+{% block content %}
+<main class="hero-wrapper">
+    <div class="hero-container">
+        <div class="hero-text-content">
+            <div class="hero-badge">🌱 Welcome Newcomers!</div>
+            <h1 class="hero-title">Clean your community, earn rewards, and learn recycling.</h1>
+            <p class="hero-description">
+                Waste Whistle connects neighbors to solve waste issues together. Report local waste spots, claim cleanup tasks nearby, or learn proper waste sorting in under a minute!
+            </p>
+            <div class="hero-actions">
+                <a href="#about" class="pill-btn hero-pill-btn">Explore Features</a>
+            </div>
+        </div>
+
+        <div class="card hero-form-card">
+            <h2 class="card-title">Join Waste Whistle</h2>
+            <p class="card-subtitle">Sign up to report waste, claim tasks, and redeem rewards.</p>
+
+            <form class="auth-form" action="#" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="fullname">Full Name</label>
+                    <input type="text" id="fullname" name="fullname" placeholder="John Doe" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Username or email</label>
+                    <input type="email" id="email" name="email" placeholder="ranger@example.com" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create a password" required />
+                </div>
+
+                <button type="submit" class="submit-btn">Create account</button>
+            </form>
+            
+            <p class="form-footer-note">Already have an account? <a href="{% url 'login' %}" class="forgot-link">Log in</a></p>
+        </div>
+    </div>
+</main>
+{% endblock content %}
