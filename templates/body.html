@@ -1,0 +1,312 @@
+<header class="ww-topbar">
+    <div class="ww-topbar-inner">
+        <a class="ww-brand" href="{% url 'dashboard' %}">
+            <span class="ww-brand-name">Waste<br>Whistle</span>
+        </a>
+
+        <nav class="ww-nav">
+            <a class="ww-nav-link is-active" href="{% url 'dashboard' %}">Explore &amp; Dashboard</a>
+            <a class="ww-nav-link" href="#">Report Waste</a>
+            <a class="ww-nav-link" href="#">Clean Tasks &amp; Dispatch</a>
+            <a class="ww-nav-link" href="#">Rewards &amp; FAQ</a>
+        </nav>
+
+        <div class="ww-topbar-right">
+            <span class="ww-oauth-badge"><span class="ww-dot ww-dot-green"></span>OAUTH VERIFIED</span>
+            <a class="ww-btn-report" href="#">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                Report Trash
+            </a>
+            <button class="ww-bell" type="button" aria-label="Notifications">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                {% if unread_notifications %}<span class="ww-bell-dot">{{ unread_notifications }}</span>{% endif %}
+            </button>
+            <a class="ww-user" href="#">
+                <span class="ww-avatar">{{ user_initial }}</span>
+                <span class="ww-user-meta">
+                    <strong>{{ user_level }}</strong>
+                    <small>{{ user_points }}</small>
+                </span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="ww-page">
+
+    {# ---------- Header hub ---------- #}
+    <section class="ww-hub-card">
+        <div class="ww-hub-left">
+            <div class="ww-hub-title-row">
+                <h1>{{ hub_title|default:"Environmental Hub" }}</h1>
+                <span class="ww-live-pill">Live Stream</span>
+            </div>
+            {% if hub_subtitle %}
+            <p class="ww-hub-sub">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ hub_subtitle }}
+            </p>
+            {% endif %}
+        </div>
+        <div class="ww-hub-right">
+            <span class="ww-oauth-pill"><span class="ww-dot ww-dot-green"></span>OAuth Active</span>
+            <span class="ww-avatar ww-avatar-g">G</span>
+        </div>
+    </section>
+
+    {# ---------- Baris statistik ---------- #}
+    <section class="ww-stats">
+        <article class="ww-stat-card">
+            <div class="ww-stat-info">
+                <span class="ww-stat-label">Waste Diverted</span>
+                <span class="ww-stat-value">{{ stat_waste_kg|default:"0" }}<small>kg</small></span>
+                {% if stat_waste_delta %}
+                <span class="ww-stat-sub ww-sub-up">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+                    {{ stat_waste_delta }}
+                </span>
+                {% endif %}
+            </div>
+            <span class="ww-stat-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="M9.344 5.811 10.437 3.92a1.83 1.83 0 0 1 1.548-.888 1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="M13.378 9.633 14.475 13.73l4.096-1.098"/></svg>
+            </span>
+        </article>
+
+        <article class="ww-stat-card">
+            <div class="ww-stat-info">
+                <span class="ww-stat-label">Active Open Spots</span>
+                <span class="ww-stat-value">{{ stat_open_spots|default:"0" }}</span>
+                {% if stat_urgent_spots %}
+                <span class="ww-stat-sub ww-sub-danger"><span class="ww-dot ww-dot-red"></span>{{ stat_urgent_spots }} urgent priority</span>
+                {% endif %}
+            </div>
+            <span class="ww-stat-icon ww-icon-warn">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            </span>
+        </article>
+
+        <article class="ww-stat-card">
+            <div class="ww-stat-info">
+                <span class="ww-stat-label">Verified Cleans</span>
+                <span class="ww-stat-value">{{ stat_verified|default:"0" }}</span>
+                {% if stat_verified_detail %}<span class="ww-stat-sub">{{ stat_verified_detail }}</span>{% endif %}
+            </div>
+            <span class="ww-stat-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+        </article>
+
+        <article class="ww-stat-card">
+            <div class="ww-stat-info">
+                <span class="ww-stat-label">Citizen Eco-Points</span>
+                <span class="ww-stat-value">{{ stat_points|default:"0" }}<small>pts</small></span>
+                {% if stat_points_detail %}
+                <span class="ww-stat-sub">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                    {{ stat_points_detail }}
+                </span>
+                {% endif %}
+            </div>
+            <span class="ww-stat-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+            </span>
+        </article>
+    </section>
+
+    {# ---------- Peta + Dispatch ---------- #}
+    <div class="ww-main-grid">
+
+        <section class="ww-map-col">
+            <div class="ww-searchbar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" placeholder="Search ward streets, canals, trash spots…">
+                <div class="ww-dist-group">
+                    <a class="ww-dist is-active" href="#">1 km</a>
+                    <a class="ww-dist" href="#">5 km</a>
+                    <a class="ww-dist" href="#">All Ward</a>
+                </div>
+            </div>
+
+            <div class="ww-layers">
+                <span class="ww-layers-label">LAYERS</span>
+                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-red"></span>Urgent Dumps</a>
+                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-blue"></span>Assigned Squads</a>
+                <a class="ww-layer-chip is-tinted" href="#"><span class="ww-dot ww-dot-green2"></span>Cleaned &amp; Audited</a>
+            </div>
+
+            <div class="ww-map">
+                {% if map_embed_url %}
+                    {# Contoh embed OpenStreetMap — ganti bbox sesuai kota/ward kamu (mis. Jakarta): #}
+                    {# https://www.openstreetmap.org/export/embed.html?bbox=106.77%2C-6.28%2C106.90%2C-6.16&layer=mapnik #}
+                    <iframe src="{{ map_embed_url }}" loading="lazy" title="Ward live map"></iframe>
+                {% else %}
+                    <div class="ww-map-placeholder">Map area — peta interaktif dirender di sini</div>
+                {% endif %}
+
+                <div class="ww-map-zoom">
+                    <button type="button" aria-label="Zoom in">+</button>
+                    <button type="button" aria-label="Zoom out">&minus;</button>
+                    <button type="button" aria-label="My location">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" x2="5" y1="12" y2="12"/><line x1="19" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="5"/><line x1="12" x2="12" y1="19" y2="22"/><circle cx="12" cy="12" r="7"/></svg>
+                    </button>
+                </div>
+
+                {% if gps_text %}
+                <span class="ww-gps-chip"><span class="ww-dot ww-dot-green"></span>{{ gps_text }}</span>
+                {% endif %}
+
+                {% comment %}
+                Marker lokasi akan dirender dari data, contoh satu marker:
+                <span class="ww-marker ww-marker-urgent" style="left:46%; top:27%;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                </span>
+                {% endcomment %}
+
+                <div class="ww-map-fabs">
+                    <a class="ww-fab ww-fab-dark" href="#">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Report Trash Spot
+                    </a>
+                    <a class="ww-fab ww-fab-green" href="#">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        Take Clean Task
+                    </a>
+                </div>
+            </div>
+
+            {% if route_code %}
+            <div class="ww-route-bar">
+                <span class="ww-route-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+                </span>
+                <div class="ww-route-info">
+                    <strong>Municipal Route {{ route_code }} · {{ route_status }}</strong>
+                    {% if route_detail %}<span>{{ route_detail }}</span>{% endif %}
+                </div>
+                <a class="ww-route-link" href="{{ route_manifest_url|default:'#' }}">
+                    View Route Manifest
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+            </div>
+            {% endif %}
+        </section>
+
+        <aside class="ww-dispatch">
+            <div class="ww-dispatch-head">
+                <h2>Dispatch Stream</h2>
+                <span class="ww-dot ww-dot-green ww-pulse"></span>
+                {% if new_reports_count %}<span class="ww-dispatch-new">{{ new_reports_count }} New</span>{% endif %}
+            </div>
+
+            <div class="ww-dispatch-tabs">
+                <a class="ww-dtab is-active" href="#">All Logs</a>
+                <a class="ww-dtab" href="#">Urgent</a>
+                <a class="ww-dtab" href="#">Active</a>
+                <a class="ww-dtab" href="#">Cleaned</a>
+            </div>
+
+            <div class="ww-feed">
+                {% for r in dispatch_logs %}
+                <article class="ww-feed-item">
+                    <span class="ww-feed-thumb ww-thumb-{{ r.thumb_class|default:'1' }}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </span>
+                    <div class="ww-feed-body">
+                        <div class="ww-feed-meta">
+                            <span class="ww-feed-avatar">{{ r.avatar_initials }}</span>
+                            <strong>{{ r.reporter }}</strong>
+                            {% if r.time_ago %}<span class="ww-feed-time">· {{ r.time_ago }}</span>{% endif %}
+                            {% if r.status_label %}<span class="ww-status ww-status-{{ r.status_class|default:'pending' }}">{{ r.status_label }}</span>{% endif %}
+                        </div>
+                        <h4>{{ r.title }}</h4>
+                        {% if r.location %}
+                        <span class="ww-feed-loc">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {{ r.location }}
+                        </span>
+                        {% endif %}
+                        {% if r.meta_left or r.meta_right %}
+                        <span class="ww-feed-stats">
+                            {% if r.meta_left %}<span>{{ r.meta_left }}</span>{% endif %}
+                            {% if r.meta_right %}<b>{{ r.meta_right }}</b>{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </article>
+                {% empty %}
+                <div class="ww-empty">No dispatch logs yet</div>
+                {% endfor %}
+            </div>
+
+            <button class="ww-load-older" type="button">
+                Load Older Reports
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+        </aside>
+    </div>
+
+    {# ---------- Kartu aksi cepat ---------- #}
+    <section class="ww-actions">
+        <article class="ww-action-card">
+            <div class="ww-action-top">
+                <span class="ww-action-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                </span>
+                <span class="ww-action-arrow">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                </span>
+            </div>
+            <h3>Submit Geo-Report</h3>
+            <p>Capture photo, auto-attach GPS coordinates, notify municipal crews instantly.</p>
+            <span class="ww-action-highlight">Earn +{{ report_reward_points|default:"50" }} Eco-Points</span>
+        </article>
+
+        <article class="ww-action-card">
+            <div class="ww-action-top">
+                <span class="ww-action-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                </span>
+                <span class="ww-action-arrow">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                </span>
+            </div>
+            <h3>Claim Clean Tasks</h3>
+            <p>Join active community sweeps or pick up solo verified cleanup gigs.</p>
+            <span class="ww-action-highlight">{{ open_missions|default:"0" }} Open Missions</span>
+        </article>
+
+        <article class="ww-action-card">
+            <div class="ww-action-top">
+                <span class="ww-action-icon ww-icon-solid">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>
+                </span>
+                <span class="ww-action-arrow">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                </span>
+            </div>
+            <div class="ww-lb-row">
+                <h3>Ward Leaderboard</h3>
+                {% if lb_rank %}<span class="ww-rank-pill">Rank #{{ lb_rank }}</span>{% endif %}
+            </div>
+            <div class="ww-lb-block">
+                <div class="ww-lb-bar">
+                    <span class="ww-lb-fill" data-progress="{{ lb_progress|default:'0' }}"></span>
+                    <script>
+                        const lbFill = document.currentScript.previousElementSibling;
+                        const progress = Number(lbFill.dataset.progress || 0);
+                        lbFill.style.width = (Number.isFinite(progress) ? progress : 0) + '%';
+                    </script>
+                </div>
+                {% if lb_next_label %}<span class="ww-lb-caption">{{ lb_next_label }}</span>{% endif %}
+            </div>
+            <a class="ww-action-link" href="#">View Monthly Champions</a>
+        </article>
+    </section>
+</main>
+
+<footer class="ww-footer">
+    <div class="ww-footer-inner">
+        <span><strong>Waste Whistle</strong> &nbsp;·&nbsp; Municipal Open Data Integration active (Django / GeoDjango Backend)</span>
+        <span>&copy; 2026 WasteWhistle &nbsp;·&nbsp; Civic Environmental Dispatch System</span>
+    </div>
+</footer>
