@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'education',
     'comment',
     'reporting.apps.ReportingConfig',
+    'rewards',
 ]
 
 MIDDLEWARE = [
