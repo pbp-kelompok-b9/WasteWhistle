@@ -6,23 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block meta %}{% endblock meta %}
 </head>
 <body>
-    <header class="top-nav">
-        <div class="logo">
-            <a href="{% url 'landing_page'%}">Waste Whistle</a>
-        </div>
-    </header>
+    {% block body %}
+        <header class="top-nav">
+            <div class="logo">
+                <a href="{% url 'landing_page'%}">Waste Whistle</a>
+            </div>
+        </header>
 
-    {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
 
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2026 WasteWhistle</p>
-        </div>
-    </footer>
+        <footer class="site-footer">
+            <div class="container">
+                <p>&copy; 2026 WasteWhistle</p>
+            </div>
+        </footer>
+    {% endblock body %}
 </body>
 </html>
