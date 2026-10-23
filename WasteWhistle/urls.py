@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from WasteWhistle.views import *
 
@@ -24,4 +24,5 @@ urlpatterns = [
     path('', landing_page, name='landing_page'),
     path('login/', login, name='login'),
     path('dashboard/', dashboard, name='dashboard'),
+    path("", include("education.urls")),
 ]
