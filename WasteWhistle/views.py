@@ -10,7 +10,7 @@ def register_user(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        return redirect("main:login_user")
+        return redirect("/login/")
 
     context = {
         "form": form,
@@ -23,7 +23,7 @@ def login_user(request):
     if request.method == "POST" and form.is_valid():
         user = form.get_user()
         login(request, user)
-        response = redirect("main:dashboard")
+        response = redirect("/dashboard/")
         return response
 
     context = {
@@ -38,6 +38,6 @@ def dashboard(request):
 
 def logout_user(request):
     logout(request)
-    response = redirect("main:show_main")
+    response = redirect("/register/")
     response.delete_cookie('last_login')
     return response
