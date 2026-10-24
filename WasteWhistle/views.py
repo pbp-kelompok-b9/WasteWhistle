@@ -38,6 +38,6 @@ def dashboard(request):
 
 def logout_user(request):
     logout(request)
-    response = redirect("/register/")
+    response = redirect("/")
     response.delete_cookie('last_login')
     return response
