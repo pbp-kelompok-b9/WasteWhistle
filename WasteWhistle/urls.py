@@ -21,7 +21,8 @@ from WasteWhistle.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', landing_page, name='landing_page'),
-    path('login/', login, name='login'),
+    path('', register_user, name='register_user'),
+    path('login/', login_user, name='login_user'),
+    path('logout/', logout_user, name='logout_user'),
     path('dashboard/', dashboard, name='dashboard'),
 ]
