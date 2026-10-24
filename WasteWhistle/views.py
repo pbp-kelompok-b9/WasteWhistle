@@ -6,7 +6,16 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 def register_user(request):
-    return render(request, "landing.html")
+    form = UserCreationForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("main:login_user")
+
+    context = {
+        "form": form,
+    }
+    return render(request, "register.html", context)
 
 def login_user(request):
     form = AuthenticationForm(request, data=request.POST or None)
@@ -14,7 +23,7 @@ def login_user(request):
     if request.method == "POST" and form.is_valid():
         user = form.get_user()
         login(request, user)
-        response = redirect("main:show_main")
+        response = redirect("main:dashboard")
         return response
 
     context = {
