@@ -35,3 +35,9 @@ def login_user(request):
 @login_required(login_url="/login/")
 def dashboard(request):
     return render(request, "dashboard.html")
+
+def logout_user(request):
+    logout(request)
+    response = redirect("main:show_main")
+    response.delete_cookie('last_login')
+    return response
