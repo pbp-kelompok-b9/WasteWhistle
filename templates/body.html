@@ -1,18 +1,18 @@
 <header class="ww-topbar">
     <div class="ww-topbar-inner">
         <a class="ww-brand" href="{% url 'dashboard' %}">
-            <span class="ww-brand-name">Waste<br>Whistle</span>
+            <span class="ww-brand-name">Waste Whistle</span>
         </a>
 
         <nav class="ww-nav">
-            <a class="ww-nav-link is-active" href="{% url 'dashboard' %}">Explore &amp; Dashboard</a>
-            <a class="ww-nav-link" href="#">Report Waste</a>
-            <a class="ww-nav-link" href="#">Clean Tasks &amp; Dispatch</a>
+            <a class="ww-nav-link is-active" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
+            <a class="ww-nav-link" href="#">Lapor Sampah</a>
+            <a class="ww-nav-link" href="#">Tugas Pembersihan &amp; Pengerahan</a>
         </nav>
 
         <div class="ww-topbar-right">
             <a class="ww-btn-report" href="#">
-                Report Trash
+                Lapor Sampah
             </a>
             <button class="ww-bell" type="button" aria-label="Notifications">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
@@ -35,7 +35,7 @@
     <section class="ww-hub-card">
         <div class="ww-hub-left">
             <div class="ww-hub-title-row">
-                <h1>Welcome, {{username}}!</h1>
+                <h1>Selamat Datang, {{username}}!</h1>
             </div>
         </div>
     </section>
@@ -44,7 +44,7 @@
     <section class="ww-stats">
         <article class="ww-stat-card">
             <div class="ww-stat-info">
-                <span class="ww-stat-label">Waste Diverted</span>
+                <span class="ww-stat-label">Sampah Dikendalikan</span>
                 <span class="ww-stat-value">{{ stat_waste_kg|default:"0" }}<small>kg</small></span>
                 {% if stat_waste_delta %}
                 <span class="ww-stat-sub ww-sub-up">
@@ -60,10 +60,10 @@
 
         <article class="ww-stat-card">
             <div class="ww-stat-info">
-                <span class="ww-stat-label">Active Open Spots</span>
+                <span class="ww-stat-label">Lokasi Aktif</span>
                 <span class="ww-stat-value">{{ stat_open_spots|default:"0" }}</span>
                 {% if stat_urgent_spots %}
-                <span class="ww-stat-sub ww-sub-danger"><span class="ww-dot ww-dot-red"></span>{{ stat_urgent_spots }} urgent priority</span>
+                <span class="ww-stat-sub ww-sub-danger"><span class="ww-dot ww-dot-red"></span>{{ stat_urgent_spots }} prioritas urgent</span>
                 {% endif %}
             </div>
             <span class="ww-stat-icon ww-icon-warn">
@@ -73,7 +73,7 @@
 
         <article class="ww-stat-card">
             <div class="ww-stat-info">
-                <span class="ww-stat-label">Verified Cleans</span>
+                <span class="ww-stat-label">Pembersihan Terverifikasi</span>
                 <span class="ww-stat-value">{{ stat_verified|default:"0" }}</span>
                 {% if stat_verified_detail %}<span class="ww-stat-sub">{{ stat_verified_detail }}</span>{% endif %}
             </div>
@@ -84,7 +84,7 @@
 
         <article class="ww-stat-card">
             <div class="ww-stat-info">
-                <span class="ww-stat-label">Citizen Eco-Points</span>
+                <span class="ww-stat-label">Poin Pengguna</span>
                 <span class="ww-stat-value">{{ stat_points|default:"0" }}<small>pts</small></span>
                 {% if stat_points_detail %}
                 <span class="ww-stat-sub">
@@ -109,15 +109,15 @@
                 <div class="ww-dist-group">
                     <a class="ww-dist is-active" href="#">1 km</a>
                     <a class="ww-dist" href="#">5 km</a>
-                    <a class="ww-dist" href="#">All Ward</a>
+                    <a class="ww-dist" href="#">Semua Wilayah</a>
                 </div>
             </div>
 
             <div class="ww-layers">
                 <span class="ww-layers-label">LAYERS</span>
-                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-red"></span>Urgent Dumps</a>
-                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-blue"></span>Assigned Squads</a>
-                <a class="ww-layer-chip is-tinted" href="#"><span class="ww-dot ww-dot-green2"></span>Cleaned &amp; Audited</a>
+                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-red"></span>Sampah Mendesak</a>
+                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-blue"></span>Kelompok Ditugaskan</a>
+                <a class="ww-layer-chip is-tinted" href="#"><span class="ww-dot ww-dot-green2"></span>Bersih &amp; Terverifikasi</a>
             </div>
 
             <div class="ww-map">
@@ -151,11 +151,11 @@
                 <div class="ww-map-fabs">
                     <a class="ww-fab ww-fab-dark" href="#">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                        Report Trash Spot
+                        Laporkan Titik Sampah
                     </a>
                     <a class="ww-fab ww-fab-green" href="#">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                        Take Clean Task
+                        Ambil Tugas Pembersihan
                     </a>
                 </div>
             </div>
@@ -185,10 +185,10 @@
             </div>
 
             <div class="ww-dispatch-tabs">
-                <a class="ww-dtab is-active" href="#">All Logs</a>
-                <a class="ww-dtab" href="#">Urgent</a>
-                <a class="ww-dtab" href="#">Active</a>
-                <a class="ww-dtab" href="#">Cleaned</a>
+                <a class="ww-dtab is-active" href="#">Semua Catatan</a>
+                <a class="ww-dtab" href="#">Mendesak</a>
+                <a class="ww-dtab" href="#">Aktif</a>
+                <a class="ww-dtab" href="#">Bersih</a>
             </div>
 
             <div class="ww-feed">
@@ -220,12 +220,12 @@
                     </div>
                 </article>
                 {% empty %}
-                <div class="ww-empty">No dispatch logs yet</div>
+                <div class="ww-empty">Belum ada catatan sekarang.</div>
                 {% endfor %}
             </div>
 
             <button class="ww-load-older" type="button">
-                Load Older Reports
+                Muat Catatan Lama
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
         </aside>
@@ -242,8 +242,8 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
                 </span>
             </div>
-            <h3>Submit Geo-Report</h3>
-            <p>Capture photo, auto-attach GPS coordinates, notify municipal crews instantly.</p>
+            <h3>Kirim Geo-Report</h3>
+            <p>Ambil gambar dan berikan GPS secara otomatis.</p>
             <span class="ww-action-highlight">Earn +{{ report_reward_points|default:"50" }} Eco-Points</span>
         </article>
 
@@ -292,7 +292,6 @@
 
 <footer class="ww-footer">
     <div class="ww-footer-inner">
-        <span><strong>Waste Whistle</strong> &nbsp;·&nbsp; Municipal Open Data Integration active (Django / GeoDjango Backend)</span>
-        <span>&copy; 2026 WasteWhistle &nbsp;·&nbsp; Civic Environmental Dispatch System</span>
-    </div>
-</footer>
+        <span><strong>Waste Whistle</strong></span>
+        <span>&copy; 2026 Waste Whistle</span>
+    </div

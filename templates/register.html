@@ -8,16 +8,16 @@
 <main class="hero-wrapper">
     <div class="hero-container">
         <div class="hero-text-content">
-            <div class="hero-badge">🌱 Welcome Newcomers!</div>
-            <h1 class="hero-title">Clean your community and learn recycling.</h1>
+            <div class="hero-badge">🌱 Selamat Datang!</div>
+            <h1 class="hero-title">Bersihkan sampah dan belajar mendaur ulang.</h1>
             <p class="hero-description">
-                Waste Whistle connects neighbors to solve waste issues together. Report local waste spots, claim cleanup tasks nearby, or learn proper waste sorting in under a minute!
+                Waste Whistle menyatukan masyarakat untuk menyelesaikan masalah sampah bersama, melaporkan titik sampah dan mengambil tugas pembersihan!
             </p>
         </div>
 
         <div class="card hero-form-card">
-            <h2 class="card-title">Join Waste Whistle</h2>
-            <p class="card-subtitle">Sign up to report waste and make world a better place.</p>
+            <h2 class="card-title">Gabung Waste Whistle</h2>
+            <p class="card-subtitle">Gabung untuk melaporkan sampah dan buat dunia menjadi lebih baik.</p>
 
             <form method="POST" action="#" class="auth-form">
                 {% csrf_token %}
@@ -33,10 +33,10 @@
             {% for error in form.non_field_errors %}
                 <p class="form-error">{{ error }}</p>
             {% endfor %}
-            <button type="submit" class="submit-btn">Create account</button>
+            <button type="submit" class="submit-btn">Buat akun</button>
             </form>
             
-            <p class="form-footer-note">Already have an account? <a href="{% url 'login_user' %}" class="forgot-link">Log in</a></p>
+            <p class="form-footer-note">Sudah punya akun? <a href="{% url 'login_user' %}" class="forgot-link">Masuk</a></p>
         </div>
     </div>
 </main>
