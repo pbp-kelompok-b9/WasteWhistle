@@ -4,9 +4,9 @@ from .models import (
     MythOrFact,
     DecompositionInfo,
     QuizQuestion,
-    QuizAttempt,
 )
 
 admin.site.register(WasteGuide)
 admin.site.register(MythOrFact)
 admin.site.register(DecompositionInfo)
+admin.site.register(QuizQuestion)

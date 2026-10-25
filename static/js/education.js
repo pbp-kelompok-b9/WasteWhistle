@@ -24,7 +24,6 @@ function setupQuiz() {
             id: element.dataset.id,
             item: element.textContent.trim(),
             answer: element.dataset.answer,
-            tip: element.dataset.tip
         };
     });
 
@@ -89,9 +88,9 @@ function setupQuiz() {
 
         // Tampilkan hasil + penjelasan cara menanganinya
         if (isCorrect) {
-            feedbackText.textContent = "Benar! " + question.tip;
+            feedbackText.textContent = "Benar!";
         } else {
-            feedbackText.textContent = "Belum tepat. Sampah ini masuk ke " + correctLabel + ". " + question.tip;
+            feedbackText.textContent = "Belum tepat. Sampah ini masuk ke " + correctLabel + ".";
         }
         feedbackText.hidden = false;
 

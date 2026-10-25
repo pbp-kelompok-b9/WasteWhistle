@@ -25,7 +25,6 @@
             <h2>Quiz: Tempat Sampah yang Mana?</h2>
             <span class="quiz-score-indicator" id="quiz-score-indicator">Skor: {{ daily_score|default:0 }}/3</span>
         </div>
-        <br>
         <ul id="quiz-data" hidden>
             {% for question in questions %}<li data-id="{{ question.id }}" data-answer="{{ question.item.category }}" data-tip="{{ question.item.handling_instruction }}">{{ question.item.name }}</li>{% endfor %}
         </ul>
@@ -33,6 +32,8 @@
         <form id="quiz-csrf-form" hidden>{% csrf_token %}</form>
         <div id="quiz-play" data-submit-url="{% url 'submit_quiz_api' %}"
              data-can-play="{% if user.is_authenticated and not already_played and questions %}true{% else %}false{% endif %}">
+            <p class="quiz-progress" id="quiz-progress">{% if questions %}Soal 1 dari {{ questions|length }}{% endif %}</p>
+            <p class="quiz-item" id="quiz-item"></p>
             <div class="bins">
                 <button class="bin bin-organik" type="button" data-bin="organik">Organik</button>
                 <button class="bin bin-anorganik" type="button" data-bin="anorganik">Anorganik</button>
@@ -43,8 +44,7 @@
             <br>
             {% if not user.is_authenticated %}<p class="quiz-message">Kamu perlu <a href="{% url 'login' %}">log in</a> untuk mengikuti kuis.</p>
             {% elif already_played %}<p class="quiz-completed">Kamu telah menyelesaikan kuis hari ini dengan skor: {{ daily_score|default:0 }}/3</p><p class="text-soft">Kembali besok untuk kuis selanjutnya.</p>
-            {% elif not questions %}<p class="quiz-message">Belum ada kuis yang tersedia.</p>
-            {% else %}<p class="quiz-progress" id="quiz-progress"></p>{% endif %}
+            {% endif %}
             <p class="quiz-feedback" id="quiz-feedback" aria-live="polite" hidden></p>
             <button class="btn btn-primary" id="quiz-next" type="button" hidden>Item berikutnya</button>
         </div>
@@ -93,7 +93,7 @@
                     <details class="guide-item">
                         <summary>
                             <span class="guide-name">{{ guide.name }}</span>
-                            <span class="category-badge category-{{ guide.category }}">{{ guide.get_category_display }}</span>
+                            <span class="category-badge category-{{ guide.category }}">{{ guide.category }}</span>
                         </summary>
                         <p>{{ guide.description }}</p>
                         <p><strong>Cara Penanganan:</strong> {{ guide.handling_instruction }}</p>
