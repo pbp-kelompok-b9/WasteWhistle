@@ -45,19 +45,22 @@ def show_edu(request):
     today = timezone.localdate()
 
     already_played = False
+    daily_score = None
     questions = []
 
     if request.user.is_authenticated:
-        already_played = QuizAttempt.objects.filter(
+        daily_score = QuizAttempt.objects.filter(
             user=request.user,
             attempt_date=today,
-        ).exists()
+        ).values_list("score", flat=True).first()
+        already_played = daily_score is not None
 
         if not already_played:
             questions = get_todays_questions(request)
 
     context = {
         "already_played": already_played,
+        "daily_score": daily_score,
         "questions": questions,
         "waste_guides": WasteGuide.objects.order_by("name"),
         "decomposition_infos": DecompositionInfo.objects.order_by("estimated_days"),

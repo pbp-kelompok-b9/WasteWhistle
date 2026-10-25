@@ -1378,3 +1378,116 @@ body {
   .ww-route-bar { flex-wrap: wrap; }
   .ww-route-link { margin-left: 0; }
 }
+
+/* ---------- 1. Palet warna & ukuran ---------- */
+
+:root {
+  /* Warna dasar */
+  --color-background: #F2F8F4;   /* sama dengan warna body di atas */
+  --color-surface: #FFFFFF;      /* latar kartu / kotak putih */
+  --color-text: #0F172A;         /* teks utama */
+  --color-text-soft: #475569;    /* teks pendukung (abu) */
+  --color-border: #D3DCE3;       /* garis tepi */
+
+  /* Hijau utama */
+  --color-primary: #047857;
+  --color-primary-hover: #065F46;
+  --color-primary-dark: #064E3B;
+  --color-primary-light: #D1FAE5;
+  --color-on-primary: #FFFFFF;   /* teks di atas warna hijau */
+
+  /* Warna status */
+  --color-success: #10B981;      /* hijau */
+  --color-warning: #F59E0B;      /* kuning */
+  --color-danger: #EF4444;       /* merah */
+  --color-neutral-light: #E2E8F0;
+
+  /* Warna kategori sampah (tong kuis dan badge di halaman Education).
+     Nama di belakang (organik, b3, dst) = nilai category di database. */
+  --color-bin-organik: #047857;            /* hijau */
+  --color-bin-anorganik: #FACC15;          /* kuning */
+  --color-bin-anorganik-text: #0F172A;     /* teks gelap di atas kuning supaya terbaca */
+  --color-bin-b3: #B91C1C;                 /* merah */
+  --color-bin-kertas: #1D4ED8;             /* biru */
+  --color-bin-residu: #64748B;             /* abu-abu */
+
+  /* Sudut membulat */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --radius-xlarge: 22px;
+  --radius-pill: 999px;
+
+  /* Lebar maksimal isi halaman */
+  --page-width: 1280px;
+}
+
+/* ---------- 2. Kelas bantu ---------- */
+
+/* Elemen yang punya atribut "hidden" harus benar-benar hilang */
+[hidden] {
+  display: none !important;
+}
+
+/* Garis fokus untuk pengguna keyboard (hanya muncul saat navigasi pakai Tab) */
+:focus-visible {
+  outline: 3px solid var(--color-success);
+  outline-offset: 2px;
+}
+
+.text-soft {
+  color: var(--color-text-soft);
+  font-size: 13px;
+}
+
+/* Disembunyikan dari layar tapi tetap bisa dipakai keyboard / screen reader */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* ---------- 3. Tombol umum ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---------- 4. Kartu lebar ----------
+   .card di atas adalah kartu FORM (login / landing), lebarnya maksimal 440px.
+   Untuk kartu isi halaman yang lebar, pakai dua class sekaligus:
+       <div class="card card-wide"> ... </div>
+   .card tetap dipakai supaya border, warna, dan sudutnya sama dengan
+   halaman lain; .card-wide hanya melepas batas lebar dan memperkecil padding. */
+
+.card-wide {
+  max-width: none;
+  padding: 24px;
+}

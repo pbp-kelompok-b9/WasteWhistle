@@ -15,7 +15,7 @@
     <!-- ==========================================================
          1. JUDUL HALAMAN
          ========================================================== -->
-    <section class="learn-heading">
+    <section class="learn-heading card card-wide">
         <h1>Waste Education</h1>
         <p class="learn-subtitle">Belajar terkait sampah dan pemilahannya</p>
     </section>
@@ -31,64 +31,38 @@
          Class "card card-wide" = kartu putih yang lebar (lihat style.css).
          ========================================================== -->
     <section class="card card-wide quiz" id="daily-quiz">
-        <h2>Quiz: Tempat Sampah yang Mana?</h2>
-
-        {% if not user.is_authenticated %}
-            <p class="quiz-message">
-                Kamu perlu <a href="{% url 'login' %}">log in</a> untuk mengikuti kuis.
-            </p>
-
-        {% elif already_played %}
-            <p class="quiz-message">
-                Kamu sudah menyelesaikan kuis. Silakan kembali besok untuk kuis berikutnya!
-            </p>
-
-        {% elif not questions %}
-            <p class="quiz-message">Belum ada kuis yang tersedia.</p>
-
-        {% else %}
-
-            <!-- Area bermain: soal, tong, dan penjelasan. Isinya diatur education.js -->
-             <form id="quiz-csrf-form" hidden>
-               {% csrf_token %}
-            </form>
-            <div id="quiz-play"data-submit-url="{% url 'submit_quiz_api' %}">
-                <p class="quiz-progress" id="quiz-progress"></p>
-                <p class="quiz-item" id="quiz-item"></p>
-
-                <!-- Lima tong.
-                     data-bin harus SAMA dengan nilai category di model WasteGuide.
-                     Class bin-xxx menentukan warna (lihat education.css bagian 2). -->
-                <div class="bins">
-                    <button class="bin bin-organik" type="button" data-bin="organik">Organik</button>
-                    <button class="bin bin-anorganik" type="button" data-bin="anorganik">Anorganik</button>
-                    <button class="bin bin-b3" type="button" data-bin="b3">B3</button>
-                    <button class="bin bin-kertas" type="button" data-bin="kertas">Sampah Kertas</button>
-                    <button class="bin bin-residu" type="button" data-bin="residu">Residu</button>
-                </div>
-
-                <p class="quiz-feedback" id="quiz-feedback" aria-live="polite" hidden></p>
-                <button class="btn btn-primary" id="quiz-next" type="button" hidden>Item berikutnya</button>
+        <div class="quiz-heading">
+            <h2>Quiz: Tempat Sampah yang Mana?</h2>
+            <span class="quiz-score-indicator" id="quiz-score-indicator">Score: {{ daily_score|default:0 }}/3</span>
+        </div>
+        <br>
+        <ul id="quiz-data" hidden>
+            {% for question in questions %}<li data-id="{{ question.id }}" data-answer="{{ question.item.category }}" data-tip="{{ question.item.handling_instruction }}">{{ question.item.name }}</li>{% endfor %}
+        </ul>
+        <br>
+        <form id="quiz-csrf-form" hidden>{% csrf_token %}</form>
+        <div id="quiz-play" data-submit-url="{% url 'submit_quiz_api' %}"
+             data-can-play="{% if user.is_authenticated and not already_played and questions %}true{% else %}false{% endif %}">
+            <div class="bins">
+                <button class="bin bin-organik" type="button" data-bin="organik">Organik</button>
+                <button class="bin bin-anorganik" type="button" data-bin="anorganik">Anorganik</button>
+                <button class="bin bin-b3" type="button" data-bin="b3">B3</button>
+                <button class="bin bin-kertas" type="button" data-bin="kertas">Sampah Kertas</button>
+                <button class="bin bin-residu" type="button" data-bin="residu">Residu</button>
             </div>
+            <br>
+            {% if not user.is_authenticated %}<p class="quiz-message">Kamu perlu <a href="{% url 'login' %}">log in</a> untuk mengikuti kuis.</p>
+            {% elif already_played %}<p class="quiz-completed">Kamu telah menyelesaikan kuis hari ini dengan skor: {{ daily_score|default:0 }}/3</p><p class="text-soft">Kembali besok untuk kuis selanjutnya.</p>
+            {% elif not questions %}<p class="quiz-message">Belum ada kuis yang tersedia.</p>
+            {% else %}<p class="quiz-progress" id="quiz-progress"></p>{% endif %}
+            <p class="quiz-feedback" id="quiz-feedback" aria-live="polite" hidden></p>
+            <button class="btn btn-primary" id="quiz-next" type="button" hidden>Item berikutnya</button>
+        </div>
 
-            <!-- Skor akhir (tersembunyi sampai soal terakhir dijawab) -->
-            <div id="quiz-result" hidden>
-                <p class="quiz-score" id="quiz-score"></p>
-                <p class="text-soft">Kembali besok untuk kuis berikutnya.</p>
-            </div>
-
-            <!-- Data soal untuk JavaScript (tidak tampil di layar).
-                 Satu <li> = satu soal. -->
-            <ul id="quiz-data" hidden>
-                {% for question in questions %}
-                    <li
-                        data-id="{{ question.id }}"
-                        data-answer="{{ question.item.category }}"
-                        data-tip="{{ question.item.handling_instruction }}">{{ question.item.name }}</li>
-                {% endfor %}
-            </ul>
-
-        {% endif %}
+        <div id="quiz-result" hidden>
+            <p class="quiz-completed">Kamu telah menyelesaikan kuis hari ini dengan skor: <span id="quiz-score"></span></p>
+            <p class="text-soft">Kembali besok untuk kuis selanjutnya.</p>
+        </div>
     </section>
 
 
@@ -125,9 +99,10 @@
         <div class="card card-wide" id="waste-guide">
             <h2>Penanganan Sampah</h2>
 
-            <input class="search-input" type="search" id="guide-search"
-                   aria-label="Cari sampah"
-                   placeholder="Cari berdasarkan nama sampah...">
+            <div class="ww-searchbar education-searchbar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="guide-search" aria-label="Cari sampah" placeholder="Cari berdasarkan nama sampah...">
+            </div>
 
             <!-- data-api-url = alamat API, dibaca oleh education.js -->
             <div id="guide-results" data-api-url="{% url 'waste_guide_api' %}">
@@ -166,7 +141,11 @@
                     <label class="flip-card">
                         <input class="flip-toggle visually-hidden" type="checkbox">
 
-                        <span class="flip-front">{{ item.statement }}</span>
+                        <span class="flip-front">
+                            <svg class="flip-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>
+                            <span class="flip-statement">{{ item.statement }}</span>
+                            <span class="flip-hint">Balik kartu untuk melihat jawaban</span>
+                        </span>
 
                         <span class="flip-back">
                             <strong class="flip-verdict">
