@@ -1,16 +1,19 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-import uuid
+import uuid, math
+
+def _plural(number, word):
+    return f"{number:,} {word}"
 
 class WasteGuide(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     CATEGORY_CHOICES = [
-        ("organic", "Organic Waste"),
-        ("inorganic", "Inorganic Waste"),
-        ("recycleable", "Recycleable Waste"),
-        ("residual", "Residual Waste"),
-        ("hazardous", "Hazardous Waste"),
+        ("organik", "Sampah Organik"),
+        ("anorganik", "Sampah Anorganik"),
+        ("kertas", "Sampah Kertas"),
+        ("residu", "Sampah Residu"),
+        ("b3", "Sampah B3"),
     ]
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
@@ -33,31 +36,46 @@ class DecompositionInfo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     material_name = models.CharField(max_length=100)
     estimated_days = models.PositiveIntegerField()
-    notes = models.TextField(blank=True)
-    source_url = models.URLField(blank=True)
-
+    
     def __str__(self):
         return self.material_name
 
     @property
     def formatted_duration(self):
         days = self.estimated_days
-
+ 
         if days < 30:
-            return f"{days} days"
-        elif days < 365:
-            months = round(days / 30)
-            return f"{months} months"
-        else:
-            years = round(days / 365)
-            return f"{years} years"
+            return _plural(days, "hari")
+ 
+        if days < 365:
+            months = min(round(days / 30), 11)
+            return _plural(months, "bulan")
+ 
+        years = round(days / 365)
+        return _plural(years, "tahun")
+
+    @property
+    def bar_percent(self):
+        longest_days = 365 * 1_000_000          
+        days = max(self.estimated_days, 1)      
+        percent = math.log10(days) / math.log10(longest_days) * 100
+        return max(5, min(round(percent), 100)) 
+
+    @property
+    def bar_level(self):
+        if self.estimated_days < 365:           
+            return "short"
+        if self.estimated_days < 365 * 300:     
+            return "medium"
+        return "long"
+ 
 
 class QuizQuestion(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    item = models.ForeignKey(
-        WasteGuide,
+    item = models.OneToOneField(
+        "WasteGuide",
         on_delete=models.CASCADE,
-        related_name="quiz_questions"
+        related_name="quiz_question",
     )
 
     def __str__(self):
@@ -71,11 +89,13 @@ class QuizAttempt(models.Model):
         related_name="quiz_attempts"
     )
     attempt_date = models.DateField(default=timezone.localdate)
-    constraints = [
-        models.UniqueConstraint(
-            fields=["user", "attempt_date"],
-            name="one_quiz_per_day"
-        )
-    ]
+    score = models.PositiveSmallIntegerField(default=0)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "attempt_date"],
+                name="one_quiz_per_day",
+            )
+        ]
     def __str__(self):
-        return f"{self.user} - {self.completed_at}"
+        return f"{self.user} - {self.attempt_date}"

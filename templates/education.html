@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Learn{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/education.css' %}">
+{% endblock %}
+
+
+{% block content %}
+
+<main class="education-page">
+
+    <!-- ==========================================================
+         1. JUDUL HALAMAN
+         ========================================================== -->
+    <section class="learn-heading">
+        <h1>Waste Education</h1>
+        <p class="learn-subtitle">Belajar terkait sampah dan pemilahannya</p>
+    </section>
+
+
+    <!-- ==========================================================
+         2. QUIZ HARIAN
+         Isi kartu ini ada 4 kemungkinan (dicek berurutan):
+           a. belum login          -> ajakan login
+           b. sudah main hari ini  -> pesan kembali besok
+           c. soal belum ada       -> pesan soal kosong
+           d. selain itu           -> kuis yang bisa dimainkan (tong baru muncul di sini)
+         Class "card card-wide" = kartu putih yang lebar (lihat style.css).
+         ========================================================== -->
+    <section class="card card-wide quiz" id="daily-quiz">
+        <h2>Quiz: Tempat Sampah yang Mana?</h2>
+
+        {% if not user.is_authenticated %}
+            <p class="quiz-message">
+                Kamu perlu <a href="{% url 'login' %}">log in</a> untuk mengikuti kuis.
+            </p>
+
+        {% elif already_played %}
+            <p class="quiz-message">
+                Kamu sudah menyelesaikan kuis. Silakan kembali besok untuk kuis berikutnya!
+            </p>
+
+        {% elif not questions %}
+            <p class="quiz-message">Belum ada kuis yang tersedia.</p>
+
+        {% else %}
+
+            <!-- Area bermain: soal, tong, dan penjelasan. Isinya diatur education.js -->
+             <form id="quiz-csrf-form" hidden>
+               {% csrf_token %}
+            </form>
+            <div id="quiz-play"data-submit-url="{% url 'submit_quiz_api' %}">
+                <p class="quiz-progress" id="quiz-progress"></p>
+                <p class="quiz-item" id="quiz-item"></p>
+
+                <!-- Lima tong.
+                     data-bin harus SAMA dengan nilai category di model WasteGuide.
+                     Class bin-xxx menentukan warna (lihat education.css bagian 2). -->
+                <div class="bins">
+                    <button class="bin bin-organik" type="button" data-bin="organik">Organik</button>
+                    <button class="bin bin-anorganik" type="button" data-bin="anorganik">Anorganik</button>
+                    <button class="bin bin-b3" type="button" data-bin="b3">B3</button>
+                    <button class="bin bin-kertas" type="button" data-bin="kertas">Sampah Kertas</button>
+                    <button class="bin bin-residu" type="button" data-bin="residu">Residu</button>
+                </div>
+
+                <p class="quiz-feedback" id="quiz-feedback" aria-live="polite" hidden></p>
+                <button class="btn btn-primary" id="quiz-next" type="button" hidden>Item berikutnya</button>
+            </div>
+
+            <!-- Skor akhir (tersembunyi sampai soal terakhir dijawab) -->
+            <div id="quiz-result" hidden>
+                <p class="quiz-score" id="quiz-score"></p>
+                <p class="text-soft">Kembali besok untuk kuis berikutnya.</p>
+            </div>
+
+            <!-- Data soal untuk JavaScript (tidak tampil di layar).
+                 Satu <li> = satu soal. -->
+            <ul id="quiz-data" hidden>
+                {% for question in questions %}
+                    <li
+                        data-id="{{ question.id }}"
+                        data-answer="{{ question.item.category }}"
+                        data-tip="{{ question.item.handling_instruction }}">{{ question.item.name }}</li>
+                {% endfor %}
+            </ul>
+
+        {% endif %}
+    </section>
+
+
+    <!-- ==========================================================
+         3. DUA KOLOM: LAMA PENGURAIAN (kiri) dan PENANGANAN SAMPAH (kanan)
+         <section class="learn-columns"> = pembungkus 2 kolom (grid).
+         Isinya harus tepat dua kartu, satu per kolom.
+         ========================================================== -->
+    <section class="learn-columns">
+
+        <!-- Kolom kiri -->
+        <div class="card card-wide" id="decomposition">
+            <h2>Lama Penguraian</h2>
+
+            {% for info in decomposition_infos %}
+                <article class="lifespan-item">
+                    <!-- Satu baris: nama | bar | lama waktu -->
+                    <div class="lifespan-row">
+                        <span class="lifespan-name">{{ info.material_name }}</span>
+
+                        <div class="lifespan-track">
+                            <div class="lifespan-bar bar-{{ info.bar_level }}"style="width: {{ info.bar_percent }}%;"></div>
+                        </div>
+
+                        <strong class="lifespan-years">{{ info.formatted_duration }}</strong>
+                    </div>
+                </article>
+            {% empty %}
+                <p class="text-soft empty-message">Belum ada informasi yang tersedia.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Kolom kanan -->
+        <div class="card card-wide" id="waste-guide">
+            <h2>Penanganan Sampah</h2>
+
+            <input class="search-input" type="search" id="guide-search"
+                   aria-label="Cari sampah"
+                   placeholder="Cari berdasarkan nama sampah...">
+
+            <!-- data-api-url = alamat API, dibaca oleh education.js -->
+            <div id="guide-results" data-api-url="{% url 'waste_guide_api' %}">
+                {% for guide in waste_guides %}
+                    <!-- Susunan item ini harus sama dengan fungsi yang membuat item
+                         hasil pencarian di education.js -->
+                    <details class="guide-item">
+                        <summary>
+                            <span class="guide-name">{{ guide.name }}</span>
+                            <span class="category-badge category-{{ guide.category }}">{{ guide.get_category_display }}</span>
+                        </summary>
+                        <p>{{ guide.description }}</p>
+                        <p><strong>Cara Penanganan:</strong> {{ guide.handling_instruction }}</p>
+                    </details>
+                {% empty %}
+                    <p class="text-soft empty-message">Belum ada informasi yang tersedia.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         4. MITOS ATAU FAKTA
+         Kartu bisa dibalik tanpa JavaScript (trik checkbox di education.css bagian 6).
+           depan    = pernyataan
+           belakang = Mitos / Fakta + penjelasan + link sumber
+         ========================================================== -->
+    <section id="myths-facts">
+        <h2 class="myth-title">Flip Card: Mitos atau Fakta?</h2>
+
+        {% if myths_facts %}
+            <div class="myth-grid">
+                {% for item in myths_facts %}
+                    <label class="flip-card">
+                        <input class="flip-toggle visually-hidden" type="checkbox">
+
+                        <span class="flip-front">{{ item.statement }}</span>
+
+                        <span class="flip-back">
+                            <strong class="flip-verdict">
+                                {% if item.is_myth %}Mitos{% else %}Fakta{% endif %}
+                            </strong>
+                            <span class="flip-explanation">{{ item.explanation }}</span>
+                            {% if item.source_url %}
+                                <a class="flip-link" href="{{ item.source_url }}"
+                                   target="_blank" rel="noopener noreferrer">Pelajari lebih lanjut</a>
+                            {% endif %}
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-soft">Belum ada mitos/fakta yang tersedia.</p>
+        {% endif %}
+    </section>
+
+</main>
+{% endblock %}
+
+
+{% block extra_js %}
+    <script src="{% static 'js/education.js' %}"></script>
+{% endblock %}
