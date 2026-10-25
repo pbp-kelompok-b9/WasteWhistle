@@ -94,7 +94,7 @@ function setupQuiz() {
         }
         feedbackText.hidden = false;
 
-        // Matikan semua tong, beri garis pada tong yang benar
+        // Matikan semua tong selain tong yang benar
         binButtons.forEach(function (button) {
             button.disabled = true;
 
@@ -120,7 +120,6 @@ function setupQuiz() {
             showResult();
         }
     }
-
 
     /* Tampilkan skor akhir */        
     async function showResult() {
@@ -275,7 +274,7 @@ function setupGuideSearch() {
         }
     }
 
-    /* Setiap ketikan: batalkan timer lama, pasang timer baru */
+    /* Setiap ketik: batalkan timer lama, pasang timer baru */
     searchInput.addEventListener("input", function () {
         clearTimeout(timerId);
 
