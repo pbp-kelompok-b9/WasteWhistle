@@ -10,11 +10,13 @@ from django.http import HttpResponse, JsonResponse
 # Create your views here.
 def show_directory(request):
     name_query = request.GET.get("title", "").strip()
+    waste_banks = WasteBank.objects.all()
 
     context = {
         "name_query": name_query,
-        "is_staff": request.user.groups.filter(name='Staf').exists(),
+        "is_staff": request.user.groups.filter(name='Staff').exists(),
         "form": WasteBankForm(),
+        "waste_banks": waste_banks,
     }
     return render(request, "directory/directory.html", context)
 
@@ -73,7 +75,7 @@ def delete_waste_bank(request, waste_bank_id):
 
 @login_required(login_url="/login/")
 def edit_waste_bank(request, waste_bank_id):
-    if not (request.user.is_superuser or request.user.groups.filter(name='Staf').exists()):
+    if not (request.user.is_superuser or request.user.groups.filter(name='Staff').exists()):
         raise PermissionDenied
     
     waste_bank = get_object_or_404(WasteBank, pk=waste_bank_id)
@@ -88,11 +90,11 @@ def edit_waste_bank(request, waste_bank_id):
         "form": form,
         "waste_bank": waste_bank,
     }
-    return render(request, "waste_bank_form.html", context)
+    return render(request, "directory/waste_bank_form.html", context)
 
 @require_POST
 def create_waste_bank_ajax(request):
-    if not (request.user.is_superuser or request.user.groups.filter(name='Staf').exists()):
+    if not (request.user.is_superuser or request.user.groups.filter(name='Staff').exists()):
         return JsonResponse(
             {"message": "Hanya staf yang dapat menambahkan lokasi."},
             status=403,
