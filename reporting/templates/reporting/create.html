@@ -25,13 +25,36 @@
         <span class="report-eyebrow">REPORT WASTE</span>
         <h1 id="report-title">Lingkungan bersih dimulai dari laporanmu.</h1>
         <p>Temukan tumpukan sampah di sekitarmu? Bantu catat kondisi dan lokasinya agar lebih mudah ditemukan.</p>
-        <div class="report-placeholder">
-            <span class="report-symbol" aria-hidden="true">+</span>
-            <div>
-                <h2>Laporkan sampah</h2>
-                <p>Form laporan segera tersedia. Siapkan deskripsi kondisi sampah dan patokan lokasinya.</p>
+        <form class="report-form" method="post" action="{% url 'reporting:create' %}" novalidate>
+            {% csrf_token %}
+            <h2>Detail laporan</h2>
+            <p>Isi judul dan deskripsi untuk melihat preview. Laporan belum dikirim atau disimpan.</p>
+            {% if form.errors %}
+            <p class="report-error-summary" role="alert">Periksa bagian yang ditandai di bawah ini. Isianmu tetap ada.</p>
+            {% endif %}
+            {% for field in form %}
+            <div class="report-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="report-required"> (wajib)</span>{% endif %}</label>
+                {{ field }}
+                <small id="{{ field.name }}-help">{{ field.help_text }}</small>
+                <div class="report-errors" id="{{ field.name }}-errors">{{ field.errors }}</div>
             </div>
-        </div>
+            {% endfor %}
+            <div class="report-form-actions">
+                <button type="submit">Lihat preview</button>
+                <a href="{% url 'dashboard' %}">Kembali ke dashboard</a>
+            </div>
+        </form>
+        {% if preview %}
+        <section class="report-preview" aria-labelledby="preview-title" aria-live="polite">
+            <span class="report-eyebrow">PREVIEW · BELUM DISIMPAN</span>
+            <h2 id="preview-title">{{ preview.title }}</h2>
+            <p class="report-description">{{ preview.description }}</p>
+            <h3>Patokan lokasi</h3>
+            <p>{{ preview.location_note|default:"Belum diisi" }}</p>
+            <p class="report-preview-note">Periksa detail di atas. Untuk memperbarui preview, ubah isian lalu klik Lihat preview lagi.</p>
+        </section>
+        {% endif %}
     </section>
 </main>
 {% endblock body %}
