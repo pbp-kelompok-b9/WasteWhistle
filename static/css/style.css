@@ -1534,6 +1534,14 @@ body {
   inset: 0px;
 }
 
+.z-0 {
+  z-index: 0;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
 .my-1 {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
@@ -1617,6 +1625,10 @@ body {
 
 .h-full {
   height: 100%;
+}
+
+.h-\[450px\] {
+  height: 450px;
 }
 
 .w-6 {
@@ -1727,6 +1739,10 @@ body {
   gap: 9px;
 }
 
+.overflow-hidden {
+  overflow: hidden;
+}
+
 .whitespace-nowrap {
   white-space: nowrap;
 }
@@ -1741,6 +1757,10 @@ body {
 
 .rounded-lg {
   border-radius: 0.5rem;
+}
+
+.rounded-\[20px\] {
+  border-radius: 20px;
 }
 
 .border {
@@ -1983,6 +2003,15 @@ body {
 /* ==========================================
    REUSABLE CORE COMPONENTS
    ========================================== */
+
+.hover\:chip-tinted:hover {
+  --tw-border-opacity: 1;
+  border-color: rgb(196 232 211 / var(--tw-border-opacity, 1));
+  --tw-bg-opacity: 1;
+  background-color: rgb(220 243 228 / var(--tw-bg-opacity, 1));
+  --tw-text-opacity: 1;
+  color: rgb(42 59 51 / var(--tw-text-opacity, 1));
+}
 
 @media (min-width: 1024px) {
   .lg\:btn-primary {
