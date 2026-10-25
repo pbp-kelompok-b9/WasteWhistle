@@ -12,28 +12,18 @@
 
 <main class="education-page">
 
-    <!-- ==========================================================
-         1. JUDUL HALAMAN
-         ========================================================== -->
+    <!-- JUDUL HALAMAN -->
     <section class="learn-heading card card-wide">
         <h1>Waste Education</h1>
         <p class="learn-subtitle">Belajar terkait sampah dan pemilahannya</p>
     </section>
 
 
-    <!-- ==========================================================
-         2. QUIZ HARIAN
-         Isi kartu ini ada 4 kemungkinan (dicek berurutan):
-           a. belum login          -> ajakan login
-           b. sudah main hari ini  -> pesan kembali besok
-           c. soal belum ada       -> pesan soal kosong
-           d. selain itu           -> kuis yang bisa dimainkan (tong baru muncul di sini)
-         Class "card card-wide" = kartu putih yang lebar (lihat style.css).
-         ========================================================== -->
+    <!-- QUIZ HARIAN -->
     <section class="card card-wide quiz" id="daily-quiz">
         <div class="quiz-heading">
             <h2>Quiz: Tempat Sampah yang Mana?</h2>
-            <span class="quiz-score-indicator" id="quiz-score-indicator">Score: {{ daily_score|default:0 }}/3</span>
+            <span class="quiz-score-indicator" id="quiz-score-indicator">Skor: {{ daily_score|default:0 }}/3</span>
         </div>
         <br>
         <ul id="quiz-data" hidden>
@@ -66,11 +56,7 @@
     </section>
 
 
-    <!-- ==========================================================
-         3. DUA KOLOM: LAMA PENGURAIAN (kiri) dan PENANGANAN SAMPAH (kanan)
-         <section class="learn-columns"> = pembungkus 2 kolom (grid).
-         Isinya harus tepat dua kartu, satu per kolom.
-         ========================================================== -->
+    <!-- DUA KOLOM: LAMA PENGURAIAN (kiri) dan PENANGANAN SAMPAH (kanan) -->
     <section class="learn-columns">
 
         <!-- Kolom kiri -->
@@ -79,7 +65,6 @@
 
             {% for info in decomposition_infos %}
                 <article class="lifespan-item">
-                    <!-- Satu baris: nama | bar | lama waktu -->
                     <div class="lifespan-row">
                         <span class="lifespan-name">{{ info.material_name }}</span>
 
@@ -103,12 +88,8 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 <input type="search" id="guide-search" aria-label="Cari sampah" placeholder="Cari berdasarkan nama sampah...">
             </div>
-
-            <!-- data-api-url = alamat API, dibaca oleh education.js -->
             <div id="guide-results" data-api-url="{% url 'waste_guide_api' %}">
                 {% for guide in waste_guides %}
-                    <!-- Susunan item ini harus sama dengan fungsi yang membuat item
-                         hasil pencarian di education.js -->
                     <details class="guide-item">
                         <summary>
                             <span class="guide-name">{{ guide.name }}</span>
@@ -126,12 +107,7 @@
     </section>
 
 
-    <!-- ==========================================================
-         4. MITOS ATAU FAKTA
-         Kartu bisa dibalik tanpa JavaScript (trik checkbox di education.css bagian 6).
-           depan    = pernyataan
-           belakang = Mitos / Fakta + penjelasan + link sumber
-         ========================================================== -->
+    <!-- MITOS ATAU FAKTA -->
     <section id="myths-facts">
         <h2 class="myth-title">Flip Card: Mitos atau Fakta?</h2>
 

@@ -46,8 +46,8 @@ function setupQuiz() {
     function showQuestion() {
         const question = questions[currentQuestion];
 
-        progressText.textContent = "Item " + (currentQuestion + 1) + " of " + questions.length;
-        scoreIndicator.textContent = "Score: " + score + "/3";
+        progressText.textContent = "Soal " + (currentQuestion + 1) + " dari " + questions.length;
+        scoreIndicator.textContent = "Skor: " + score + "/3";
         itemText.textContent = question.item;
 
         // Reset: sembunyikan penjelasan, aktifkan lagi semua tong
@@ -77,7 +77,7 @@ function setupQuiz() {
         if (isCorrect) {
             score = score + 1;
         }
-        scoreIndicator.textContent = "Score: " + score + "/3";
+        scoreIndicator.textContent = "Skor: " + score + "/3";
 
         // Cari tulisan di tong yang benar
         let correctLabel = question.answer;
@@ -89,9 +89,9 @@ function setupQuiz() {
 
         // Tampilkan hasil + penjelasan cara menanganinya
         if (isCorrect) {
-            feedbackText.textContent = "Correct. " + question.tip;
+            feedbackText.textContent = "Benar! " + question.tip;
         } else {
-            feedbackText.textContent = "Not quite. It goes in " + correctLabel + ". " + question.tip;
+            feedbackText.textContent = "Belum tepat. Sampah ini masuk ke " + correctLabel + ". " + question.tip;
         }
         feedbackText.hidden = false;
 
@@ -104,9 +104,9 @@ function setupQuiz() {
             }
         });
 
-        // Tombol berikutnya berubah jadi "See score" di soal terakhir
+        // Tombol berikutnya berubah jadi "Lihat skor" di soal terakhir
         const isLastQuestion = (currentQuestion === questions.length - 1);
-        nextButton.textContent = isLastQuestion ? "See score" : "Next item";
+        nextButton.textContent = isLastQuestion ? "Lihat skor" : "Soal berikutnya";
         nextButton.hidden = false;
     }
 
@@ -131,7 +131,7 @@ function setupQuiz() {
         );
 
         nextButton.disabled = true;
-        scoreText.textContent = "Saving your result...";
+        scoreText.textContent = "Menyimpan hasil kuis...";
 
         try {
             const response = await fetch(submitUrl, {
@@ -147,25 +147,24 @@ function setupQuiz() {
             const data = await response.json();
 
             if (!response.ok) {
-                scoreText.textContent = data.error ||
-                    "Unable to save your quiz result. Please reload the page.";
-                resultBox.hidden = false;
+                feedbackText.textContent = data.error ||
+                    "Hasil kuis tidak dapat disimpan. Muat ulang halaman dan coba lagi.";
+                feedbackText.hidden = false;
                 nextButton.disabled = false;
                 return;
             }
 
             scoreText.textContent =
                 data.score + "/3";
-            scoreIndicator.textContent = "Score: " + data.score + "/3";
+            scoreIndicator.textContent = "Skor: " + data.score + "/3";
 
             playArea.hidden = true;
             resultBox.hidden = false;
 
         } catch (error) {
             console.error(error);
-            scoreText.textContent =
-                "Unable to connect to the server. Please try again.";
-            resultBox.hidden = false;
+            feedbackText.textContent = "Tidak dapat terhubung ke server. Silakan coba lagi.";
+            feedbackText.hidden = false;
             nextButton.disabled = false;
         }
     }
@@ -208,7 +207,7 @@ function createGuideItem(guide) {
 
     const handling = document.createElement("p");
     const handlingLabel = document.createElement("strong");
-    handlingLabel.textContent = "Cara menangani: ";
+    handlingLabel.textContent = "Cara penanganan:";
     handling.append(handlingLabel, " " + guide.handling_instruction);
 
     item.append(summary, description, handling);
@@ -236,22 +235,31 @@ function setupGuideSearch() {
     // Alamat API dititipkan Django lewat atribut data-api-url
     const apiUrl = resultsBox.dataset.apiUrl;
     let timerId;
+    let latestRequest = 0;
 
     /* Minta data ke API lalu tampilkan */
     async function loadGuides(keyword) {
+        const requestId = ++latestRequest;
         try {
             const url = new URL(apiUrl, window.location.origin);
             url.searchParams.set("q", keyword);
 
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error("Failed to fetch waste guides");
+                throw new Error("Gagal memuat panduan sampah.");
             }
 
             const data = await response.json();
+            if (requestId !== latestRequest) {
+                return;
+            }
+
+            if (!data || !Array.isArray(data.results)) {
+                throw new Error("Format data panduan tidak valid.");
+            }
 
             if (data.results.length === 0) {
-                showMessage(resultsBox, "No matching waste guides found.");
+                showMessage(resultsBox, "Panduan sampah yang cocok tidak ditemukan.");
                 return;
             }
 
@@ -260,8 +268,11 @@ function setupGuideSearch() {
             resultsBox.replaceChildren(...items);
 
         } catch (error) {
+            if (requestId !== latestRequest) {
+                return;
+            }
             console.error(error);
-            showMessage(resultsBox, "Unable to load waste guides. Please try again.");
+            showMessage(resultsBox, "Panduan sampah gagal dimuat. Silakan coba lagi.");
         }
     }
 

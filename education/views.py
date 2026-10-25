@@ -2,7 +2,7 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from education.models import (
     DecompositionInfo,
@@ -20,7 +20,14 @@ def get_todays_questions(request):
     today = timezone.localdate().isoformat()
     saved = request.session.get(SESSION_KEY)
 
-    if saved and saved.get("date") == today:
+    if (
+        isinstance(saved, dict)
+        and saved.get("date") == today
+        and isinstance(saved.get("question_ids"), list)
+        and len(saved["question_ids"]) == QUIZ_SIZE
+        and all(isinstance(question_id, str) for question_id in saved["question_ids"])
+        and len(set(saved["question_ids"])) == QUIZ_SIZE
+    ):
         found = {
             str(question.id): question
             for question in QuizQuestion.objects.filter(
@@ -28,12 +35,16 @@ def get_todays_questions(request):
             ).select_related("item")
         }
         questions = [found[i] for i in saved["question_ids"] if i in found]
-        if questions:
+        if len(questions) == QUIZ_SIZE:
             return questions
 
     questions = list(
         QuizQuestion.objects.select_related("item").order_by("?")[:QUIZ_SIZE]
     )
+    if len(questions) != QUIZ_SIZE:
+        request.session.pop(SESSION_KEY, None)
+        return []
+
     request.session[SESSION_KEY] = {
         "date": today,
         "question_ids": [str(question.id) for question in questions],
@@ -68,6 +79,7 @@ def show_edu(request):
     }
     return render(request, "education.html", context)
 
+@require_GET
 def waste_guide_api(request):
     query = request.GET.get("q", "").strip()
     guides = WasteGuide.objects.order_by("name")
@@ -94,28 +106,53 @@ def submit_quiz_api(request):
     today = timezone.localdate()
 
     if not request.user.is_authenticated:
-        return JsonResponse({"error": "Please log in first."}, status=401)
+        return JsonResponse({"error": "Silakan masuk terlebih dahulu."}, status=401)
 
     if QuizAttempt.objects.filter(user=request.user, attempt_date=today).exists():
-        return JsonResponse({"error": "You already played today."}, status=409)
+        return JsonResponse({"error": "Kamu sudah mengikuti kuis hari ini."}, status=409)
 
     saved = request.session.get(SESSION_KEY)
-    if not saved or saved.get("date") != today.isoformat():
+    question_ids = saved.get("question_ids") if isinstance(saved, dict) else None
+    if (
+        not isinstance(saved, dict)
+        or saved.get("date") != today.isoformat()
+        or not isinstance(question_ids, list)
+        or len(question_ids) != QUIZ_SIZE
+        or not all(isinstance(question_id, str) for question_id in question_ids)
+        or len(set(question_ids)) != QUIZ_SIZE
+    ):
         return JsonResponse(
-            {"error": "No quiz in progress. Please reload the page."}, status=400
+            {"error": "Kuis tidak ditemukan. Muat ulang halaman untuk mencoba lagi."}, status=400
         )
 
     try:
-        answers = json.loads(request.body).get("answers", {})
-    except (ValueError, AttributeError):
-        return JsonResponse({"error": "Invalid data."}, status=400)
+        payload = json.loads(request.body)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"error": "Data kuis tidak valid."}, status=400)
 
+    answers = payload.get("answers") if isinstance(payload, dict) else None
     if not isinstance(answers, dict):
-        return JsonResponse({"error": "Invalid data."}, status=400)
+        return JsonResponse({"error": "Data jawaban tidak valid."}, status=400)
 
     questions = list(
-        QuizQuestion.objects.filter(id__in=saved["question_ids"]).select_related("item")
+        QuizQuestion.objects.filter(id__in=question_ids).select_related("item")
     )
+    if len(questions) != QUIZ_SIZE:
+        request.session.pop(SESSION_KEY, None)
+        return JsonResponse(
+            {"error": "Soal kuis berubah. Muat ulang halaman untuk mencoba lagi."},
+            status=400,
+        )
+
+    question_ids = {str(question.id) for question in questions}
+    valid_categories = {choice[0] for choice in WasteGuide.CATEGORY_CHOICES}
+    if set(answers) != question_ids or any(
+        not isinstance(answer, str) or answer not in valid_categories
+        for answer in answers.values()
+    ):
+        return JsonResponse(
+            {"error": "Jawab semua soal kuis sebelum mengirim hasil."}, status=400
+        )
 
     score = 0
     for question in questions:
@@ -123,14 +160,14 @@ def submit_quiz_api(request):
         if chosen_bin == question.item.category:
             score = score + 1
 
-    attempt, created = QuizAttempt.objects.get_or_create(
+    _, created = QuizAttempt.objects.get_or_create(
         user=request.user,
         attempt_date=today,
         defaults={"score": score},
     )
 
     if not created:
-        return JsonResponse({"error": "You already played today."}, status=409)
+        return JsonResponse({"error": "Kamu sudah mengikuti kuis hari ini."}, status=409)
 
     del request.session[SESSION_KEY]
     

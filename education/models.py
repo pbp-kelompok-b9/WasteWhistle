@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-import uuid, math
+import math
+import uuid
 
 def _plural(number, word):
     return f"{number:,} {word}"
@@ -29,8 +30,9 @@ class MythOrFact(models.Model):
     is_myth = models.BooleanField()
     explanation = models.TextField()
     source_url = models.URLField(blank=True)
+
     def __str__(self):
-            return self.statement
+        return self.statement
 
 class DecompositionInfo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
