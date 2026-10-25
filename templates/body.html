@@ -91,36 +91,21 @@
                 <a class="chip chip-tinted" href="#"><span class="dot dot-green"></span>Bersih &amp; Terverifikasi</a>
             </div>
 
-            <div class="map-box">
-                {% if map_embed_url %}
-                    <iframe src="{{ map_embed_url }}" loading="lazy" title="Ward live map" class="absolute inset-0 w-full h-full border-0 pointer-events-none saturate-[0.92]"></iframe>
-                {% else %}
-                    <div class="absolute inset-0 grid place-items-center text-[#7E938A] text-[13px] font-semibold text-center px-6">
-                        Map area — peta interaktif dirender di sini
-                    </div>
-                {% endif %}
+            <div class="map-box relative overflow-hidden rounded-[20px] h-[450px]">
+                
+                <!-- THE MAP RENDERS INSIDE THIS DIV -->
+                <div id="map" class="absolute inset-0 w-full h-full z-0"></div>
 
-                <div class="map-zoom">
-                    <button type="button" aria-label="Zoom in">+</button>
-                    <button type="button" aria-label="Zoom out">&minus;</button>
-                    <button type="button" aria-label="My location">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" x2="5" y1="12" y2="12"/><line x1="19" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="5"/><line x1="12" x2="12" y1="19" y2="22"/><circle cx="12" cy="12" r="7"/></svg>
-                    </button>
+                <!-- Floating map control buttons sit on top of the map (z-10) -->
+                <div class="map-zoom z-10">
+                    <button type="button" id="btn-zoom-in">+</button>
+                    <button type="button" id="btn-zoom-out">&minus;</button>
+                    <button type="button" id="btn-locate">...</button>
                 </div>
-
-                {% if gps_text %}
-                <span class="gps-chip"><span class="dot dot-green"></span>{{ gps_text }}</span>
-                {% endif %}
-
-                <div class="map-fabs">
-                    <a class="btn-dark" href="#">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                        Laporkan Titik Sampah
-                    </a>
-                    <a class="btn-accent" href="#">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                        Ambil Tugas Pembersihan
-                    </a>
+                
+                <div class="map-fabs z-10">
+                    <a class="btn-dark" href="#">Laporkan Titik Sampah</a>
+                    <a class="btn-accent" href="#">Ambil Tugas Pembersihan</a>
                 </div>
             </div>
         </section>
@@ -186,3 +171,34 @@
         <span>&copy; 2026 Waste Whistle</span>
     </div>
 </footer>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Initialize map (disable default zoom control to use your custom UI)
+        const map = L.map('map', { 
+            zoomControl: false 
+        }).setView([-6.2088, 106.8456], 13); // Set default [lat, lng] & zoom
+
+        // 2. Load OpenStreetMap Tile Layer
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/">HOT</a>'
+        }).addTo(map);
+
+        // 3. Bind custom map controls
+        document.getElementById('btn-zoom-in')?.addEventListener('click', () => map.zoomIn());
+        document.getElementById('btn-zoom-out')?.addEventListener('click', () => map.zoomOut());
+        document.getElementById('btn-locate')?.addEventListener('click', () => {
+            map.locate({ setView: true, maxZoom: 16 });
+        });
+
+        // 4. Handle Geolocation Success
+        map.on('locationfound', (e) => {
+            L.marker(e.latlng).addTo(map)
+                .bindPopup('Lokasi Anda Sekarang')
+                .openPopup();
+        });
+    });
+</script>
+{% endblock scripts %}
