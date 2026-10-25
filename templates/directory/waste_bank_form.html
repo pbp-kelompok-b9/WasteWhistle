@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+    <title>Add Waste Bank - Waste Whistle</title>
+{% endblock meta %}
+
+{% block content %}
+<main class="page-container">
+    <section class="card" aria-labelledby="waste-bank-form-title">
+        <h1 id="waste-bank-form-title" class="card-title">Add a Waste Bank</h1>
+        <p class="card-subtitle">Enter the waste bank's details to add it to the directory.</p>
+
+        <form method="post" 
+              action="{% if waste_bank %}{% url 'directory:edit_waste_bank' waste_bank.id %}{% else %}{% url 'directory:create_waste_bank' %}{% endif %}"
+              class="auth-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="submit-btn">Tambah Bank Sampah</button>
+            <a href="{% url 'directory:show_directory' %}" class="forgot-link">Batal</a>
+        </form>
+    </section>
+</main>
+{% endblock content %}
