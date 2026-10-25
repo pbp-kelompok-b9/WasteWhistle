@@ -1,27 +1,3 @@
-<header class="topbar">
-    <div class="topbar-inner">
-        <a class="brand" href="{% url 'dashboard' %}">
-            <span>Waste Whistle</span>
-        </a>
-
-        <nav class="nav-group">
-            <a class="nav-link is-active" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
-            <a class="nav-link" href="#">Lapor Sampah</a>
-            <a class="nav-link" href="#">Tugas Pembersihan &amp; Pengerahan</a>
-        </nav>
-
-        <div class="ml-auto flex items-center gap-[14px]">
-            <a class="btn-secondary" href="#">
-                Lapor Sampah
-            </a>
-            <a class="flex items-center gap-[9px] no-underline" href="#">
-                <span class="avatar">{{ user_initial }}</span>
-                <a class="btn-primary h-[38px] text-[12.5px] px-4 font-bold" href={% url 'logout_user' %}>Keluar</a>
-            </a>
-        </div>
-    </div>
-</header>
-
 <main class="page-container">
 
     {# ---------- Header hub ---------- #}

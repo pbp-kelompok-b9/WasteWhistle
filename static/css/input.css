@@ -30,7 +30,7 @@
   }
 
   .card-sm {
-    @apply card rounded-[18px] p-[18px]; /* FIXED: p-4.5 -> p-[18px] */
+    @apply card rounded-[18px] p-[18px];
   }
 
   .card-title {
@@ -166,11 +166,11 @@
   }
 
   .nav-group {
-    @apply hidden md:flex gap-[6px] ml-2.5 min-w-0;
+    @apply hidden lg:flex gap-[6px] ml-2.5 min-w-0;
   }
 
   .nav-link {
-    @apply text-[13px] font-semibold text-[#5C6F65] no-underline py-[9px] px-[15px] rounded-full transition-all duration-200 whitespace-nowrap hover:text-[#12241D] hover:bg-[#EFF6F1];
+    @apply text-[13px] font-semibold text-[#5C6F65] no-underline py-[9px] px-[7px] rounded-full transition-all duration-200 whitespace-nowrap hover:text-[#12241D] hover:bg-[#EFF6F1];
   }
 
   .nav-link.is-active {
@@ -198,7 +198,7 @@
   }
 
   .footer {
-    @apply border-t border-[#E2EDE6] bg-white/[0.55] mt-auto; /* FIXED: bg-white/55 -> bg-white/[0.55] */
+    @apply border-t border-[#E2EDE6] bg-white/[0.55] mt-auto;
   }
 
   .footer-inner {
