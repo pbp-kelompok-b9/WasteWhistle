@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Report Waste - Waste Whistle</title>
+    <link rel="stylesheet" href="{% static 'reporting/reporting.css' %}">
+{% endblock meta %}
+
+{% block body %}
+<header class="ww-topbar">
+    <div class="ww-topbar-inner">
+        <a class="ww-brand" href="{% url 'dashboard' %}">
+            <span class="ww-brand-name">Waste<br>Whistle</span>
+        </a>
+        <nav class="ww-nav report-nav" aria-label="Navigasi utama">
+            <a class="ww-nav-link" href="{% url 'dashboard' %}">Explore &amp; Dashboard</a>
+            <a class="ww-nav-link is-active" href="{% url 'reporting:create' %}" aria-current="page">Report Waste</a>
+        </nav>
+    </div>
+</header>
+
+<main class="report-page">
+    <a class="report-back" href="{% url 'dashboard' %}">&larr; Kembali ke dashboard</a>
+    <section class="report-intro" aria-labelledby="report-title">
+        <span class="report-eyebrow">REPORT WASTE</span>
+        <h1 id="report-title">Lingkungan bersih dimulai dari laporanmu.</h1>
+        <p>Temukan tumpukan sampah di sekitarmu? Bantu catat kondisi dan lokasinya agar lebih mudah ditemukan.</p>
+        <div class="report-placeholder">
+            <span class="report-symbol" aria-hidden="true">+</span>
+            <div>
+                <h2>Laporkan sampah</h2>
+                <p>Form laporan segera tersedia. Siapkan deskripsi kondisi sampah dan patokan lokasinya.</p>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock body %}

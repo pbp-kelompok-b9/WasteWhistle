@@ -6,14 +6,14 @@
 
         <nav class="ww-nav">
             <a class="ww-nav-link is-active" href="{% url 'dashboard' %}">Explore &amp; Dashboard</a>
-            <a class="ww-nav-link" href="#">Report Waste</a>
+            <a class="ww-nav-link" href="{% url 'reporting:create' %}">Report Waste</a>
             <a class="ww-nav-link" href="#">Clean Tasks &amp; Dispatch</a>
             <a class="ww-nav-link" href="#">Rewards &amp; FAQ</a>
         </nav>
 
         <div class="ww-topbar-right">
             <span class="ww-oauth-badge"><span class="ww-dot ww-dot-green"></span>OAUTH VERIFIED</span>
-            <a class="ww-btn-report" href="#">
+            <a class="ww-btn-report" href="{% url 'reporting:create' %}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                 Report Trash
             </a>
@@ -163,7 +163,7 @@
                 {% endcomment %}
 
                 <div class="ww-map-fabs">
-                    <a class="ww-fab ww-fab-dark" href="#">
+                    <a class="ww-fab ww-fab-dark" href="{% url 'reporting:create' %}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         Report Trash Spot
                     </a>
@@ -256,7 +256,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
                 </span>
             </div>
-            <h3>Submit Geo-Report</h3>
+            <h3><a class="ww-action-link" href="{% url 'reporting:create' %}">Submit Geo-Report</a></h3>
             <p>Capture photo, auto-attach GPS coordinates, notify municipal crews instantly.</p>
             <span class="ww-action-highlight">Earn +{{ report_reward_points|default:"50" }} Eco-Points</span>
         </article>
