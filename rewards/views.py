@@ -5,7 +5,6 @@ from django.db import transaction
 from .models import Reward
 
 def is_petugas(user):
-    # sesuaikan dengan cara tim membedakan peran
     return user.is_staff
 
 @login_required
@@ -50,7 +49,7 @@ def redeem_reward(request, pk):
         return redirect('reward_list')
 
     reward = get_object_or_404(Reward.objects.select_for_update(), pk=pk)
-    poin_user = 1000  # fungsi buatanmu
+    poin_user = 1000  # fungsi 
 
     if reward.stok <= 0:
         messages.error(request, 'Stok habis.')
@@ -59,7 +58,7 @@ def redeem_reward(request, pk):
     else:
         reward.stok -= 1
         reward.save()
-        # catat Redemption dan PointTransaction (poin keluar) di sini
+        # catat Redemption dan PointTransaction
         messages.success(request, 'Penukaran berhasil.')
     return redirect('reward_list')
 

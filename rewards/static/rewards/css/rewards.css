@@ -1,0 +1,180 @@
+/* ===== Halaman Rewards (WasteWhistle) =====
+   Semua class diawali rewards-/points-/reward- supaya tidak bentrok
+   dengan style.css milik tim. */
+
+.rewards-page {
+  --rw-green-900: #064e3b;
+  --rw-green-600: #047857;
+  --rw-green-300: #8fc4b3;
+  --rw-mint-100: #d1f7e3;
+  --rw-page-bg: #eef6f1;
+  --rw-ink: #0f172a;
+  --rw-muted: #475569;
+  --rw-border: #d5e2da;
+  --rw-locked-bg: #e2e8f0;
+
+  background: var(--rw-page-bg);
+  color: var(--rw-ink);
+  min-height: 100vh;
+  padding: 28px 0 48px;
+}
+
+.rewards-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.rewards-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+}
+
+/* ---------- Kartu poin ---------- */
+.points-card {
+  background: #f4faf7;
+  border: 1.5px dashed #b6cfc2;
+  border-radius: 18px;
+  padding: 28px 32px 32px;
+  margin-bottom: 24px;
+}
+
+.points-total {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.points-level {
+  color: var(--rw-muted);
+  font-size: 0.95rem;
+  margin: 0 0 20px;
+}
+
+.points-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.dot-filled {
+  background: var(--rw-green-600);
+}
+
+.dot-empty {
+  border: 1.5px dashed var(--rw-green-600);
+  background: transparent;
+}
+
+/* ---------- Katalog hadiah ---------- */
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.reward-card {
+  background: #fff;
+  border: 1px solid var(--rw-border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-image {
+  height: 120px;
+  background: var(--rw-mint-100);
+}
+
+.reward-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reward-card.is-locked .reward-image {
+  background: var(--rw-locked-bg);
+}
+
+.reward-body {
+  padding: 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.reward-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reward-cost {
+  color: var(--rw-muted);
+  font-size: 0.85rem;
+  margin: 0 0 12px;
+}
+
+.reward-body form {
+  margin: auto 0 0;
+}
+
+.reward-btn {
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--rw-green-600);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-top: auto;
+}
+
+.reward-btn:hover:not(:disabled) {
+  background: var(--rw-green-900);
+}
+
+.reward-btn:focus-visible {
+  outline: 3px solid #86d9b4;
+  outline-offset: 2px;
+}
+
+.reward-btn:disabled {
+  background: var(--rw-green-300);
+  cursor: not-allowed;
+}
+
+.reward-empty {
+  grid-column: 1 / -1;
+  color: var(--rw-muted);
+}
+
+/* ---------- Responsif ---------- */
+@media (max-width: 1000px) {
+  .reward-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .reward-grid { grid-template-columns: 1fr; }
+  .points-card { padding: 22px 20px 24px; }
+  .points-total, .rewards-title { font-size: 1.6rem; }
+}
