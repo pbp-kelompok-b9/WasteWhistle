@@ -1,135 +1,130 @@
-<header class="ww-topbar">
-    <div class="ww-topbar-inner">
-        <a class="ww-brand" href="{% url 'dashboard' %}">
-            <span class="ww-brand-name">Waste Whistle</span>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="{% url 'dashboard' %}">
+            <span>Waste Whistle</span>
         </a>
 
-        <nav class="ww-nav">
-            <a class="ww-nav-link is-active" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
-            <a class="ww-nav-link" href="#">Lapor Sampah</a>
-            <a class="ww-nav-link" href="#">Tugas Pembersihan &amp; Pengerahan</a>
+        <nav class="nav-group">
+            <a class="nav-link is-active" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
+            <a class="nav-link" href="#">Lapor Sampah</a>
+            <a class="nav-link" href="#">Tugas Pembersihan &amp; Pengerahan</a>
         </nav>
 
-        <div class="ww-topbar-right">
-            <a class="ww-btn-report" href="#">
+        <div class="ml-auto flex items-center gap-[14px]">
+            <a class="btn-secondary" href="#">
                 Lapor Sampah
             </a>
-            <button class="ww-bell" type="button" aria-label="Notifications">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                {% if unread_notifications %}<span class="ww-bell-dot">{{ unread_notifications }}</span>{% endif %}
-            </button>
-            <a class="ww-user" href="#">
-                <span class="ww-avatar">{{ user_initial }}</span>
-                <span class="ww-user-meta">
-                    <strong>{{ user_level }}</strong>
-                    <small>{{ user_points }}</small>
-                </span>
+            <a class="flex items-center gap-[9px] no-underline" href="#">
+                <span class="avatar">{{ user_initial }}</span>
+                <a class="btn-primary h-[38px] text-[12.5px] px-4 font-bold" href={% url 'logout_user' %}>Keluar</a>
             </a>
         </div>
     </div>
 </header>
 
-<main class="ww-page">
+<main class="page-container">
 
     {# ---------- Header hub ---------- #}
-    <section class="ww-hub-card">
-        <div class="ww-hub-left">
-            <div class="ww-hub-title-row">
-                <h1>Selamat Datang, {{username}}!</h1>
+    <section class="card flex max-sm:flex-col items-center max-sm:items-start justify-between gap-[18px]">
+        <div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <h1 class="text-[25px] font-extrabold tracking-[-0.4px] text-[#101F19]">Selamat Datang, {{username}}!</h1>
             </div>
         </div>
     </section>
 
     {# ---------- Baris statistik ---------- #}
-    <section class="ww-stats">
-        <article class="ww-stat-card">
-            <div class="ww-stat-info">
-                <span class="ww-stat-label">Sampah Dikendalikan</span>
-                <span class="ww-stat-value">{{ stat_waste_kg|default:"0" }}<small>kg</small></span>
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+        <article class="stat-card">
+            <div class="flex flex-col min-w-0">
+                <span class="stat-label">Sampah Dikendalikan</span>
+                <span class="stat-value">{{ stat_waste_kg|default:"0" }}<small>kg</small></span>
                 {% if stat_waste_delta %}
-                <span class="ww-stat-sub ww-sub-up">
+                <span class="flex items-center gap-[5px] text-[11.5px] font-semibold mt-2 text-[#0E8A47]">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
                     {{ stat_waste_delta }}
                 </span>
                 {% endif %}
             </div>
-            <span class="ww-stat-icon">
+            <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="M9.344 5.811 10.437 3.92a1.83 1.83 0 0 1 1.548-.888 1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="M13.378 9.633 14.475 13.73l4.096-1.098"/></svg>
             </span>
         </article>
 
-        <article class="ww-stat-card">
-            <div class="ww-stat-info">
-                <span class="ww-stat-label">Lokasi Aktif</span>
-                <span class="ww-stat-value">{{ stat_open_spots|default:"0" }}</span>
+        <article class="stat-card">
+            <div class="flex flex-col min-w-0">
+                <span class="stat-label">Lokasi Aktif</span>
+                <span class="stat-value">{{ stat_open_spots|default:"0" }}</span>
                 {% if stat_urgent_spots %}
-                <span class="ww-stat-sub ww-sub-danger"><span class="ww-dot ww-dot-red"></span>{{ stat_urgent_spots }} prioritas urgent</span>
+                <span class="flex items-center gap-[5px] text-[11.5px] font-semibold mt-2 text-[#E5484D]">
+                    <span class="dot dot-red"></span>{{ stat_urgent_spots }} prioritas urgent
+                </span>
                 {% endif %}
             </div>
-            <span class="ww-stat-icon ww-icon-warn">
+            <span class="stat-icon stat-icon-warn">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
             </span>
         </article>
 
-        <article class="ww-stat-card">
-            <div class="ww-stat-info">
-                <span class="ww-stat-label">Pembersihan Terverifikasi</span>
-                <span class="ww-stat-value">{{ stat_verified|default:"0" }}</span>
-                {% if stat_verified_detail %}<span class="ww-stat-sub">{{ stat_verified_detail }}</span>{% endif %}
+        <article class="stat-card">
+            <div class="flex flex-col min-w-0">
+                <span class="stat-label">Pembersihan Terverifikasi</span>
+                <span class="stat-value">{{ stat_verified|default:"0" }}</span>
+                {% if stat_verified_detail %}<span class="text-[11.5px] font-semibold mt-2 text-[#64766D]">{{ stat_verified_detail }}</span>{% endif %}
             </div>
-            <span class="ww-stat-icon">
+            <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
             </span>
         </article>
 
-        <article class="ww-stat-card">
-            <div class="ww-stat-info">
-                <span class="ww-stat-label">Poin Pengguna</span>
-                <span class="ww-stat-value">{{ stat_points|default:"0" }}<small>pts</small></span>
+        <article class="stat-card">
+            <div class="flex flex-col min-w-0">
+                <span class="stat-label">Poin Pengguna</span>
+                <span class="stat-value">{{ stat_points|default:"0" }}<small>pts</small></span>
                 {% if stat_points_detail %}
-                <span class="ww-stat-sub">
+                <span class="flex items-center gap-[5px] text-[11.5px] font-semibold mt-2 text-[#64766D]">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
                     {{ stat_points_detail }}
                 </span>
                 {% endif %}
             </div>
-            <span class="ww-stat-icon">
+            <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
             </span>
         </article>
     </section>
 
     {# ---------- Peta + Dispatch ---------- #}
-    <div class="ww-main-grid">
+    <div class="main-grid">
 
-        <section class="ww-map-col">
-            <div class="ww-searchbar">
+        <section class="flex flex-col gap-3 min-w-0">
+            <div class="searchbar">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 <input type="text" placeholder="Search ward streets, canals, trash spots…">
-                <div class="ww-dist-group">
-                    <a class="ww-dist is-active" href="#">1 km</a>
-                    <a class="ww-dist" href="#">5 km</a>
-                    <a class="ww-dist" href="#">Semua Wilayah</a>
+                <div class="flex gap-1 bg-[#F0F6F2] rounded-full p-1 shrink-0">
+                    <a class="chip is-active" href="#">1 km</a>
+                    <a class="chip" href="#">5 km</a>
+                    <a class="chip" href="#">Semua Wilayah</a>
                 </div>
             </div>
 
-            <div class="ww-layers">
-                <span class="ww-layers-label">LAYERS</span>
-                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-red"></span>Sampah Mendesak</a>
-                <a class="ww-layer-chip" href="#"><span class="ww-dot ww-dot-blue"></span>Kelompok Ditugaskan</a>
-                <a class="ww-layer-chip is-tinted" href="#"><span class="ww-dot ww-dot-green2"></span>Bersih &amp; Terverifikasi</a>
+            <div class="flex items-center gap-[10px] flex-wrap">
+                <span class="text-[10px] font-extrabold tracking-[0.14em] text-[#8CA096] mr-[2px]">LAYERS</span>
+                <a class="chip chip-white" href="#"><span class="dot dot-red"></span>Sampah Mendesak</a>
+                <a class="chip chip-white" href="#"><span class="dot dot-blue"></span>Kelompok Ditugaskan</a>
+                <a class="chip chip-tinted" href="#"><span class="dot dot-green"></span>Bersih &amp; Terverifikasi</a>
             </div>
 
-            <div class="ww-map">
+            <div class="map-box">
                 {% if map_embed_url %}
-                    {# Contoh embed OpenStreetMap — ganti bbox sesuai kota/ward kamu (mis. Jakarta): #}
-                    {# https://www.openstreetmap.org/export/embed.html?bbox=106.77%2C-6.28%2C106.90%2C-6.16&layer=mapnik #}
-                    <iframe src="{{ map_embed_url }}" loading="lazy" title="Ward live map"></iframe>
+                    <iframe src="{{ map_embed_url }}" loading="lazy" title="Ward live map" class="absolute inset-0 w-full h-full border-0 pointer-events-none saturate-[0.92]"></iframe>
                 {% else %}
-                    <div class="ww-map-placeholder">Map area — peta interaktif dirender di sini</div>
+                    <div class="absolute inset-0 grid place-items-center text-[#7E938A] text-[13px] font-semibold text-center px-6">
+                        Map area — peta interaktif dirender di sini
+                    </div>
                 {% endif %}
 
-                <div class="ww-map-zoom">
+                <div class="map-zoom">
                     <button type="button" aria-label="Zoom in">+</button>
                     <button type="button" aria-label="Zoom out">&minus;</button>
                     <button type="button" aria-label="My location">
@@ -138,22 +133,15 @@
                 </div>
 
                 {% if gps_text %}
-                <span class="ww-gps-chip"><span class="ww-dot ww-dot-green"></span>{{ gps_text }}</span>
+                <span class="gps-chip"><span class="dot dot-green"></span>{{ gps_text }}</span>
                 {% endif %}
 
-                {% comment %}
-                Marker lokasi akan dirender dari data, contoh satu marker:
-                <span class="ww-marker ww-marker-urgent" style="left:46%; top:27%;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                </span>
-                {% endcomment %}
-
-                <div class="ww-map-fabs">
-                    <a class="ww-fab ww-fab-dark" href="#">
+                <div class="map-fabs">
+                    <a class="btn-dark" href="#">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         Laporkan Titik Sampah
                     </a>
-                    <a class="ww-fab ww-fab-green" href="#">
+                    <a class="btn-accent" href="#">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                         Ambil Tugas Pembersihan
                     </a>
@@ -161,52 +149,54 @@
             </div>
         </section>
 
-        <aside class="ww-dispatch">
-            <div class="ww-dispatch-head">
-                <h2>Pengiriman Tugas</h2>
+        <aside class="card flex flex-col gap-[14px] min-w-0">
+            <div class="flex items-center gap-2">
+                <h2 class="text-[16.5px] font-extrabold text-[#101F19] tracking-[-0.2px]">Pengiriman Tugas</h2>
             </div>
 
-            <div class="ww-dispatch-tabs">
-                <a class="ww-dtab is-active" href="#">Semua Catatan</a>
-                <a class="ww-dtab" href="#">Mendesak</a>
-                <a class="ww-dtab" href="#">Aktif</a>
-                <a class="ww-dtab" href="#">Bersih</a>
+            <div class="flex gap-[6px] flex-wrap">
+                <a class="chip is-active" href="#">Semua Catatan</a>
+                <a class="chip" href="#">Mendesak</a>
+                <a class="chip" href="#">Aktif</a>
+                <a class="chip" href="#">Bersih</a>
             </div>
 
-            <div class="ww-feed">
+            <div class="flex flex-col gap-[14px] flex-1">
                 {% for r in dispatch_logs %}
-                <article class="ww-feed-item">
-                    <span class="ww-feed-thumb ww-thumb-{{ r.thumb_class|default:'1' }}">
+                <article class="feed-item">
+                    <span class="thumb thumb-{{ r.thumb_class|default:'1' }}">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                     </span>
-                    <div class="ww-feed-body">
-                        <div class="ww-feed-meta">
-                            <span class="ww-feed-avatar">{{ r.avatar_initials }}</span>
-                            <strong>{{ r.reporter }}</strong>
-                            {% if r.time_ago %}<span class="ww-feed-time">· {{ r.time_ago }}</span>{% endif %}
-                            {% if r.status_label %}<span class="ww-status ww-status-{{ r.status_class|default:'pending' }}">{{ r.status_label }}</span>{% endif %}
+                    <div class="feed-body">
+                        <div class="flex items-center gap-[6px] flex-wrap">
+                            <span class="avatar avatar-sm">{{ r.avatar_initials }}</span>
+                            <strong class="text-[12.5px] text-[#12241D] font-bold whitespace-nowrap">{{ r.reporter }}</strong>
+                            {% if r.time_ago %}<span class="text-[11px] text-[#8CA096] font-semibold whitespace-nowrap">· {{ r.time_ago }}</span>{% endif %}
+                            {% if r.status_label %}<span class="ml-auto badge-status badge-status-{{ r.status_class|default:'pending' }}">{{ r.status_label }}</span>{% endif %}
                         </div>
-                        <h4>{{ r.title }}</h4>
+                        <h4 class="text-[13.5px] font-bold text-[#16241F] tracking-[-0.1px]">{{ r.title }}</h4>
                         {% if r.location %}
-                        <span class="ww-feed-loc">
+                        <span class="flex items-center gap-[5px] text-[11.5px] text-[#64766D]">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                             {{ r.location }}
                         </span>
                         {% endif %}
                         {% if r.meta_left or r.meta_right %}
-                        <span class="ww-feed-stats">
+                        <span class="flex items-center gap-2 text-[11.5px] text-[#64766D] font-semibold mt-[2px]">
                             {% if r.meta_left %}<span>{{ r.meta_left }}</span>{% endif %}
-                            {% if r.meta_right %}<b>{{ r.meta_right }}</b>{% endif %}
+                            {% if r.meta_right %}<b class="text-[#0E8A47] font-bold">{{ r.meta_right }}</b>{% endif %}
                         </span>
                         {% endif %}
                     </div>
                 </article>
                 {% empty %}
-                <div class="ww-empty">Belum ada catatan sekarang.</div>
+                <div class="border-[1.5px] border-dashed border-[#C4E8D3] rounded-[14px] py-[22px] px-4 text-center text-[12.5px] font-semibold text-[#8CA096] leading-[1.6]">
+                    Belum ada catatan sekarang.
+                </div>
                 {% endfor %}
             </div>
 
-            <button class="ww-load-older" type="button">
+            <button class="btn-action" type="button">
                 Muat Catatan Lama
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
@@ -214,8 +204,9 @@
     </div>
 </main>
 
-<footer class="ww-footer">
-    <div class="ww-footer-inner">
+<footer class="footer">
+    <div class="footer-inner">
         <span><strong>Waste Whistle</strong></span>
         <span>&copy; 2026 Waste Whistle</span>
-    </div
+    </div>
+</footer>

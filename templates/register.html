@@ -7,15 +7,17 @@
 {% block content %}
 <main class="hero-wrapper">
     <div class="hero-container">
-        <div class="hero-text-content">
-            <div class="hero-badge">🌱 Selamat Datang!</div>
-            <h1 class="hero-title">Bersihkan sampah dan belajar mendaur ulang.</h1>
-            <p class="hero-description">
+        <div class="flex-1 max-w-[580px] flex flex-col items-start max-lg:items-center max-lg:text-center">
+            <div class="badge-success mb-5">🌱 Selamat Datang!</div>
+            <h1 class="text-[40px] font-bold text-[#16241F] leading-[1.25] mb-4 tracking-[-0.5px]">
+                Bersihkan sampah dan belajar mendaur ulang.
+            </h1>
+            <p class="text-[15px] leading-[1.6] text-[#6C7D75] mb-7">
                 Waste Whistle menyatukan masyarakat untuk menyelesaikan masalah sampah bersama, melaporkan titik sampah dan mengambil tugas pembersihan!
             </p>
         </div>
 
-        <div class="card hero-form-card">
+        <div class="card-lg lg:flex-[0_0_420px] w-full max-lg:max-w-[440px]">
             <h2 class="card-title">Gabung Waste Whistle</h2>
             <p class="card-subtitle">Gabung untuk melaporkan sampah dan buat dunia menjadi lebih baik.</p>
 
@@ -23,8 +25,8 @@
                 {% csrf_token %}
                 {% for field in form %}
                 <div class="form-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-input">
                     {% for error in field.errors %}
                         <p class="form-error">{{ error }}</p>
                     {% endfor %}
@@ -33,10 +35,10 @@
             {% for error in form.non_field_errors %}
                 <p class="form-error">{{ error }}</p>
             {% endfor %}
-            <button type="submit" class="submit-btn">Buat akun</button>
+            <button type="submit" class="btn-primary">Buat akun</button>
             </form>
             
-            <p class="form-footer-note">Sudah punya akun? <a href="{% url 'login_user' %}" class="forgot-link">Masuk</a></p>
+            <p class="card-subtitle mt-5 mb-0 text-center">Sudah punya akun? <a href="{% url 'login_user' %}" class="text-[13px] font-semibold text-[#115D3F] hover:underline no-underline ml-1">Masuk</a></p>
         </div>
     </div>
 </main>

@@ -12,17 +12,17 @@
 </head>
 <body>
     {% block body %}
-        <header class="top-nav">
-            <div class="logo">
-                <a href="{% url 'register_user'%}">Waste Whistle</a>
+        <header class="p-6">
+            <div class="brand">
+                <a href="{% url 'register_user' %}" class="no-underline text-inherit">Waste Whistle</a>
             </div>
         </header>
 
         {% block content %}{% endblock %}
 
-        <footer class="site-footer">
-            <div class="container">
-                <p>&copy; 2026 WasteWhistle</p>
+        <footer class="footer">
+            <div class="footer-inner text-center justify-center">
+                <p>&copy; 2026 Waste Whistle</p>
             </div>
         </footer>
     {% endblock body %}
