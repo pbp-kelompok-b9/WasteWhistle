@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from .models import Reward
+from .forms import RewardForm
+from datetime import date
 
 def is_petugas(user):
     return user.is_staff
@@ -76,6 +78,11 @@ def reward_list(request):
          "terkunci": True, "level_minimal": 4},
         {"pk": 5, "nama": "TESTINGTESTINGTESTING", "harga_poin": 100, "terkunci": False},
     ]
+    
+    redemptions = [
+        {"reward": {"nama": "Transit credit Rp 25,000"}, "tanggal": date(2026, 10, 20), "status": "selesai", "kode": "WW-4821"},
+        {"reward": {"nama": "15% off at the refill store"}, "tanggal": date(2026, 10, 23), "status": "diproses", "kode": ""},
+    ]
 
     return render(request, 'rewards/reward_list.html', {
         'total_poin': total_poin,
@@ -83,4 +90,44 @@ def reward_list(request):
         'poin_ke_level_berikutnya': poin_ke_level_berikutnya,
         'dots': [True] * 9 + [False],   # 9 bulatan penuh, 1 putus-putus
         'rewards': rewards,
+        'redemptions': redemptions,
     })
+    
+    
+def _pesan_error(form):
+    hasil = []
+    for nama_field, daftar in form.errors.items():
+        label = form.fields[nama_field].label if nama_field in form.fields else ''
+        for e in daftar:
+            hasil.append(f"{label}: {e}" if label else e)
+    return " ".join(hasil)
+
+
+@login_required
+def reward_create(request):
+    if not request.user.is_staff:
+        return redirect('reward_list')
+    if request.method == 'POST':
+        form = RewardForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hadiah berhasil ditambahkan.')
+        else:
+            messages.error(request, _pesan_error(form))
+    return redirect('reward_list')
+
+
+@login_required
+def reward_update(request, pk):
+    if not request.user.is_staff:
+        return redirect('reward_list')
+    reward = get_object_or_404(Reward, pk=pk)
+    if request.method == 'POST':
+        form = RewardForm(request.POST, instance=reward)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hadiah berhasil diubah.')
+        else:
+            messages.error(request, _pesan_error(form))
+    return redirect('reward_list')
+    
