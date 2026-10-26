@@ -7,7 +7,7 @@
         <!-- Desktop Navigation -->
         <nav class="nav-group">
             <a class="nav-link {% if active_page == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
-            <a class="nav-link {% if active_page == 'dispatch' %}is-active{% endif %}" href="#">Tugas Pembersihan &amp; Pengerahan</a>
+            <a class="nav-link {% if active_page == 'dispatch' %}is-active{% endif %}" href="{% url 'directory:show_directory'%}">Direktori Bank Sampah</a>
             <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="#">Hadiah &amp; FAQ</a>
         </nav>
 
