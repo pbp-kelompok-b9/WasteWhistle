@@ -26,3 +26,4 @@ class ReportForm(forms.Form):
                 "max_length": "Maksimal %(limit_value)s karakter (saat ini %(show_value)s).",
             })
             field.widget.attrs["aria-describedby"] = f"{name}-help {name}-errors"
+            field.widget.attrs["class"] = "report-input"

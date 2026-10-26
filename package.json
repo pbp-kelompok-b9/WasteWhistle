@@ -1,0 +1,11 @@
+{
+  "name": "wastewhistle",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/style.css",
+    "watch:css": "tailwindcss -i ./static/css/input.css -o ./static/css/style.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

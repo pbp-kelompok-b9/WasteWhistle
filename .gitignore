@@ -13,3 +13,7 @@ __pycache__/
 .vscode/*
 !.vscode/settings.json
 .idea/
+
+# Frontend dependencies and collected Django static assets
+node_modules/
+staticfiles/

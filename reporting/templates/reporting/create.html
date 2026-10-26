@@ -1,58 +1,41 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block meta %}
-    <title>Report Waste - Waste Whistle</title>
-    <link rel="stylesheet" href="{% static 'reporting/reporting.css' %}">
-{% endblock meta %}
-
+{% block meta %}<title>Lapor Sampah - Waste Whistle</title>{% endblock meta %}
 {% block body %}
-<header class="ww-topbar">
-    <div class="ww-topbar-inner">
-        <a class="ww-brand" href="{% url 'dashboard' %}">
-            <span class="ww-brand-name">Waste<br>Whistle</span>
-        </a>
-        <nav class="ww-nav report-nav" aria-label="Navigasi utama">
-            <a class="ww-nav-link" href="{% url 'dashboard' %}">Explore &amp; Dashboard</a>
-            <a class="ww-nav-link is-active" href="{% url 'reporting:create' %}" aria-current="page">Report Waste</a>
-        </nav>
-    </div>
-</header>
-
-<main class="report-page">
-    <a class="report-back" href="{% url 'dashboard' %}">&larr; Kembali ke dashboard</a>
-    <section class="report-intro" aria-labelledby="report-title">
-        <span class="report-eyebrow">REPORT WASTE</span>
-        <h1 id="report-title">Lingkungan bersih dimulai dari laporanmu.</h1>
-        <p>Temukan tumpukan sampah di sekitarmu? Bantu catat kondisi dan lokasinya agar lebih mudah ditemukan.</p>
-        <form class="report-form" method="post" action="{% url 'reporting:create' %}" novalidate>
+{% include 'topbar.html' %}
+<main class="w-full max-w-[940px] mx-auto px-5 mt-8 mb-16">
+    <a class="inline-block mb-6 text-sm font-semibold text-[#115D3F] hover:underline" href="{% url 'dashboard' %}">&larr; Kembali ke dashboard</a>
+    <section class="card p-6 sm:p-12" aria-labelledby="report-title">
+        <span class="text-xs font-extrabold tracking-[1.5px] text-[#115D3F]">LAPOR SAMPAH</span>
+        <h1 id="report-title" class="max-w-[640px] my-4 text-[28px] sm:text-[40px] font-bold leading-tight tracking-[-1px] text-[#11352B]">Lingkungan bersih dimulai dari laporanmu.</h1>
+        <p class="text-[15px] leading-relaxed text-[#64766D]">Temukan tumpukan sampah di sekitarmu? Bantu catat kondisi dan lokasinya agar lebih mudah ditemukan.</p>
+        <form class="mt-8 grid gap-5" method="post" action="{% url 'reporting:create' %}" novalidate>
             {% csrf_token %}
-            <h2>Detail laporan</h2>
-            <p>Isi judul dan deskripsi untuk melihat preview. Laporan belum dikirim atau disimpan.</p>
+            <h2 class="text-xl font-bold text-[#11352B]">Detail laporan</h2>
+            <p class="text-sm leading-relaxed text-[#64766D]">Isi judul dan deskripsi untuk melihat preview. Laporan belum dikirim atau disimpan.</p>
             {% if form.errors %}
-            <p class="report-error-summary" role="alert">Periksa bagian yang ditandai di bawah ini. Isianmu tetap ada.</p>
+            <p class="p-4 rounded-xl bg-red-50 text-red-800 text-sm" role="alert">Periksa bagian yang ditandai di bawah ini. Isianmu tetap ada.</p>
             {% endif %}
             {% for field in form %}
-            <div class="report-field">
-                <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="report-required"> (wajib)</span>{% endif %}</label>
+            <div class="grid gap-2">
+                <label class="text-sm font-bold text-[#11352B]" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="text-xs font-normal"> (wajib)</span>{% endif %}</label>
                 {{ field }}
-                <small id="{{ field.name }}-help">{{ field.help_text }}</small>
-                <div class="report-errors" id="{{ field.name }}-errors">{{ field.errors }}</div>
+                <small class="text-xs leading-relaxed text-[#64766D]" id="{{ field.name }}-help">{{ field.help_text }}</small>
+                <div class="text-sm text-red-700" id="{{ field.name }}-errors">{{ field.errors }}</div>
             </div>
             {% endfor %}
-            <div class="report-form-actions">
-                <button type="submit">Lihat preview</button>
-                <a href="{% url 'dashboard' %}">Kembali ke dashboard</a>
+            <div class="flex flex-wrap items-center gap-5">
+                <button class="btn-secondary py-3 px-6 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#115D3F]" type="submit">Lihat preview</button>
+                <a class="text-sm text-[#115D3F] hover:underline" href="{% url 'dashboard' %}">Kembali ke dashboard</a>
             </div>
         </form>
         {% if preview %}
-        <section class="report-preview" aria-labelledby="preview-title" aria-live="polite">
-            <span class="report-eyebrow">PREVIEW · BELUM DISIMPAN</span>
-            <h2 id="preview-title">{{ preview.title }}</h2>
-            <p class="report-description">{{ preview.description }}</p>
-            <h3>Patokan lokasi</h3>
-            <p>{{ preview.location_note|default:"Belum diisi" }}</p>
-            <p class="report-preview-note">Periksa detail di atas. Untuk memperbarui preview, ubah isian lalu klik Lihat preview lagi.</p>
+        <section class="mt-8 p-5 sm:p-6 border border-dashed border-[#B4CEBE] rounded-2xl bg-[#F5FAF6] break-words" aria-labelledby="preview-title" aria-live="polite">
+            <span class="text-xs font-extrabold tracking-wide text-[#115D3F]">PREVIEW · BELUM DISIMPAN</span>
+            <h2 id="preview-title" class="my-4 text-2xl font-bold text-[#11352B]">{{ preview.title }}</h2>
+            <p class="whitespace-pre-wrap text-sm leading-relaxed text-[#64766D]">{{ preview.description }}</p>
+            <h3 class="mt-5 font-bold text-sm text-[#11352B]">Patokan lokasi</h3>
+            <p class="mt-2 text-sm text-[#64766D]">{{ preview.location_note|default:"Belum diisi" }}</p>
+            <p class="mt-5 pt-4 border-t border-[#D8E6DE] text-sm leading-relaxed text-[#64766D]">Periksa detail di atas. Untuk memperbarui preview, ubah isian lalu klik Lihat preview lagi.</p>
         </section>
         {% endif %}
     </section>

@@ -1,0 +1,50 @@
+<header class="topbar">
+    <div class="topbar-inner justify-between">
+        <a class="brand" href="{% url 'dashboard' %}">
+            <span>Waste Whistle</span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="nav-group" aria-label="Navigasi utama">
+            <a class="nav-link {% if active_page == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
+            <a class="nav-link {% if active_page == 'dispatch' %}is-active{% endif %}" href="#">Tugas Pembersihan &amp; Pengerahan</a>
+            <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="#">Hadiah &amp; FAQ</a>
+        </nav>
+
+        <div class="ml-auto flex items-center gap-[10px] md:gap-[14px]">
+            <a class="btn-secondary lg:inline-flex" href="{% url 'reporting:create' %}" {% if active_page == 'reporting' %}aria-current="page"{% endif %}>
+                Lapor Sampah
+            </a>
+            <a class="flex items-center gap-[9px] no-underline" href="#">
+                <span class="avatar" title="{{ request.user.username }}">{{ request.user.username|first|upper }}</span>
+            </a>
+            <a class="btn-primary h-[38px] text-[12.5px] px-4 font-bold hidden lg:inline-flex" href="{% url 'logout_user' %}">Keluar</a>
+
+            <!-- Hamburger Button (Mobile Only) -->
+            <button type="button" id="menu-toggle" class="lg:hidden p-2 text-[#12241D] rounded-lg hover:bg-[#EFF6F1] focus-visible:outline focus-visible:outline-2" aria-label="Buka menu navigasi" aria-controls="mobile-menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-[#E2EDE6] bg-white px-6 py-4 flex flex-col gap-3 shadow-lg">
+        <a class="nav-link {% if active_page == 'reporting' %}is-active{% endif %}" href="{% url 'reporting:create' %}" {% if active_page == 'reporting' %}aria-current="page"{% endif %}>Lapor Sampah</a>
+        <a class="nav-link {% if active_page == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
+        <a class="nav-link {% if active_page == 'dispatch' %}is-active{% endif %}" href="#">Tugas Pembersihan &amp; Pengerahan</a>
+        <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="#">Hadiah &amp; FAQ</a>
+        <hr class="border-[#E2EDE6] my-1" />
+        <a class="btn-primary h-[40px] text-[13px]" href="{% url 'logout_user' %}">Keluar</a>
+    </div>
+</header>
+
+<script>
+    document.getElementById('menu-toggle')?.addEventListener('click', function() {
+        const menu = document.getElementById('mobile-menu');
+        const isHidden = menu.classList.toggle('hidden');
+        this.setAttribute('aria-expanded', String(!isHidden));
+        this.setAttribute('aria-label', isHidden ? 'Buka menu navigasi' : 'Tutup menu navigasi');
+    });
+</script>
