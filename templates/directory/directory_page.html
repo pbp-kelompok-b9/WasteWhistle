@@ -6,50 +6,8 @@
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
 {% endblock meta %}
 
-{% block body %}
-    <header class="directory-topbar">
-        <div class="directory-topbar__inner">
-            <a class="directory-brand" href="{% url 'dashboard' %}" aria-label="Waste Whistle home">
-                <span class="directory-brand__mark" aria-hidden="true">
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m7 7 3-3 3 3"/><path d="M10 4v8a4 4 0 0 0 4 4h3"/>
-                        <path d="m17 13 3 3-3 3"/><path d="M20 16h-8a4 4 0 0 1-4-4V9"/>
-                    </svg>
-                </span>
-                <span class="directory-brand__name">Waste<br>Whistle</span>
-            </a>
-
-            <nav class="directory-nav" aria-label="Main navigation">
-                <a href="{% url 'dashboard' %}">Explore &amp; Dashboard</a>
-                <a href="#">Report Waste</a>
-                <a href="#">Waste Bank Directory</a>
-                <a href="#">Rewards &amp; FAQ</a>
-            </nav>
-
-            <div class="directory-topbar__actions">
-                <span class="directory-verified">
-                <a class="directory-report-button" href="#directory-help">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                        <path d="M5 12h14"/><path d="M12 5v14"/>
-                    </svg>
-                    Report Trash
-                </a>
-                <button class="directory-icon-button" type="button" aria-label="Notifications">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-                    </svg>
-                </button>
-                <a class="directory-user" href="#">
-                    <span class="directory-user__avatar">{{ user.username|default:'G'|slice:':1'|upper }}</span>
-                    <span class="directory-user__copy">
-                        <strong>{{ user.username|default:'Guest' }}</strong>
-                        <small>Eco citizen</small>
-                    </span>
-                </a>
-            </div>
-        </div>
-    </header>
-
+{% block body %} 
+    {%include 'topbar.html'%}
     <main class="directory-page">
         {% with total=waste_banks|length %}
         <section class="directory-hero">
