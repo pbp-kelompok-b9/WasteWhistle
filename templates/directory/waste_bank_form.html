@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>{% if waste_bank %}Edit Waste Bank{% else %}Add Waste Bank{% endif %} - Waste Whistle</title>
+    <link rel="stylesheet" href="{% static 'css/directory.css' %}">
+{% endblock meta %}
+
+{% block body %}
+    <header class="directory-topbar">
+        <div class="directory-topbar__inner">
+            <a class="directory-brand" href="{% url 'dashboard' %}" aria-label="Waste Whistle home">
+                <span class="directory-brand__mark" aria-hidden="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7 7 3-3 3 3"/><path d="M10 4v8a4 4 0 0 0 4 4h3"/>
+                        <path d="m17 13 3 3-3 3"/><path d="M20 16h-8a4 4 0 0 1-4-4V9"/>
+                    </svg>
+                </span>
+                <span class="directory-brand__name">Waste<br>Whistle</span>
+            </a>
+
+            <nav class="directory-nav" aria-label="Main navigation">
+                <a href="{% url 'dashboard' %}">Explore &amp; Dashboard</a>
+                <a href="#">Report Waste</a>
+                <a href="#">Clean Tasks &amp; Dispatch</a>
+                <a href="#">Rewards &amp; FAQ</a>
+            </nav>
+
+            <div class="directory-topbar__actions">
+                <span class="directory-verified"><span class="directory-dot directory-dot--green"></span>OAUTH VERIFIED</span>
+                <a class="directory-report-button" href="{% url 'directory:show_directory' %}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <path d="M5 12h14"/><path d="M12 5v14"/>
+                    </svg>
+                    Directory
+                </a>
+                <button class="directory-icon-button" type="button" aria-label="Notifications">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                    </svg>
+                </button>
+                <a class="directory-user" href="#">
+                    <span class="directory-user__avatar">{{ user.username|default:'G'|slice:':1'|upper }}</span>
+                    <span class="directory-user__copy">
+                        <strong>{{ user.username|default:'Guest' }}</strong>
+                        <small>Eco citizen</small>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="directory-form-page">
+        <section class="directory-form-hero">
+            <div>
+                <div class="directory-eyebrow"><span class="directory-dot directory-dot--light"></span>DIRECTORY MANAGEMENT</div>
+                <h1>{% if waste_bank %}Update a waste bank{% else %}Add a waste bank{% endif %}</h1>
+                <p>{% if waste_bank %}Keep this community location accurate so people can find and contact it.{% else %}Help the community discover a trusted place to drop off recyclable materials.{% endif %}</p>
+            </div>
+            <span class="directory-form-hero__pill"><span class="directory-dot directory-dot--light"></span>Staff access</span>
+        </section>
+
+        <section class="directory-form-layout" aria-label="Waste bank details">
+            <div class="directory-panel directory-form-card">
+                <div class="directory-form-card__header">
+                    <span class="directory-form-card__icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M9 12h.01"/><path d="M15 12h.01"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2>Location details</h2>
+                        <p>Share the information visitors need before they arrive.</p>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="directory-form-error-summary" role="alert">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post"
+                      action="{% if waste_bank %}{% url 'directory:edit_waste_bank' waste_bank.id %}{% else %}{% url 'directory:create_waste_bank' %}{% endif %}"
+                      class="directory-form">
+                    {% csrf_token %}
+                    <div class="directory-form-fields">
+                        {% for field in form %}
+                            <div class="directory-form-field{% if field.name == 'address' %} directory-form-field--full{% endif %}{% if field.errors %} directory-form-field--invalid{% endif %}">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}<span class="directory-form-help">{{ field.help_text }}</span>{% endif %}
+                                {% for error in field.errors %}
+                                    <p class="directory-form-error">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="directory-form-actions">
+                        <a class="directory-cancel-button" href="{% url 'directory:show_directory' %}">Cancel</a>
+                        <button class="directory-submit-button" type="submit">
+                            {% if waste_bank %}Save changes{% else %}Add waste bank{% endif %}
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <aside class="directory-form-aside">
+                <div class="directory-panel directory-form-guide">
+                    <div class="directory-form-guide__top">
+                        <span class="directory-form-guide__icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/>
+                            </svg>
+                        </span>
+                        <span class="directory-status-pill"><span class="directory-dot directory-dot--green"></span>Quick guide</span>
+                    </div>
+                    <h2>Make it useful for visitors</h2>
+                    <p>A few accurate details make every directory listing easier to trust.</p>
+                    <ol class="directory-form-tips">
+                        <li><span>01</span><div><strong>Use the public name</strong><small>Choose the name people will recognize locally.</small></div></li>
+                        <li><span>02</span><div><strong>Be precise with the address</strong><small>Add landmarks or neighborhood details when helpful.</small></div></li>
+                        <li><span>03</span><div><strong>Keep contact details current</strong><small>Visitors may call before bringing materials.</small></div></li>
+                    </ol>
+                </div>
+
+                <div class="directory-panel directory-form-note">
+                    <span class="directory-form-note__dot"></span>
+                    <div><strong>Visible to the community</strong><p>This location will appear in the Waste Bank Directory after it is saved.</p></div>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <footer class="directory-footer">
+        <span><strong>Waste Whistle</strong> · Municipal environmental network</span>
+        <span>© 2026 WasteWhistle · Built for cleaner communities</span>
+    </footer>
+{% endblock body %}
