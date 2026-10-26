@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 # the method to login and logout
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.template import context
 
 def register_user(request):
 
@@ -42,7 +43,10 @@ def login_user(request):
 
 @login_required(login_url="/login/")
 def dashboard(request):
-    return render(request, "dashboard.html")
+    context = {
+            "username":request.user.username,
+            }
+    return render(request, "dashboard.html", context)
 
 def logout_user(request):
     logout(request)
