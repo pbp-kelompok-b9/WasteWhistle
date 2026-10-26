@@ -18,7 +18,7 @@ def show_directory(request):
         "form": WasteBankForm(),
         "waste_banks": waste_banks,
     }
-    return render(request, "directory/directory.html", context)
+    return render(request, "directory/directory_page.html", context)
 
 @login_required(login_url="/login/")
 def create_waste_bank(request):
@@ -38,16 +38,14 @@ def create_waste_bank(request):
     return render(request, "directory/waste_bank_form.html", context)
 
 def get_waste_bank_json(request):
-    name_query = request.GET.get("title", "").strip()
+    name_query = request.GET.get("name", "").strip()
     waste_bank_list = WasteBank.objects.all()
 
     if name_query:
-        waste_bank_list = waste_bank_list.filter(title__icontains=name_query)
+        waste_bank_list = waste_bank_list.filter(name__icontains=name_query)
 
     data = []
     for waste_bank in waste_bank_list:
-
-        data = []
         data.append({
             "pk": str(waste_bank.id),
             "fields": {
