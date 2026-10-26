@@ -790,6 +790,8 @@ body {
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
+  }
+
 .btn-accent {
   display: inline-flex;
   cursor: pointer;
