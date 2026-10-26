@@ -19,16 +19,20 @@
 @layer components {
 
   /* --- CARDS --- */
-  .card {
+  .card,
+  .card-lg,
+  .card-sm,
+  .stat-card {
     @apply bg-white border border-[#E2EDE6] rounded-[20px] p-6 shadow-[0_2px_10px_rgba(11,59,46,0.04)];
   }
 
   .card-lg {
-    @apply card rounded-[28px] border-[#D8E6DE] pt-10 px-9 pb-9 shadow-[0_4px_20px_rgba(0,0,0,0.02)];
+    @apply rounded-[28px] border-[#D8E6DE] pt-10 px-9 pb-9 shadow-[0_4px_20px_rgba(0,0,0,0.02)];
   }
 
-  .card-sm {
-    @apply card rounded-[18px] p-[18px];
+  .card-sm,
+  .stat-card {
+    @apply rounded-[18px] p-[18px];
   }
 
   .card-title {
@@ -40,37 +44,43 @@
   }
 
   /* --- BUTTONS & PILLS --- */
-  .btn {
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-dark,
+  .btn-accent,
+  .btn-action {
     @apply inline-flex items-center justify-center gap-2 font-bold transition-colors duration-200 rounded-full cursor-pointer no-underline whitespace-nowrap border-none;
   }
 
   .btn-primary {
-    @apply btn w-full h-[48px] bg-[#11734F] hover:bg-[#0E5E40] text-white text-sm font-semibold rounded-[24px];
+    @apply w-full h-[48px] bg-[#11734F] hover:bg-[#0E5E40] text-white text-sm font-semibold rounded-[24px];
   }
 
   .btn-secondary {
-    @apply btn bg-[#0B4A34] hover:bg-[#0E5A40] text-white text-[12.5px] py-2.5 px-4;
+    @apply bg-[#0B4A34] hover:bg-[#0E5A40] text-white text-[12.5px] py-2.5 px-4;
   }
 
   .btn-dark {
-    @apply btn bg-[#0B3B2E] text-white text-[12.5px] py-[11px] px-[18px] shadow-[0_6px_18px_rgba(10,30,22,0.22)];
+    @apply bg-[#0B3B2E] text-white text-[12.5px] py-[11px] px-[18px] shadow-[0_6px_18px_rgba(10,30,22,0.22)];
   }
 
   .btn-accent {
-    @apply btn bg-[#9FEFC0] text-[#0B3B2E] text-[12.5px] py-[11px] px-[18px] shadow-[0_6px_18px_rgba(10,30,22,0.22)];
+    @apply bg-[#9FEFC0] text-[#0B3B2E] text-[12.5px] py-[11px] px-[18px] shadow-[0_6px_18px_rgba(10,30,22,0.22)];
   }
 
   .btn-action {
-    @apply btn w-full bg-[#F0F6F2] hover:bg-[#E6F1EA] text-[#2A3B33] text-[12.5px] p-[11px];
+    @apply w-full bg-[#F0F6F2] hover:bg-[#E6F1EA] text-[#2A3B33] text-[12.5px] p-[11px];
   }
 
   /* --- CHIPS & TABS --- */
-  .chip {
+  .chip,
+  .chip-white {
     @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-bold text-[#5C6F65] bg-[#F0F6F2] hover:bg-[#E6F1EA] border border-transparent transition-colors no-underline whitespace-nowrap cursor-pointer;
   }
 
   .chip-white {
-    @apply chip bg-white border-[#E2EDE6] text-[#2A3B33];
+    @apply bg-white border-[#E2EDE6] text-[#2A3B33];
   }
 
   .chip.is-active,
@@ -83,12 +93,13 @@
   }
 
   /* --- BADGES & STATUS INDICATORS --- */
-  .badge {
+  .badge,
+  .badge-success {
     @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-semibold whitespace-nowrap;
   }
 
   .badge-success {
-    @apply badge bg-[#E2EFE7] text-[#115D3F] text-[13px];
+    @apply bg-[#E2EFE7] text-[#115D3F] text-[13px];
   }
 
   .badge-status {
@@ -207,7 +218,7 @@
      DASHBOARD SPECIFICS
      ========================================== */
   .stat-card {
-    @apply card-sm flex justify-between gap-2.5;
+    @apply flex justify-between gap-2.5;
   }
 
   .stat-label {
