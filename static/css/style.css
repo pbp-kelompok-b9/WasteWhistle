@@ -2004,6 +2004,15 @@ body {
    REUSABLE CORE COMPONENTS
    ========================================== */
 
+.hover\:chip-tinted:hover {
+  --tw-border-opacity: 1;
+  border-color: rgb(196 232 211 / var(--tw-border-opacity, 1));
+  --tw-bg-opacity: 1;
+  background-color: rgb(220 243 228 / var(--tw-bg-opacity, 1));
+  --tw-text-opacity: 1;
+  color: rgb(42 59 51 / var(--tw-text-opacity, 1));
+}
+
 @media (min-width: 1024px) {
   .lg\:btn-primary {
     display: inline-flex;
