@@ -1,0 +1,6 @@
+<div class="grid gap-2">
+    <label class="text-sm font-bold text-[#11352B]" for="{{ field.id_for_label }}">{{ field.label }} <span class="text-xs font-normal">(wajib)</span></label>
+    {{ field }}
+    <small class="text-xs leading-relaxed text-[#64766D]" id="{{ field.name }}-help">{{ field.help_text }}</small>
+    <div class="text-sm text-red-700" id="{{ field.name }}-errors">{{ field.errors }}</div>
+</div>

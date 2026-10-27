@@ -3,24 +3,58 @@ from django.db import connection
 from django.test import Client, SimpleTestCase, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils.translation import override
 
 from .forms import ReportForm
+
+COORDINATES = {"latitude": "-6.362000", "longitude": "106.827000"}
 
 
 class ReportFormTests(SimpleTestCase):
     def test_required_fields_reject_whitespace(self):
-        form = ReportForm({"title": "   ", "description": "\n "})
+        form = ReportForm({**COORDINATES, "title": "   ", "description": "\n "})
         self.assertFalse(form.is_valid())
         self.assertEqual(set(form.errors), {"title", "description"})
 
     def test_limits_and_optional_location(self):
-        valid = {"title": "a" * 120, "description": "b" * 2000}
+        valid = {**COORDINATES, "title": "a" * 120, "description": "b" * 2000}
         self.assertTrue(ReportForm(valid).is_valid())
         for name, limit in [("title", 120), ("description", 2000), ("location_note", 200)]:
             with self.subTest(field=name):
                 form = ReportForm({**valid, name: "x" * (limit + 1)})
                 self.assertFalse(form.is_valid())
                 self.assertIn(name, form.errors)
+
+    def test_location_must_be_explicit_and_complete(self):
+        for coords in ({}, {"latitude": "-6"}, {"longitude": "106"}):
+            with self.subTest(coords=coords):
+                form = ReportForm({"title": "Sampah", "description": "Di halte", **coords})
+                self.assertFalse(form.is_valid())
+                self.assertIn("Pilih titik di peta", str(form.errors))
+
+    def test_coordinate_ranges_precision_and_non_numeric_values(self):
+        data = {"title": "Sampah", "description": "Di halte", **COORDINATES}
+        cases = [
+            ("latitude", "90.000001"), ("latitude", "-90.000001"),
+            ("longitude", "180.000001"), ("longitude", "-180.000001"),
+            ("latitude", "-6.1234567"), ("longitude", "106.1234567"),
+            ("latitude", "NaN"), ("longitude", "Infinity"),
+            ("latitude", "<script>"), ("longitude", "bukan angka"),
+        ]
+        for name, value in cases:
+            with self.subTest(field=name, value=value):
+                form = ReportForm({**data, name: value})
+                self.assertFalse(form.is_valid())
+                self.assertIn(name, form.errors)
+
+    def test_zero_and_boundary_coordinates_are_valid(self):
+        for lat, lng in [("0", "0"), ("-90", "-180"), ("90", "180")]:
+            with self.subTest(latitude=lat, longitude=lng):
+                form = ReportForm({
+                    "title": "Sampah", "description": "Di halte", "latitude": lat, "longitude": lng,
+                })
+                self.assertTrue(form.is_valid(), form.errors)
+
 
 class ReportViewTests(TestCase):
     @classmethod
@@ -33,15 +67,18 @@ class ReportViewTests(TestCase):
         self.client.force_login(self.user)
 
     def test_invalid_post_preserves_input(self):
-        response = self.client.post(reverse("reporting:create"), {"title": "Sampah dekat halte"})
+        response = self.client.post(reverse("reporting:create"), {**COORDINATES, "title": "Sampah dekat halte"})
         self.assertContains(response, "Sampah dekat halte")
         self.assertContains(response, "Bagian ini wajib diisi.")
         self.assertIsNone(response.context["preview"])
+        self.assertEqual(response.context["form"]["latitude"].value(), COORDINATES["latitude"])
+        self.assertEqual(response.context["form"]["longitude"].value(), COORDINATES["longitude"])
 
     def test_preview_escapes_input_and_does_not_persist(self):
         url = reverse("reporting:create")
         with CaptureQueriesContext(connection) as queries:
             response = self.client.post(url, {
+                **COORDINATES,
                 "title": "  Sampah halte  ", "description": '<script>alert("x")</script>',
             })
         self.assertFalse(any(
@@ -62,10 +99,34 @@ class ReportViewTests(TestCase):
         self.assertEqual(client.get(url).status_code, 200)
         token = client.cookies["csrftoken"].value
         response = client.post(url, {
+            **COORDINATES,
             "csrfmiddlewaretoken": token, "title": "Sampah", "description": "Di halte",
         })
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response.context["preview"])
+
+    def test_new_form_has_no_location_preselected(self):
+        response = self.client.get(reverse("reporting:create"))
+        self.assertIsNone(response.context["form"]["latitude"].value())
+        self.assertIsNone(response.context["form"]["longitude"].value())
+        self.assertContains(response, 'id="report-map"')
+
+    def test_invalid_coordinates_do_not_generate_preview(self):
+        response = self.client.post(reverse("reporting:create"), {
+            "title": "Sampah", "description": "Di halte", **COORDINATES, "latitude": "91",
+        })
+        self.assertIsNone(response.context["preview"])
+        self.assertContains(response, "Koordinat maksimal 90.")
+        self.assertNotContains(response, "Lihat titik di OpenStreetMap")
+
+    def test_preview_coordinates_and_map_link_use_decimal_points(self):
+        with override("de"):
+            response = self.client.post(reverse("reporting:create"), {
+                "title": "Sampah", "description": "Di halte", **COORDINATES,
+            })
+        self.assertContains(response, 'id="preview-latitude">-6.362000</span>')
+        self.assertContains(response, 'id="preview-longitude">106.827000</span>')
+        self.assertContains(response, "mlat=-6.362000&amp;mlon=106.827000")
 
     def test_guests_are_sent_to_login(self):
         self.client.logout()
