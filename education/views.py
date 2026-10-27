@@ -70,6 +70,7 @@ def show_edu(request):
             questions = get_todays_questions(request)
 
     context = {
+        "active_page": "education",
         "already_played": already_played,
         "daily_score": daily_score,
         "questions": questions,

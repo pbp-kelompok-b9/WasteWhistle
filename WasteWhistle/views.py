@@ -45,6 +45,7 @@ def login_user(request):
 def dashboard(request):
     context = {
             "username":request.user.username,
+            "active_page": "dashboard",
             }
     return render(request, "dashboard.html", context)
 

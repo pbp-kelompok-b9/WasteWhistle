@@ -184,26 +184,29 @@ function setupQuiz() {
 /* Pencarian Waste Guide */
 function createGuideItem(guide) {
     const item = document.createElement("details");
-    item.className = "guide-item";
+    item.className = "guide-item mt-2 rounded-xl border border-[#E2EDE6] bg-white px-3.5 py-3";
 
     // Baris judul: nama + badge kategori
     const summary = document.createElement("summary");
+    summary.className = "flex items-center justify-start gap-2 text-[13px] font-semibold";
 
     const name = document.createElement("span");
     name.className = "guide-name";
     name.textContent = guide.name;
 
     const badge = document.createElement("span");
-    badge.className = "category-badge category-" + guide.category;
+    badge.className = "ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize tracking-[0.04em] category-badge category-" + guide.category;
     badge.textContent = guide.category_display || guide.category;
 
     summary.append(name, badge);
 
     // Isi: deskripsi + cara menangani
     const description = document.createElement("p");
+    description.className = "mt-2 text-[12px] text-[#6C7D75]";
     description.textContent = guide.description;
 
     const handling = document.createElement("p");
+    handling.className = "mt-2 text-[12px] text-[#6C7D75]";
     const handlingLabel = document.createElement("strong");
     handlingLabel.textContent = "Cara penanganan:";
     handling.append(handlingLabel, " " + guide.handling_instruction);
@@ -216,7 +219,7 @@ function createGuideItem(guide) {
 /* Menampilkan satu pesan teks di kotak hasil (untuk "kosong" atau "error") */
 function showMessage(container, text) {
     const message = document.createElement("p");
-    message.className = "text-soft";
+    message.className = "mt-3 text-[13px] text-[#6C7D75]";
     message.textContent = text;
     container.replaceChildren(message);
 }

@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@source "../../templates/education.html";
+@source "../js/education.js"
+
+.education-page [hidden] {
+    display: none !important;
+}
+
+body:has(.education-page) > header:not(.topbar) { display: none; }
+
+.bin-organik,
+.category-organik { --bin-color: #11734F; --bin-text: #fff; }
+.bin-anorganik,
+.category-anorganik { --bin-color: #FACC15; --bin-text: #1A202C; }
+.bin-b3,
+.category-b3 { --bin-color: #B91C1C; --bin-text: #fff; }
+.bin-kertas,
+.category-kertas { --bin-color: #1D4ED8; --bin-text: #fff; }
+.bin-residu,
+.category-residu { --bin-color: #64748B; --bin-text: #fff; }
+
+.category-badge { background-color: var(--bin-color); color: var(--bin-text); }
+
+.bin {
+    position: relative;
+    flex: 1 1 90px;
+    min-height: 80px;
+    padding: 30px 8px 14px;
+    border: 0;
+    border-radius: 6px 6px 20px 20px;
+    background-color: var(--bin-color);
+    color: var(--bin-text);
+    cursor: pointer;
+}
+
+.bin::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -4px;
+    left: -4px;
+    height: 16px;
+    border-radius: 6px;
+    background-color: var(--bin-color);
+    filter: brightness(0.82);
+}
+
+.bin:disabled { opacity: 0.4; cursor: not-allowed; }
+.bin.is-correct { opacity: 1; }
+
+.lifespan-track {
+    height: 16px;
+    border-radius: 999px;
+    background-color: #E2EDE6;
+}
+
+.lifespan-bar { height: 100%; border-radius: 999px; }
+.bar-short { background-color: #10B981; }
+.bar-medium { background-color: #F59E0B; }
+.bar-long { background-color: #EF4444; }
+.lifespan-years { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.guide-item summary { list-style: none; cursor: pointer; }
+.guide-item summary::-webkit-details-marker { display: none; }
+.guide-item summary::marker { content: ""; }
+.guide-item summary::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex: 0 0 6px;
+    border-right: 2px solid #6C7D75;
+    border-bottom: 2px solid #6C7D75;
+    transform: rotate(-45deg);
+    transition: transform 160ms ease;
+    opacity: 0.6;
+}
+.guide-item[open] summary::before { transform: rotate(45deg); }
+
+.flip-card { perspective: 900px; cursor: pointer; }
+.flip-front,
+.flip-back {
+    position: absolute;
+    inset: 0;
+    padding: 18px;
+    border-radius: 22px;
+    backface-visibility: hidden;
+    transition: transform 0.5s;
+}
+.flip-back { transform: rotateY(180deg); }
+.flip-toggle:checked ~ .flip-front { transform: rotateY(180deg); }
+.flip-toggle:checked ~ .flip-back { transform: rotateY(0deg); }
+.flip-toggle:focus-visible ~ .flip-front { outline: 3px solid #10B981; }
+
+@media (prefers-reduced-motion: reduce) {
+    .flip-front,
+    .flip-back { transition: none; }
+}
+
+@media (max-width: 900px) {
+    .education-columns,
+    .myth-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 540px) {
+    .quiz-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
