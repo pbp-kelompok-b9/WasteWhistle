@@ -61,7 +61,7 @@ class DecompositionInfo(models.Model):
         longest_days = 365 * 1_000_000          
         days = max(self.estimated_days, 1)      
         percent = math.log10(days) / math.log10(longest_days) * 100
-        return max(5, min(round(percent), 100)) 
+        return max(0, min(round(percent), 100))
 
     @property
     def bar_level(self):
