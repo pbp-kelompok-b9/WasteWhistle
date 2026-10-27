@@ -1,8 +1,8 @@
 {# Modal tambah / ubah hadiah. Dipakai oleh reward_list.html (khusus petugas). #}
 <dialog id="reward-modal" class="rw-modal" aria-labelledby="reward-modal-title">
   <form method="post" id="reward-form" class="rw-modal-form"
-        action="{% url 'reward_create' %}"
-        data-create-action="{% url 'reward_create' %}">
+        action="{% url 'rewards:reward_create' %}"
+        data-create-action="{% url 'rewards:reward_create' %}">
     {% csrf_token %}
 
     <header class="rw-modal-head">

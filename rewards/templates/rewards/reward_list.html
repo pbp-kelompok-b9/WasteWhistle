@@ -7,7 +7,12 @@
 <main class="rewards-page">
   <div class="rewards-container">
 
-    <h1 class="rewards-title">Rewards</h1>
+    <div class="rewards-head">
+      <h1 class="rewards-title">Rewards</h1>
+      
+        <button type="button" class="rw-btn rw-btn-primary" data-modal-open="create">+ Tambah hadiah</button>
+      
+    </div>
 
     <div class="rewards-layout">
 
@@ -45,7 +50,7 @@
                 {% if reward.terkunci %}
                   <button type="button" class="reward-btn" disabled>Locked</button>
                 {% else %}
-                  <form method="post" action="{% url 'redeem_reward' reward.pk %}">
+                  <form method="post" action="{% url 'rewards:redeem_reward' reward.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="reward-btn">Redeem</button>
                   </form>
@@ -88,4 +93,7 @@
     </div>
   </div>
 </main>
+
+{% include 'rewards/components/reward_form_modal.html' %}
 {% endblock %}
+

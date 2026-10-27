@@ -10,31 +10,16 @@ def is_petugas(user):
     return user.is_staff
 
 @login_required
-def reward_create(request):
-    if not is_petugas(request.user):
-        return redirect('reward_list')
-    if request.method == 'POST':
-        Reward.objects.create(
-            nama=request.POST['nama'],
-            deskripsi=request.POST.get('deskripsi', ''),
-            harga_poin=request.POST['harga_poin'],
-            stok=request.POST['stok'],
-        )
-        messages.success(request, 'Hadiah ditambahkan.')
-        return redirect('reward_list')
-    return render(request, 'rewards/reward_form.html')
-
-@login_required
 def reward_update(request, pk):
     reward = get_object_or_404(Reward, pk=pk)
     if not is_petugas(request.user):
-        return redirect('reward_list')
+        return redirect('rewards:reward_list')
     if request.method == 'POST':
         reward.nama = request.POST['nama']
         reward.harga_poin = request.POST['harga_poin']
         reward.stok = request.POST['stok']
         reward.save()
-        return redirect('reward_list')
+        return redirect('rewards:reward_list')
     return render(request, 'rewards/reward_form.html', {'reward': reward})
 
 @login_required
@@ -42,13 +27,13 @@ def reward_delete(request, pk):
     reward = get_object_or_404(Reward, pk=pk)
     if is_petugas(request.user) and request.method == 'POST':
         reward.delete()
-    return redirect('reward_list')
+    return redirect('rewards:reward_list')
 
 @login_required
 @transaction.atomic
 def redeem_reward(request, pk):
     if request.method != 'POST':
-        return redirect('reward_list')
+        return redirect('rewards:reward_list')
 
     reward = get_object_or_404(Reward.objects.select_for_update(), pk=pk)
     poin_user = 1000  # fungsi 
@@ -62,7 +47,7 @@ def redeem_reward(request, pk):
         reward.save()
         # catat Redemption dan PointTransaction
         messages.success(request, 'Penukaran berhasil.')
-    return redirect('reward_list')
+    return redirect('rewards:reward_list')
 
 
 def reward_list(request):
@@ -70,14 +55,7 @@ def reward_list(request):
     level = 3
     poin_ke_level_berikutnya = 80
 
-    rewards = [
-        {"pk": 1, "nama": "Transit credit Rp 25,000", "harga_poin": 250, "terkunci": False},
-        {"pk": 2, "nama": "15% off at the refill store", "harga_poin": 180, "terkunci": False},
-        {"pk": 3, "nama": "Plant one tree in your ward", "harga_poin": 500, "terkunci": False},
-        {"pk": 4, "nama": "Summit invite with city officials", "harga_poin": 1000,
-         "terkunci": True, "level_minimal": 4},
-        {"pk": 5, "nama": "TESTINGTESTINGTESTING", "harga_poin": 100, "terkunci": False},
-    ]
+    rewards = Reward.objects.all()
     
     redemptions = [
         {"reward": {"nama": "Transit credit Rp 25,000"}, "tanggal": date(2026, 10, 20), "status": "selesai", "kode": "WW-4821"},
@@ -91,6 +69,7 @@ def reward_list(request):
         'dots': [True] * 9 + [False],   # 9 bulatan penuh, 1 putus-putus
         'rewards': rewards,
         'redemptions': redemptions,
+        'form': RewardForm,
     })
     
     
@@ -103,10 +82,8 @@ def _pesan_error(form):
     return " ".join(hasil)
 
 
-@login_required
+
 def reward_create(request):
-    if not request.user.is_staff:
-        return redirect('reward_list')
     if request.method == 'POST':
         form = RewardForm(request.POST)
         if form.is_valid():
@@ -114,13 +91,13 @@ def reward_create(request):
             messages.success(request, 'Hadiah berhasil ditambahkan.')
         else:
             messages.error(request, _pesan_error(form))
-    return redirect('reward_list')
+    return redirect('rewards:reward_list')
 
 
 @login_required
 def reward_update(request, pk):
     if not request.user.is_staff:
-        return redirect('reward_list')
+        return redirect('rewards:reward_list')
     reward = get_object_or_404(Reward, pk=pk)
     if request.method == 'POST':
         form = RewardForm(request.POST, instance=reward)
@@ -129,5 +106,5 @@ def reward_update(request, pk):
             messages.success(request, 'Hadiah berhasil diubah.')
         else:
             messages.error(request, _pesan_error(form))
-    return redirect('reward_list')
+    return redirect('rewards:reward_list')
     

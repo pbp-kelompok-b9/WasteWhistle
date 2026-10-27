@@ -4,13 +4,6 @@ from django.utils.html import strip_tags
 
 from .models import Reward
 
-# Class Tailwind untuk semua input
-INPUT_CLASS = (
-    "w-full rounded-xl border border-emerald-200 bg-white px-4 py-2.5 "
-    "text-sm text-slate-900 placeholder-slate-400 "
-    "focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-)
-
 
 class RewardForm(ModelForm):
     class Meta:
@@ -27,26 +20,21 @@ class RewardForm(ModelForm):
 
         widgets = {
             "nama": TextInput(attrs={
-                "class": INPUT_CLASS,
                 "placeholder": "ex: Voucher KopiKafe Rp 25,000",
             }),
             "deskripsi": Textarea(attrs={
-                "class": INPUT_CLASS,
                 "placeholder": "Deskripsikan reward",
                 "rows": 3,
             }),
             "harga_poin": NumberInput(attrs={
-                "class": INPUT_CLASS,
                 "placeholder": "ex: 100",
                 "min": 1,
             }),
             "stok": NumberInput(attrs={
-                "class": INPUT_CLASS,
                 "placeholder": "ex: 50",
                 "min": 0,
             }),
             "gambar": URLInput(attrs={
-                "class": INPUT_CLASS,
                 "placeholder": "ex: https://drive.google.com/thumbnail?id=...&sz=w1000",
             }),
         }
