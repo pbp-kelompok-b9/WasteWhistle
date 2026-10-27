@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @source "../../templates/education.html";
-@source "../js/education.js"
+@source "../../templates/topbar.html";
+@source "../js/education.js";
 
 .education-page [hidden] {
     display: none !important;
