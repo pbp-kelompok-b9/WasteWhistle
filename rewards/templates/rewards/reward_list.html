@@ -32,7 +32,26 @@
           </ul>
         </section>
 
+        <form method="get" class="filter-bar">
+            <div class="filter-chips">
+              <a href="?" class="rw-chip {% if not kategori_aktif %}is-active{% endif %}">Semua</a>
+              {% for kode, nama in kategori_list %}
+              <a href="?kategori={{ kode }}"
+              class="rw-chip {% if kategori_aktif == kode %}is-active{% endif %}">{{ nama }}</a>
+              {% endfor %}
+            </div>
+
+            <div class="filter-price">
+              <label for="maks_poin">Maks. poin</label>
+                <input type="number" id="maks_poin" name="maks_poin" min="1"
+                value="{{ maks_poin|default:'' }}" placeholder="ex: 300">
+                {% if kategori_aktif %}<input type="hidden" name="kategori" value="{{ kategori_aktif }}">{% endif %}
+              <button type="submit" class="rw-btn rw-btn-ghost">Terapkan</button>
+            </div>
+          </form>
+
         <section class="reward-grid" aria-label="Daftar hadiah">
+         
           {% for reward in rewards %}
             <article class="reward-card {% if reward.terkunci %}is-locked{% endif %}">
               <div class="reward-image">
@@ -43,6 +62,15 @@
 
               <div class="reward-body">
                 <h2 class="reward-name">{{ reward.nama }}</h2>
+                <p class="reward-desc" title="{{ reward.deskripsi }}">
+                  {{ reward.deskripsi|default:"Belum ada deskripsi." }}
+                </p>
+                <button type="button" class="reward-more js-detail-reward"
+                        data-nama="{{ reward.nama }}"
+                        data-deskripsi="{{ reward.deskripsi }}"
+                        data-kategori="{{ reward.get_kategori_display }}"
+                        data-harga="{{ reward.harga_poin }}">Lihat detail</button>
+
                 <p class="reward-cost">
                   {{ reward.harga_poin }} Eco-Points{% if reward.terkunci %}, unlocks at Level {{ reward.level_minimal }}{% endif %}
                 </p>
@@ -55,6 +83,23 @@
                     <button type="submit" class="reward-btn">Redeem</button>
                   </form>
                 {% endif %}
+
+                <div class="reward-admin">
+                    <button type="button" class="rw-btn rw-btn-ghost js-edit-reward"
+                            data-action="{% url 'rewards:reward_update' reward.pk %}"
+                            data-nama="{{ reward.nama }}"
+                            data-deskripsi="{{ reward.deskripsi }}"
+                            data-harga="{{ reward.harga_poin }}"
+                            data-stok="{{ reward.stok }}"
+                            data-gambar="{{ reward.gambar }}">Ubah</button>
+
+                    <form method="post" action="{% url 'rewards:reward_delete' reward.pk %}"
+                          onsubmit="return confirm('Hapus hadiah ini?')">
+                      {% csrf_token %}
+                      <button type="submit" class="rw-btn rw-btn-ghost rw-btn-danger">Hapus</button>
+                    </form>
+                </div>
+
               </div>
             </article>
           {% empty %}
@@ -95,5 +140,47 @@
 </main>
 
 {% include 'rewards/components/reward_form_modal.html' %}
+
+<dialog id="detail-modal" class="rw-modal" aria-labelledby="detail-title">
+  <div class="rw-modal-form">
+    <header class="rw-modal-head">
+      <h2 id="detail-title" class="rw-modal-title"></h2>
+      <button type="button" class="rw-modal-close" data-detail-close aria-label="Tutup">&times;</button>
+    </header>
+
+    <div class="rw-modal-body">
+      <p class="detail-meta"><span id="detail-kategori"></span> &middot; <span id="detail-harga"></span> Eco-Points</p>
+      <p id="detail-deskripsi" class="detail-desc"></p>
+    </div>
+
+    <footer class="rw-modal-foot">
+      <button type="button" class="rw-btn rw-btn-ghost" data-detail-close>Tutup</button>
+    </footer>
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    const dlg = document.getElementById('detail-modal');
+    if (!dlg) return;
+
+    document.querySelectorAll('.js-detail-reward').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('detail-title').textContent = btn.dataset.nama;
+        document.getElementById('detail-kategori').textContent = btn.dataset.kategori;
+        document.getElementById('detail-harga').textContent = btn.dataset.harga;
+        document.getElementById('detail-deskripsi').textContent =
+          btn.dataset.deskripsi || 'Belum ada deskripsi.';
+        dlg.showModal();
+      });
+    });
+
+    dlg.querySelectorAll('[data-detail-close]')
+      .forEach(b => b.addEventListener('click', () => dlg.close()));
+
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  })();
+</script>
+
 {% endblock %}
 

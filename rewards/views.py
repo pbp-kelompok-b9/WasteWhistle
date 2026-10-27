@@ -9,23 +9,11 @@ from datetime import date
 def is_petugas(user):
     return user.is_staff
 
-@login_required
-def reward_update(request, pk):
-    reward = get_object_or_404(Reward, pk=pk)
-    if not is_petugas(request.user):
-        return redirect('rewards:reward_list')
-    if request.method == 'POST':
-        reward.nama = request.POST['nama']
-        reward.harga_poin = request.POST['harga_poin']
-        reward.stok = request.POST['stok']
-        reward.save()
-        return redirect('rewards:reward_list')
-    return render(request, 'rewards/reward_form.html', {'reward': reward})
-
-@login_required
+# @login_required
 def reward_delete(request, pk):
     reward = get_object_or_404(Reward, pk=pk)
-    if is_petugas(request.user) and request.method == 'POST':
+    # if is_petugas(request.user) and 
+    if request.method == 'POST':
         reward.delete()
     return redirect('rewards:reward_list')
 
@@ -57,6 +45,17 @@ def reward_list(request):
 
     rewards = Reward.objects.all()
     
+    kategori_aktif = request.GET.get("kategori", "")
+    maks_poin = request.GET.get("maks_poin", "")
+    
+    if kategori_aktif in dict(Reward.KATEGORI_CHOICES):
+        rewards = rewards.filter(kategori=kategori_aktif)
+    else:
+        kategori_aktif = ""
+        
+    if maks_poin.isdigit():
+        rewards = rewards.filter(harga_poin__lte=int(maks_poin))
+    
     redemptions = [
         {"reward": {"nama": "Transit credit Rp 25,000"}, "tanggal": date(2026, 10, 20), "status": "selesai", "kode": "WW-4821"},
         {"reward": {"nama": "15% off at the refill store"}, "tanggal": date(2026, 10, 23), "status": "diproses", "kode": ""},
@@ -70,6 +69,9 @@ def reward_list(request):
         'rewards': rewards,
         'redemptions': redemptions,
         'form': RewardForm,
+        'kategori_aktif': kategori_aktif,
+        'kategori_list': Reward.KATEGORI_CHOICES,
+        'maks_poin': maks_poin,
     })
     
     
@@ -94,10 +96,10 @@ def reward_create(request):
     return redirect('rewards:reward_list')
 
 
-@login_required
+# @login_required
 def reward_update(request, pk):
-    if not request.user.is_staff:
-        return redirect('rewards:reward_list')
+    # if not request.user.is_staff:
+    #     return redirect('rewards:reward_list')
     reward = get_object_or_404(Reward, pk=pk)
     if request.method == 'POST':
         form = RewardForm(request.POST, instance=reward)
