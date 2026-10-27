@@ -301,6 +301,11 @@
 
 /* ===================== Modal ===================== */
 .rw-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+
   width: min(520px, 92vw);
   max-height: 90vh;
   padding: 0;
@@ -417,3 +422,44 @@
   .rewards-head { flex-wrap: wrap; }
   .rw-modal-foot .rw-btn { flex: 1; }
 }
+
+/* ===================== Tombol umum ===================== */
+.rewards-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+ 
+.rewards-head .rewards-title { margin: 0; }
+ 
+.rw-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+ 
+.rw-btn:focus-visible {
+  outline: 3px solid #86d9b4;
+  outline-offset: 2px;
+}
+ 
+.rw-btn-primary { background: #047857; color: #fff; }
+.rw-btn-primary:hover { background: #064e3b; }
+ 
+.rw-btn-ghost {
+  background: #fff;
+  color: #064e3b;
+  border-color: #b6cfc2;
+}
+.rw-btn-ghost:hover { background: #eef6f1; }
+ 
+.rw-btn-danger { color: #991b1b; border-color: #f2b8b8; }
+.rw-btn-danger:hover { background: #fee2e2; }
