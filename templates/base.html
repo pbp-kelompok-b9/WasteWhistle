@@ -8,26 +8,28 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/output_dashboard.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     {% block meta %}{% endblock meta %}
 </head>
 <body>
     {% block body %}
-        <header class="top-nav">
-            <div class="logo">
-                <a href="{% url 'register_user'%}">Waste Whistle</a>
+        <header class="p-6">
+            <div class="brand">
+                <a href="{% url 'register_user' %}" class="no-underline text-inherit">Waste Whistle</a>
             </div>
         </header>
 
         {% block content %}{% endblock %}
 
-        <footer class="site-footer">
-            <div class="container">
-                <p>&copy; 2026 WasteWhistle</p>
+        <footer class="footer">
+            <div class="footer-inner text-center justify-center">
+                <p>&copy; 2026 Waste Whistle</p>
             </div>
         </footer>
         {% block extra_js %}{% endblock %}
     {% endblock body %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
