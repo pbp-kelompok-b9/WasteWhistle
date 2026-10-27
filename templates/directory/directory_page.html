@@ -153,10 +153,9 @@
         </section>
         {% endwith %}
     </main>
-    <footer class="directory-footer flex items-center justify-between gap-3 py-[22px] text-[11px]">
-        <span><strong>Waste Whistle</strong> · Municipal environmental network</span>
-        <span>© 2026 WasteWhistle · Built for cleaner communities</span>
-    </footer>
+
+    {% include 'footer.html'%}
+
 
     <script>
         const directorySearch = document.getElementById("directory-search");
@@ -193,4 +192,6 @@
         });
         filterDirectory();
     </script>
+
+
 {% endblock body %}
