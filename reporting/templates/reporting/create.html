@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static l10n %}
 {% block meta %}
-    <title>Lapor Sampah - Waste Whistle</title>
+    <title>Tambah Laporan - Waste Whistle</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
     <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -11,15 +11,15 @@
 {% block body %}
 {% include 'topbar.html' %}
 <main class="w-full max-w-[940px] mx-auto px-5 mt-8 mb-16">
-    <a class="inline-block mb-6 text-sm font-semibold text-[#115D3F] hover:underline" href="{% url 'dashboard' %}">&larr; Kembali ke dashboard</a>
+    <a class="inline-block mb-6 text-sm font-semibold text-[#115D3F] hover:underline" href="{% url 'reporting:list' %}">&larr; Kembali ke Laporan Saya</a>
     <section class="card p-6 sm:p-12" aria-labelledby="report-title">
         <span class="text-xs font-extrabold tracking-[1.5px] text-[#115D3F]">LAPOR SAMPAH</span>
-        <h1 id="report-title" class="max-w-[640px] my-4 text-[28px] sm:text-[40px] font-bold leading-tight tracking-[-1px] text-[#11352B]">Lingkungan bersih dimulai dari laporanmu.</h1>
+        <h1 id="report-title" class="max-w-[640px] my-4 text-[28px] sm:text-[40px] font-bold leading-tight tracking-[-1px] text-[#11352B]">Tambah laporan</h1>
         <p class="text-[15px] leading-relaxed text-[#64766D]">Temukan tumpukan sampah di sekitarmu? Bantu catat kondisi dan lokasinya agar lebih mudah ditemukan.</p>
         <form class="mt-8 grid gap-5" method="post" action="{% url 'reporting:create' %}" novalidate>
             {% csrf_token %}
             <h2 class="text-xl font-bold text-[#11352B]">Detail laporan</h2>
-            <p class="text-sm leading-relaxed text-[#64766D]">Isi detail dan pilih lokasi sampah untuk melihat preview. Laporan belum dikirim atau disimpan.</p>
+            <p class="text-sm leading-relaxed text-[#64766D]">Isi detail dan pilih lokasi sampah. Kamu bisa melihat preview sebelum mengirim laporan.</p>
             {% if form.errors %}
             <p class="p-4 rounded-xl bg-red-50 text-red-800 text-sm" role="alert">Periksa bagian yang ditandai di bawah ini. Isianmu tetap ada.</p>
             {% endif %}
@@ -59,8 +59,9 @@
                 </div>
             </fieldset>
             <div class="flex flex-wrap items-center gap-5">
-                <button class="btn-secondary py-3 px-6 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#115D3F]" type="submit">Lihat preview</button>
-                <a class="text-sm text-[#115D3F] hover:underline" href="{% url 'dashboard' %}">Kembali ke dashboard</a>
+                <button class="btn-action py-3 px-6 text-sm" type="submit" name="action" value="preview">Lihat preview</button>
+                <button class="btn-secondary py-3 px-6 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#115D3F]" type="submit" name="action" value="save">Kirim laporan</button>
+                <a class="text-sm text-[#115D3F] hover:underline" href="{% url 'reporting:list' %}">Batal</a>
             </div>
         </form>
         {% if preview %}

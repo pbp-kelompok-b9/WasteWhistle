@@ -13,9 +13,24 @@ python manage.py runserver 8001
 ```
 
 Buka `http://127.0.0.1:8001/` untuk membuat akun lokal, lalu masuk.
-Dashboard dan `/reporting/create/` memerlukan login. Form laporan saat ini
-memvalidasi detail dan lokasi, lalu menampilkan preview. Laporan belum disimpan ke database.
+Dashboard dan halaman reporting memerlukan login. Tombol **Lapor Sampah** membuka
+`/reporting/` (Laporan Saya). Klik **Tambah laporan** untuk membuka `/reporting/create/`.
 Jika mengakses form saat belum login, setelah login pengguna kembali ke form.
+
+### Laporan Saya dan penyimpanan laporan
+
+- **Laporan Saya** menampilkan laporan milik akun yang sedang login, terbaru di atas,
+  dengan 10 laporan per halaman. Akun yang belum punya laporan melihat tampilan kosong.
+- **Lihat preview** memvalidasi form tanpa menyimpan. **Kirim laporan** memvalidasi
+  ulang, menyimpan ke database, lalu kembali ke Laporan Saya dengan pesan berhasil.
+- Tanggal dan jam dibuat tampil dalam WIB. Refresh halaman daftar tidak mengirim
+  ulang form, dan laporan tetap tersedia setelah logout lalu login kembali.
+- Model `reporting.models.Report` berisi `reporter` (relasi user), `title`,
+  `description`, `location_note`, `latitude`, `longitude`, dan `created_at`.
+  Pelapor dan waktu dibuat ditentukan server, bukan input pengguna. Model ini dapat
+  dipakai saat integrasi modul Display Report; halaman ini khusus riwayat pribadi.
+- Setelah menarik perubahan, jalankan `python manage.py migrate` sebelum membuka
+  reporting. Preview dari versi sebelumnya belum tersimpan, jadi tidak menjadi riwayat.
 
 ### Reporting tahap 3: pilih lokasi
 

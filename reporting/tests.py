@@ -4,8 +4,12 @@ from django.test import Client, SimpleTestCase, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.translation import override
+from django.utils import timezone
+from datetime import timedelta
+from decimal import Decimal
 
 from .forms import ReportForm
+from .models import Report
 
 COORDINATES = {"latitude": "-6.362000", "longitude": "106.827000"}
 
@@ -95,7 +99,8 @@ class ReportViewTests(TestCase):
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.user)
         url = reverse("reporting:create")
-        self.assertEqual(client.post(url, {}).status_code, 403)
+        self.assertEqual(client.post(url, {"action": "save", **COORDINATES, "title": "Sampah", "description": "Di halte"}).status_code, 403)
+        self.assertFalse(Report.objects.exists())
         self.assertEqual(client.get(url).status_code, 200)
         token = client.cookies["csrftoken"].value
         response = client.post(url, {
@@ -136,10 +141,12 @@ class ReportViewTests(TestCase):
                 self.assertRedirects(response, "/login/?next=/reporting/create/")
 
     def test_shared_navigation_links_to_reporting(self):
-        for name in ("dashboard", "reporting:create"):
+        for name in ("dashboard", "reporting:create", "reporting:list"):
             response = self.client.get(reverse(name))
             self.assertTemplateUsed(response, "topbar.html")
-            self.assertContains(response, 'href="/reporting/create/"', count=3 if name == "dashboard" else 2)
+            self.assertContains(response, 'href="/reporting/"')
+            if name == "dashboard":
+                self.assertNotContains(response, 'href="/reporting/create/"')
             self.assertContains(response, 'aria-controls="mobile-menu"')
             self.assertNotContains(response, "reporting/reporting.css")
 
@@ -172,3 +179,95 @@ class ReportViewTests(TestCase):
             "username": "new-reporter", "password": "Another-test-2026!",
         })
         self.assertRedirects(response, reverse("dashboard"))
+
+
+class ReportHistoryTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = get_user_model().objects.create_user(username="owner")
+        cls.other = get_user_model().objects.create_user(username="other")
+
+    def setUp(self):
+        self.client.force_login(self.owner)
+        self.data = {"title": "Sampah dekat halte", "description": "Plastik berserakan.", **COORDINATES}
+
+    def test_empty_history_links_to_create_form(self):
+        response = self.client.get(reverse("reporting:list"))
+        self.assertContains(response, "Belum ada laporan")
+        self.assertContains(response, 'href="/reporting/create/"')
+        self.assertNotContains(response, 'id="id_title"')
+
+    def test_save_uses_authenticated_owner_and_persists_after_refresh(self):
+        before = timezone.now()
+        response = self.client.post(reverse("reporting:create"), {
+            **self.data, "action": "save", "reporter": self.other.pk,
+            "created_at": "2000-01-01T00:00:00Z", "location_note": "Di depan gerbang",
+        })
+        self.assertRedirects(response, reverse("reporting:list"))
+        report = Report.objects.get()
+        self.assertEqual(report.reporter, self.owner)
+        self.assertGreaterEqual(report.created_at, before)
+        self.assertEqual(report.title, self.data["title"])
+        self.assertEqual(report.description, self.data["description"])
+        self.assertEqual(report.location_note, "Di depan gerbang")
+        self.assertEqual(report.latitude, Decimal(COORDINATES["latitude"]))
+        self.assertEqual(report.longitude, Decimal(COORDINATES["longitude"]))
+        for _ in range(2):
+            history = self.client.get(reverse("reporting:list"))
+            self.assertContains(history, self.data["title"])
+            self.assertContains(history, "WIB")
+        self.assertEqual(Report.objects.count(), 1)
+
+    def test_preview_and_invalid_save_never_create_reports(self):
+        preview = self.client.post(reverse("reporting:create"), {**self.data, "action": "preview"})
+        self.assertIsNotNone(preview.context["preview"])
+        for changes in ({"description": " "}, {"latitude": "91"}, {"longitude": ""}):
+            response = self.client.post(reverse("reporting:create"), {**self.data, "action": "save", **changes})
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.context["form"].errors)
+            self.assertIsNone(response.context["preview"])
+        self.assertFalse(Report.objects.exists())
+
+    def test_history_is_private_even_with_other_user_query(self):
+        mine = Report.objects.create(reporter=self.owner, **self.data)
+        other = Report.objects.create(reporter=self.other, **{**self.data, "title": "Laporan rahasia akun lain"})
+        response = self.client.get(reverse("reporting:list"), {"reporter": self.other.pk})
+        self.assertEqual(list(response.context["page_obj"]), [mine])
+        self.assertNotContains(response, other.title)
+        self.client.force_login(self.other)
+        response = self.client.get(reverse("reporting:list"))
+        self.assertEqual(list(response.context["page_obj"]), [other])
+        self.assertNotContains(response, mine.title)
+
+    def test_history_orders_newest_first_and_paginates(self):
+        reports = [Report.objects.create(reporter=self.owner, **{**self.data, "title": f"Laporan {i}"}) for i in range(11)]
+        Report.objects.filter(pk=reports[0].pk).update(created_at=timezone.now() + timedelta(days=1))
+        response = self.client.get(reverse("reporting:list"))
+        page = response.context["page_obj"]
+        self.assertEqual(page.paginator.count, 11)
+        self.assertEqual(len(page), 10)
+        self.assertEqual(list(page)[0], reports[0])
+        self.assertContains(response, "Berikutnya")
+        second = self.client.get(reverse("reporting:list"), {"page": 2}).context["page_obj"]
+        self.assertEqual(len(second), 1)
+        self.assertEqual(self.client.get(reverse("reporting:list"), {"page": "invalid"}).status_code, 200)
+
+    def test_history_escapes_saved_text(self):
+        Report.objects.create(reporter=self.owner, **{
+            **self.data, "title": '<script>alert("test")</script>', "description": '<img src=x onerror="alert(1)">',
+        })
+        response = self.client.get(reverse("reporting:list"))
+        self.assertContains(response, "&lt;script&gt;")
+        self.assertNotContains(response, '<script>alert("test")</script>')
+        self.assertNotContains(response, '<img src=x')
+
+    def test_guests_cannot_read_history_or_save(self):
+        self.client.logout()
+        self.assertRedirects(self.client.get(reverse("reporting:list")), "/login/?next=/reporting/")
+        self.assertRedirects(self.client.post(reverse("reporting:create"), {**self.data, "action": "save"}), "/login/?next=/reporting/create/")
+        self.assertFalse(Report.objects.exists())
+
+    def test_posting_to_history_cannot_create_reports(self):
+        response = self.client.post(reverse("reporting:list"), {**self.data, "action": "save"})
+        self.assertEqual(response.status_code, 405)
+        self.assertFalse(Report.objects.exists())

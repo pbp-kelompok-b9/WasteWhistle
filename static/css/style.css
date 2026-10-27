@@ -1593,6 +1593,10 @@ textarea.report-input {
   margin-bottom: 4rem;
 }
 
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+
 .mb-4 {
   margin-bottom: 1rem;
 }
@@ -1637,6 +1641,10 @@ textarea.report-input {
   margin-top: 1.25rem;
 }
 
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
 .mt-8 {
   margin-top: 2rem;
 }
@@ -1665,6 +1673,10 @@ textarea.report-input {
   display: none;
 }
 
+.h-10 {
+  height: 2.5rem;
+}
+
 .h-6 {
   height: 1.5rem;
 }
@@ -1683,6 +1695,10 @@ textarea.report-input {
 
 .h-full {
   height: 100%;
+}
+
+.w-10 {
+  width: 2.5rem;
 }
 
 .w-6 {
@@ -1715,6 +1731,10 @@ textarea.report-input {
 
 .shrink-0 {
   flex-shrink: 0;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .grid-cols-1 {
@@ -1759,6 +1779,10 @@ textarea.report-input {
 
 .gap-3 {
   gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 
 .gap-5 {
@@ -1873,6 +1897,11 @@ textarea.report-input {
   border-color: rgb(226 237 230 / var(--tw-border-opacity, 1));
 }
 
+.bg-\[\#E8F5EC\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(232 245 236 / var(--tw-bg-opacity, 1));
+}
+
 .bg-\[\#F0F6F2\] {
   --tw-bg-opacity: 1;
   background-color: rgb(240 246 242 / var(--tw-bg-opacity, 1));
@@ -1916,6 +1945,10 @@ textarea.report-input {
 
 .p-6 {
   padding: 1.5rem;
+}
+
+.p-8 {
+  padding: 2rem;
 }
 
 .px-4 {
@@ -2011,6 +2044,11 @@ textarea.report-input {
 
 .text-\[40px\] {
   font-size: 40px;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
 }
 
 .text-sm {
@@ -2274,6 +2312,10 @@ textarea.report-input {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .sm\:p-10 {
+    padding: 2.5rem;
+  }
+
   .sm\:p-12 {
     padding: 3rem;
   }
@@ -2282,8 +2324,17 @@ textarea.report-input {
     padding: 1.5rem;
   }
 
+  .sm\:text-\[36px\] {
+    font-size: 36px;
+  }
+
   .sm\:text-\[40px\] {
     font-size: 40px;
+  }
+
+  .sm\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
 }
 

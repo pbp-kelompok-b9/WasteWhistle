@@ -12,7 +12,7 @@
         </nav>
 
         <div class="ml-auto flex items-center gap-[10px] md:gap-[14px]">
-            <a class="btn-secondary lg:inline-flex" href="{% url 'reporting:create' %}" {% if active_page == 'reporting' %}aria-current="page"{% endif %}>
+            <a class="btn-secondary lg:inline-flex" href="{% url 'reporting:list' %}" {% if active_page == 'reporting' %}aria-current="page"{% endif %}>
                 Lapor Sampah
             </a>
             <a class="flex items-center gap-[9px] no-underline" href="#">
@@ -31,7 +31,7 @@
 
     <!-- Mobile Dropdown Menu -->
     <div id="mobile-menu" class="hidden lg:hidden border-t border-[#E2EDE6] bg-white px-6 py-4 flex flex-col gap-3 shadow-lg">
-        <a class="nav-link {% if active_page == 'reporting' %}is-active{% endif %}" href="{% url 'reporting:create' %}" {% if active_page == 'reporting' %}aria-current="page"{% endif %}>Lapor Sampah</a>
+        <a class="nav-link {% if active_page == 'reporting' %}is-active{% endif %}" href="{% url 'reporting:list' %}" {% if active_page == 'reporting' %}aria-current="page"{% endif %}>Lapor Sampah</a>
         <a class="nav-link {% if active_page == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
         <a class="nav-link {% if active_page == 'dispatch' %}is-active{% endif %}" href="#">Tugas Pembersihan &amp; Pengerahan</a>
         <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="#">Hadiah &amp; FAQ</a>
