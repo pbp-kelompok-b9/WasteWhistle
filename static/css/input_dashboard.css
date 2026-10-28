@@ -18,6 +18,18 @@
    ========================================== */
 @layer components {
 
+  .report-input {
+    @apply w-full px-4 py-3 border border-[#B4CEBE] rounded-[10px] bg-white text-sm text-[#16241F] outline-none focus:border-[#115D3F] focus:ring-2 focus:ring-[#115D3F] focus:ring-offset-2;
+  }
+
+  textarea.report-input {
+    @apply resize-y min-h-[140px];
+  }
+
+  .report-input[aria-invalid="true"] {
+    @apply border-red-700;
+  }
+
   /* --- CARDS --- */
   .card,
   .card-lg,

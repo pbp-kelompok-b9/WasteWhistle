@@ -1,0 +1,213 @@
+@import "tailwindcss";
+
+/* ==========================================
+   GLOBAL BASE STYLES
+   ========================================== */
+@layer base {
+  body {
+    @apply font-sans bg-[#F2F8F4] min-h-screen text-[#1A202C] flex flex-col;
+  }
+}
+
+/* ==========================================
+   REPORTING MODULE COMPONENTS
+   ========================================== */
+@layer components {
+
+  /* --- LAYOUT & CONTAINERS --- */
+  .reporting-container {
+    @apply w-full max-w-[940px] mx-auto px-5 mt-8 mb-16;
+  }
+
+  .reporting-card {
+    @apply bg-white border border-[#E2EDE6] rounded-[20px] p-6 sm:p-12 shadow-[0_2px_10px_rgba(11,59,46,0.04)];
+  }
+
+  .reporting-card-compact {
+    @apply bg-white border border-[#E2EDE6] rounded-[20px] p-6 sm:p-10 shadow-[0_2px_10px_rgba(11,59,46,0.04)];
+  }
+
+  .reporting-item-card {
+    @apply bg-white border border-[#E2EDE6] rounded-[20px] p-5 sm:p-6 min-w-0 break-words shadow-[0_2px_10px_rgba(11,59,46,0.04)];
+  }
+
+  .reporting-empty-card {
+    @apply bg-white border border-dashed border-[#B4CEBE] rounded-[20px] p-8 sm:p-12 text-center shadow-[0_2px_10px_rgba(11,59,46,0.04)];
+  }
+
+  /* --- NAVIGATION & LINKS --- */
+  .reporting-back-link {
+    @apply inline-block mb-6 text-sm font-semibold text-[#115D3F] hover:underline;
+  }
+
+  .reporting-link {
+    @apply text-sm font-semibold text-[#115D3F] hover:underline;
+  }
+
+  .reporting-external-link {
+    @apply inline-block mt-2 text-sm font-semibold text-[#115D3F] hover:underline;
+  }
+
+  /* --- TYPOGRAPHY & BADGES --- */
+  .reporting-badge {
+    @apply text-xs font-extrabold tracking-[1.5px] text-[#115D3F] uppercase;
+  }
+
+  .reporting-title {
+    @apply max-w-[640px] my-4 text-[28px] sm:text-[40px] font-bold leading-tight tracking-[-1px] text-[#11352B];
+  }
+
+  .reporting-list-title {
+    @apply mt-3 mb-3 text-[28px] sm:text-[36px] font-bold tracking-[-1px] text-[#11352B];
+  }
+
+  .reporting-subtitle {
+    @apply text-[15px] leading-relaxed text-[#64766D];
+  }
+
+  .reporting-section-title {
+    @apply text-xl font-bold text-[#11352B];
+  }
+
+  .reporting-section-desc {
+    @apply text-sm leading-relaxed text-[#64766D];
+  }
+
+  /* --- FORM & INPUTS --- */
+  .reporting-form {
+    @apply mt-8 grid gap-5;
+  }
+
+  .reporting-field {
+    @apply grid gap-2;
+  }
+
+  .reporting-label {
+    @apply text-sm font-bold text-[#11352B];
+  }
+
+  .reporting-label-tag {
+    @apply text-xs font-normal;
+  }
+
+  .reporting-help {
+    @apply text-xs leading-relaxed text-[#64766D];
+  }
+
+  .reporting-error {
+    @apply text-sm text-red-700;
+  }
+
+  .reporting-fieldset {
+    @apply min-w-0 border-t border-[#D8E6DE] pt-5;
+  }
+
+  .reporting-legend {
+    @apply text-xl font-bold text-[#11352B] pr-3;
+  }
+
+  .reporting-grid-2 {
+    @apply grid sm:grid-cols-2 gap-5 mt-5;
+  }
+
+  .reporting-form-actions {
+    @apply flex flex-wrap items-center gap-5;
+  }
+
+  /* --- ALERTS & NOTIFICATIONS --- */
+  .reporting-alert-error {
+    @apply p-4 rounded-xl bg-red-50 text-red-800 text-sm;
+  }
+
+  .reporting-alert-success {
+    @apply mb-5 p-4 rounded-xl bg-[#E8F5EC] text-[#115D3F] text-sm;
+  }
+
+  /* --- MAP CONTAINER & CONTROLS --- */
+  .reporting-map-wrapper {
+    @apply relative z-0 overflow-hidden rounded-[20px] border border-[#B4CEBE];
+  }
+
+  .reporting-map-canvas {
+    @apply relative z-0 h-[340px] sm:h-[380px] w-full bg-[#F2F8F4];
+  }
+
+  .reporting-map-zoom {
+    @apply absolute top-[14px] left-[14px] flex flex-col bg-white rounded-[12px] shadow-[0_4px_14px_rgba(11,27,20,0.14)] overflow-hidden z-10;
+  }
+
+  .reporting-map-zoom button {
+    @apply w-[34px] h-[34px] border-none bg-white text-[16px] font-bold text-[#2A3B33] cursor-pointer grid place-items-center focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#115D3F] disabled:opacity-50 disabled:cursor-not-allowed [&+button]:border-t [&+button]:border-[#EDF3EF];
+  }
+
+  .reporting-map-controls {
+    @apply flex flex-wrap items-center gap-3 mt-4;
+  }
+
+  .reporting-map-status {
+    @apply text-sm text-[#64766D];
+  }
+
+  .reporting-map-error {
+    @apply mt-3 text-sm text-red-700;
+  }
+
+  /* --- FORM & INPUTS --- */
+  .report-input,
+  .reporting-field input,
+  .reporting-field textarea {
+    @apply w-full px-4 py-2.5 text-sm text-[#1A202C] bg-white border border-[#CCDCD3] rounded-[10px] outline-none transition-all duration-200 placeholder:text-[#9DB0A5] focus:border-[#115D3F] focus:ring-2 focus:ring-[#115D3F]/20 disabled:bg-[#F2F8F4] disabled:cursor-not-allowed;
+  }
+
+  input.report-input,
+  .reporting-field input {
+    @apply h-[46px];
+  }
+
+  textarea.report-input,
+  .reporting-field textarea {
+    @apply min-h-[110px] py-3 resize-y;
+  }
+
+  /* --- PREVIEW SECTION --- */
+  .reporting-preview-card {
+    @apply mt-8 p-5 sm:p-6 border border-dashed border-[#B4CEBE] rounded-2xl bg-[#F5FAF6] break-words;
+  }
+
+  .reporting-preview-title {
+    @apply my-4 text-2xl font-bold text-[#11352B];
+  }
+
+  .reporting-preview-desc {
+    @apply whitespace-pre-wrap text-sm leading-relaxed text-[#64766D];
+  }
+
+  .reporting-preview-heading {
+    @apply mt-5 font-bold text-sm text-[#11352B];
+  }
+
+  .reporting-preview-note {
+    @apply mt-5 pt-4 border-t border-[#D8E6DE] text-sm leading-relaxed text-[#64766D];
+  }
+
+  /* --- HISTORY & DETAILS --- */
+  .reporting-history-header {
+    @apply flex flex-wrap items-center justify-between gap-3 mb-4;
+  }
+
+  .reporting-history-list {
+    @apply grid gap-4;
+  }
+
+  .reporting-details {
+    @apply mt-4 pt-4 border-t border-[#D8E6DE];
+  }
+
+  .reporting-summary {
+    @apply cursor-pointer text-sm font-semibold text-[#115D3F];
+  }
+
+  .reporting-pagination {
+    @apply mt-6 flex flex-wrap items-center justify-between gap-4 text-sm;
+  }
+}

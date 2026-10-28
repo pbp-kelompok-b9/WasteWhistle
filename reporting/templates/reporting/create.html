@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static l10n %}
+{% block meta %}
+    <title>Tambah Laporan - Waste Whistle</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script> 
+    <script defer src="{% static 'reporting/map.js' %}?v=4"></script>
+    <script defer src="{% static 'reporting/form.js' %}?v=1"></script>
+{% endblock meta %}
+{% block body %}
+{% include 'topbar.html' %}
+<main class="reporting-container">
+    <a class="reporting-back-link" href="{% url 'reporting:list' %}">&larr; Kembali ke Laporan Saya</a>
+    <section class="reporting-card" aria-labelledby="report-title">
+        <span class="reporting-badge">LAPOR SAMPAH</span>
+        <h1 id="report-title" class="reporting-title">Tambah laporan</h1>
+        <p class="reporting-subtitle">Temukan tumpukan sampah di sekitarmu? Bantu catat kondisi dan lokasinya agar lebih mudah ditemukan.</p>
+        
+        <form id="report-form" class="reporting-form" method="post" action="{% url 'reporting:create' %}" data-renew-submission="{{ submission_renewed|yesno:'true,false' }}" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="submission_token" value="{{ submission_token }}">
+            <h2 class="reporting-section-title">Detail laporan</h2>
+            <p class="reporting-section-desc">Isi detail dan pilih lokasi sampah. Kamu bisa melihat preview sebelum mengirim laporan.</p>
+            
+            {% if form.errors %}
+            <div class="reporting-alert-error" role="alert">
+                {% if form.non_field_errors %}{{ form.non_field_errors }}{% else %}Periksa bagian yang ditandai di bawah ini. Isianmu tetap ada.{% endif %}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+            {% if field.name != 'latitude' and field.name != 'longitude' %}
+            <div class="reporting-field">
+                <label class="reporting-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %}<span class="reporting-label-tag"> (wajib)</span>{% endif %}
+                </label>
+                {{ field }}
+                <small class="reporting-help" id="{{ field.name }}-help">{{ field.help_text }}</small>
+                <div class="reporting-error" id="{{ field.name }}-errors">{{ field.errors }}</div>
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <fieldset class="reporting-fieldset">
+                <legend class="reporting-legend">Lokasi sampah</legend>
+                <p id="map-help" class="reporting-section-desc mb-4">Klik peta untuk memasang pin, lalu geser pin ke lokasi sampah. Kamu juga bisa mengisi koordinat di bawah peta.</p>
+                <div class="reporting-map-wrapper">
+                    <div id="report-map" class="reporting-map-canvas"
+                         role="region" aria-label="Pilih lokasi sampah di peta" aria-describedby="map-help map-status"
+                         data-tile-url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png">
+                        <p id="map-loading" class="p-5 text-sm text-[#64766D]">Memuat peta… Koordinat juga dapat diisi secara manual.</p>
+                    </div>
+                    <div class="reporting-map-zoom" role="group" aria-label="Zoom peta">
+                        <button id="report-zoom-in" type="button" aria-label="Perbesar peta" aria-controls="report-map" disabled>+</button>
+                        <button id="report-zoom-out" type="button" aria-label="Perkecil peta" aria-controls="report-map" disabled>&minus;</button>
+                    </div>
+                </div>
+                <div class="reporting-map-controls">
+                    <button id="use-map-center" type="button" class="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed" disabled>Gunakan titik tengah peta</button>
+                    <p id="map-status" class="reporting-map-status" role="status" aria-live="polite">Belum ada titik dipilih.</p>
+                </div>
+                <p id="map-error" class="reporting-map-error hidden" role="status"></p>
+                <noscript><p class="mt-3 text-sm text-[#64766D]">JavaScript tidak aktif. Isi latitude dan longitude secara manual untuk melanjutkan.</p></noscript>
+                <div class="reporting-grid-2">
+                    {% include 'reporting/coordinate_field.html' with field=form.latitude %}
+                    {% include 'reporting/coordinate_field.html' with field=form.longitude %}
+                </div>
+            </fieldset>
+
+            <div class="reporting-form-actions">
+                <button class="btn-action py-3 px-6 text-sm" type="submit" name="action" value="preview">Lihat preview</button>
+                <button class="btn-secondary py-3 px-6 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#115D3F]" type="submit" name="action" value="save">Kirim laporan</button>
+                <a class="reporting-link" href="{% url 'reporting:list' %}">Batal</a>
+            </div>
+        </form>
+
+        {% if preview %}
+        <section class="reporting-preview-card" aria-labelledby="preview-title" aria-live="polite">
+            <span class="reporting-badge">PREVIEW · BELUM DISIMPAN</span>
+            <h2 id="preview-title" class="reporting-preview-title">{{ preview.title }}</h2>
+            <p class="reporting-preview-desc">{{ preview.description }}</p>
+            <h3 class="reporting-preview-heading">Patokan lokasi</h3>
+            <p class="mt-2 text-sm text-[#64766D]">{{ preview.location_note|default:"Belum diisi" }}</p>
+            <h3 class="reporting-preview-heading">Koordinat lokasi</h3>
+            <p class="mt-2 text-sm text-[#64766D]">Latitude: <span id="preview-latitude">{{ preview.latitude|unlocalize }}</span> · Longitude: <span id="preview-longitude">{{ preview.longitude|unlocalize }}</span></p>
+            <a class="reporting-external-link" href="https://www.openstreetmap.org/?mlat={{ preview.latitude|unlocalize }}&amp;mlon={{ preview.longitude|unlocalize }}#map=17/{{ preview.latitude|unlocalize }}/{{ preview.longitude|unlocalize }}" target="_blank" rel="noopener noreferrer">Lihat titik di OpenStreetMap &nearr;</a>
+            <p class="reporting-preview-note">Periksa detail di atas. Untuk memperbarui preview, ubah isian lalu klik Lihat preview lagi.</p>
+        </section>
+        {% endif %}
+    </section>
+</main>
+{% endblock body %}
