@@ -42,7 +42,7 @@
     try {
         loading.remove();
         map = L.map(container, {
-            scrollWheelZoom: false, zoomControl: false, minZoom: 1, maxZoom: 19,
+            scrollWheelZoom: true, zoomControl: true, minZoom: 5, maxZoom: 20,
         }).setView(savedPoint || [-6.2088, 106.8456], savedPoint ? 16 : 13);
         L.tileLayer(container.dataset.tileUrl, {
             minZoom: 1,
