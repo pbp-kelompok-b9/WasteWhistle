@@ -20,7 +20,8 @@ class WasteBankForm(ModelForm):
             "address": "Alamat",
             "contact_number": "Nomor Kontak",
             "email": "Email",
-            
+            "latitude": "Latitude",
+            "longitude": "Longitude",
         }
 
         widgets = {
