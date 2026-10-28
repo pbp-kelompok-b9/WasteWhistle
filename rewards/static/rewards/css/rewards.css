@@ -761,3 +761,13 @@
 @media (max-width: 560px) {
   .rw-toast-stack { top: 12px; right: 12px; left: 12px; width: auto; }
 }
+
+.rewards-page [hidden] { display: none !important; }
+
+button.rw-chip { font-family: inherit; cursor: pointer; }
+
+.rw-state {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--rw-muted);
+}

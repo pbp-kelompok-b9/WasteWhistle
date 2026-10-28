@@ -1,14 +1,22 @@
 from django.urls import path
-
-from WasteWhistle.views import *
+ 
+from . import views
 from .views import *
-
+ 
 app_name = "rewards"
-
+ 
 urlpatterns = [
-    path('', reward_list, name='reward_list'),
-    path('<int:pk>/redeem/', redeem_reward, name='redeem_reward'),
-    path('<int:pk>/ubah/', reward_update, name='reward_update'),
-    path('<int:pk>/hapus/', reward_delete, name='reward_delete'),
-    path('baru/', reward_create, name='reward_create'),
+    # Halaman
+    path('', views.reward_list, name='reward_list'),
+ 
+    # Endpoint JSON (GET)
+    path('api/rewards/', views.get_rewards_json, name='get_rewards_json'),
+    path('api/saya/', views.get_my_rewards_json, name='get_my_rewards_json'),
+ 
+    # Endpoint AJAX (POST)
+    path('api/rewards/baru/', views.create_reward_ajax, name='create_reward_ajax'),
+    path('api/rewards/<int:pk>/ubah/', views.update_reward_ajax, name='update_reward_ajax'),
+    path('api/rewards/<int:pk>/hapus/', views.delete_reward_ajax, name='delete_reward_ajax'),
+    path('api/rewards/<int:pk>/tukar/', views.redeem_reward_ajax, name='redeem_reward_ajax'),
 ]
+ 
