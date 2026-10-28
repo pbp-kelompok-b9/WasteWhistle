@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import ProtectedError
 from .forms import *
 from datetime import date
 from django.views.decorators.http import require_POST
@@ -12,11 +13,24 @@ from .models import *
 from .services import *
 from .permissions import *
 
-@login_required
+@login_required(login_url='login')
+@require_POST
 def reward_delete(request, pk):
+    if not is_petugas(request.user):
+        messages.error(request, 'Hanya petugas yang dapat menghapus hadiah.')
+        return redirect('rewards:reward_list')
+
     reward = get_object_or_404(Reward, pk=pk)
-    if is_petugas(request.user) and request.method == 'POST':
+    try:
+        nama = reward.nama
         reward.delete()
+        messages.success(request, f'Hadiah "{nama}" dihapus.')
+    except ProtectedError:
+        messages.error(
+            request,
+            'Hadiah ini sudah pernah ditukar, jadi tidak bisa dihapus. '
+            'Ubah stoknya menjadi 0 jika ingin menandainya habis.'
+        )
     return redirect('rewards:reward_list')
 
 @login_required(login_url='login')
@@ -101,8 +115,12 @@ def _pesan_error(form):
     return " ".join(hasil)
 
 
-
+@login_required(login_url='login')
+@require_POST
 def reward_create(request):
+    if not is_petugas(request.user):
+        messages.error(request, 'Hanya petugas yang dapat membuat hadiah.')
+        return redirect('rewards:reward_list')
     if request.method == 'POST':
         form = RewardForm(request.POST)
         if form.is_valid():
@@ -117,6 +135,7 @@ def reward_create(request):
 @require_POST
 def reward_update(request, pk):
     if not is_petugas(request.user):
+        messages.error(request, 'Hanya petugas yang dapat mengubah hadiah.')
         return redirect("rewards:reward_list")
 
     reward = get_object_or_404(Reward, pk=pk)

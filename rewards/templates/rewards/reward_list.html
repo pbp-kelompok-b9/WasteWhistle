@@ -15,11 +15,37 @@
     </div>
 
     {% if messages %}
-      <ul class="rewards-messages" role="status">
-      {% for message in messages %}
-        <li class="rewards-message rewards-message-{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-         </ul>
+    <div class="rw-toast-stack" aria-live="polite">
+    {% for message in messages %}
+      <div class="rw-toast rw-toast-{{ message.tags|default:'info' }}"
+           role="{% if message.level >= 40 %}alert{% else %}status{% endif %}"
+           style="--rw-toast-ms: {% if message.level >= 40 %}7000{% else %}4500{% endif %}ms">
+        <span class="rw-toast-icon" aria-hidden="true"></span>
+        <p class="rw-toast-text">{{ message }}</p>
+        <button type="button" class="rw-toast-close" aria-label="Tutup notifikasi">&times;</button>
+        <span class="rw-toast-bar" aria-hidden="true"></span>
+      </div>
+    {% endfor %}
+    </div>
+
+    <script>
+      (function () {
+        function dismiss(toast) {
+          if (toast.classList.contains('is-leaving')) return;
+          toast.classList.add('is-leaving');
+          setTimeout(function () { toast.remove(); }, 250);
+        }
+
+        document.querySelectorAll('.rw-toast').forEach(function (toast) {
+          toast.querySelector('.rw-toast-close')
+            .addEventListener('click', function () { dismiss(toast); });
+
+          // hilang otomatis saat batang waktu habis
+          toast.querySelector('.rw-toast-bar')
+            .addEventListener('animationend', function () { dismiss(toast); });
+        });
+      })();
+    </script>
     {% endif %}
 
     <div class="rewards-layout">
