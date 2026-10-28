@@ -175,7 +175,7 @@ Aplikasi WasteWhistle adalah aplikasi melacak dan menetapkan keberadaan sampah y
 
 ## Daftar Modul
 
-- (Justin) Authentication, menggunakan OAuth.
+- (Justin) Membuat Directory Bank Sampah
 - (Syakira) Landing Page, menggunakan OAuth.
 - (Adriel) Reporting and Timer, modul ini akan menggunakan API OpenStreetMap
 - (Rafa) Display Report, modul ini juga akan menggunakan API OpenStreetMap

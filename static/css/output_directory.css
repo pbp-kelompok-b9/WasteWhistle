@@ -1080,6 +1080,9 @@
   .text-inherit {
     color: inherit;
   }
+  .text-red-700 {
+    color: var(--color-red-700);
+  }
   .text-red-600 {
     color: var(--color-red-600);
   }
@@ -2368,6 +2371,67 @@
     --tw-leading: 1.5;
     line-height: 1.5;
     color: var(--directory-muted);
+  }
+  .directory-delete-form {
+    display: inline-flex;
+  }
+  .directory-delete-popover {
+    position: fixed;
+    top: calc(var(--spacing) * 6);
+    right: auto;
+    bottom: auto;
+    left: calc(1 / 2 * 100%);
+    margin: 0px;
+    width: min(320px, calc(100vw - 32px));
+    --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+    border-radius: 14px;
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+    border-color: #dcebe1;
+    background-color: var(--color-white);
+    padding: 18px;
+    color: var(--directory-ink);
+    --tw-shadow: 0 18px 45px var(--tw-shadow-color, rgba(18,58,43,.18));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .directory-delete-popover h3 {
+    margin: 0px;
+    font-size: 15px;
+  }
+  .directory-delete-popover p {
+    margin-inline: 0px;
+    margin-top: 7px;
+    margin-bottom: calc(var(--spacing) * 4);
+    font-size: var(--text-xs);
+    line-height: var(--tw-leading, var(--text-xs--line-height));
+    --tw-leading: 1.5;
+    line-height: 1.5;
+    color: var(--directory-muted);
+  }
+  .directory-delete-popover__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--spacing) * 2);
+  }
+  .directory-delete-popover__cancel, .directory-delete-popover__confirm {
+    cursor: pointer;
+    border-radius: calc(infinity * 1px);
+    border-style: var(--tw-border-style);
+    border-width: 0px;
+    padding-inline: calc(var(--spacing) * 3);
+    padding-block: calc(var(--spacing) * 2);
+    font-size: 11px;
+    --tw-font-weight: var(--font-weight-extrabold);
+    font-weight: var(--font-weight-extrabold);
+  }
+  .directory-delete-popover__cancel {
+    background-color: #edf7f0;
+    color: var(--directory-green);
+  }
+  .directory-delete-popover__confirm {
+    background-color: #b53b3b;
+    color: var(--color-white);
   }
 }
 @property --tw-translate-x {
