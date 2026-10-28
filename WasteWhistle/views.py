@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from reporting.models import Report
 
 def register_user(request):
 
@@ -50,11 +51,23 @@ def login_user(request):
 
 @login_required(login_url="/login/")
 def dashboard(request):
+# Calculate real statistics from Report model
+    total_reports = Report.objects.count()
+    user_reports_count = Report.objects.filter(reporter=request.user).count()
+    user_points = user_reports_count * 10  # e.g., 10 points per report submitted
+
+    # Fetch 10 most recent reports with reporter user data attached
+    dispatch_logs = Report.objects.select_related('reporter').order_by('-created_at')[:10]
+
     context = {
-            "username":request.user.username,
-            "active_page": "dashboard",
-            }
-    return render(request, "dashboard.html", context)
+        'active_page': 'dashboard',
+        'username': request.user.username,
+        'stat_open_spots': total_reports,
+        'stat_points': user_points,
+        'stat_points_detail': f"{user_reports_count} laporan dikirim",
+        'dispatch_logs': dispatch_logs,
+    }
+    return render(request, 'dashboard.html', context)
 
 def logout_user(request):
     logout(request)

@@ -4,7 +4,7 @@
     <section class="card flex max-sm:flex-col items-center max-sm:items-start justify-between gap-[18px]">
         <div>
             <div class="flex items-center gap-3 flex-wrap">
-                <h1 class="text-[25px] font-extrabold tracking-[-0.4px] text-[#101F19]">Selamat Datang, {{username}}!</h1>
+                <h1 class="text-[25px] font-extrabold tracking-[-0.4px] text-[#101F19]">Selamat Datang, {{ username }}!</h1>
             </div>
         </div>
     </section>
@@ -15,12 +15,6 @@
             <div class="flex flex-col min-w-0">
                 <span class="stat-label">Sampah Dikendalikan</span>
                 <span class="stat-value">{{ stat_waste_kg|default:"0" }}<small>kg</small></span>
-                {% if stat_waste_delta %}
-                <span class="flex items-center gap-[5px] text-[11.5px] font-semibold mt-2 text-[#0E8A47]">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
-                    {{ stat_waste_delta }}
-                </span>
-                {% endif %}
             </div>
             <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="M9.344 5.811 10.437 3.92a1.83 1.83 0 0 1 1.548-.888 1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="M13.378 9.633 14.475 13.73l4.096-1.098"/></svg>
@@ -31,11 +25,6 @@
             <div class="flex flex-col min-w-0">
                 <span class="stat-label">Lokasi Aktif</span>
                 <span class="stat-value">{{ stat_open_spots|default:"0" }}</span>
-                {% if stat_urgent_spots %}
-                <span class="flex items-center gap-[5px] text-[11.5px] font-semibold mt-2 text-[#E5484D]">
-                    <span class="dot dot-red"></span>{{ stat_urgent_spots }} prioritas urgent
-                </span>
-                {% endif %}
             </div>
             <span class="stat-icon stat-icon-warn">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
@@ -46,7 +35,6 @@
             <div class="flex flex-col min-w-0">
                 <span class="stat-label">Pembersihan Terverifikasi</span>
                 <span class="stat-value">{{ stat_verified|default:"0" }}</span>
-                {% if stat_verified_detail %}<span class="text-[11.5px] font-semibold mt-2 text-[#64766D]">{{ stat_verified_detail }}</span>{% endif %}
             </div>
             <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
@@ -92,59 +80,42 @@
             </div>
 
             <div class="map-box relative overflow-hidden rounded-[20px] h-[450px]">
-                
-                <!-- THE MAP RENDERS INSIDE THIS DIV -->
                 <div id="map" class="absolute inset-0 w-full h-full z-0" data-api-url="{% url 'reporting:show_json' %}"></div>
 
-                <!-- Floating map control buttons sit on top of the map (z-10) -->
                 <div class="map-zoom z-10">
                     <button type="button" id="btn-zoom-in">+</button>
                     <button type="button" id="btn-zoom-out">&minus;</button>
                     <button type="button" id="btn-locate">...</button>
                 </div>
                 <div class="map-fabs z-10">
-                    <a class="btn-dark" href="#">Laporkan Titik Sampah</a>
-                    <a class="btn-accent" href="#">Ambil Tugas Pembersihan</a>
+                    <a class="btn-dark" href="{% url 'reporting:create' %}">Laporkan Titik Sampah</a>
                 </div>
             </div>
         </section>
 
+        <!-- Dynamic Activity Log -->
         <aside class="card flex flex-col gap-[14px] min-w-0">
             <div class="flex items-center gap-2">
                 <h2 class="text-[16.5px] font-extrabold text-[#101F19] tracking-[-0.2px]">Pengiriman Tugas</h2>
             </div>
 
-            <div class="flex gap-[6px] flex-wrap">
-                <a class="chip hover:chip-tinted" href="#">Semua Catatan</a>
-                <a class="chip hover:chip-tinted" href="#">Mendesak</a>
-                <a class="chip hover:chip-tinted" href="#">Aktif</a>
-                <a class="chip hover:chip-tinted" href="#">Bersih</a>
-            </div>
-
             <div class="flex flex-col gap-[14px] flex-1">
                 {% for r in dispatch_logs %}
                 <article class="feed-item">
-                    <span class="thumb thumb-{{ r.thumb_class|default:'1' }}">
+                    <span class="thumb thumb-1">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                     </span>
-                    <div class="feed-body">
+                    <div class="feed-body min-w-0">
                         <div class="flex items-center gap-[6px] flex-wrap">
-                            <span class="avatar avatar-sm">{{ r.avatar_initials }}</span>
-                            <strong class="text-[12.5px] text-[#12241D] font-bold whitespace-nowrap">{{ r.reporter }}</strong>
-                            {% if r.time_ago %}<span class="text-[11px] text-[#8CA096] font-semibold whitespace-nowrap">· {{ r.time_ago }}</span>{% endif %}
-                            {% if r.status_label %}<span class="ml-auto badge-status badge-status-{{ r.status_class|default:'pending' }}">{{ r.status_label }}</span>{% endif %}
+                            <span class="avatar avatar-sm">{{ r.reporter.username|first|upper }}</span>
+                            <strong class="text-[12.5px] text-[#12241D] font-bold whitespace-nowrap">{{ r.reporter.username }}</strong>
+                            <span class="text-[11px] text-[#8CA096] font-semibold whitespace-nowrap">· {{ r.created_at|timesince }} lalu</span>
                         </div>
-                        <h4 class="text-[13.5px] font-bold text-[#16241F] tracking-[-0.1px]">{{ r.title }}</h4>
-                        {% if r.location %}
-                        <span class="flex items-center gap-[5px] text-[11.5px] text-[#64766D]">
+                        <h4 class="text-[13.5px] font-bold text-[#16241F] tracking-[-0.1px] mt-1">{{ r.title }}</h4>
+                        {% if r.location_note %}
+                        <span class="flex items-center gap-[5px] text-[11.5px] text-[#64766D] mt-1">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                            {{ r.location }}
-                        </span>
-                        {% endif %}
-                        {% if r.meta_left or r.meta_right %}
-                        <span class="flex items-center gap-2 text-[11.5px] text-[#64766D] font-semibold mt-[2px]">
-                            {% if r.meta_left %}<span>{{ r.meta_left }}</span>{% endif %}
-                            {% if r.meta_right %}<b class="text-[#0E8A47] font-bold">{{ r.meta_right }}</b>{% endif %}
+                            {{ r.location_note }}
                         </span>
                         {% endif %}
                     </div>
@@ -155,15 +126,10 @@
                 </div>
                 {% endfor %}
             </div>
-
-            <button class="btn-action" type="button">
-                Muat Catatan Lama
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
         </aside>
     </div>
 </main>
-{%include 'footer.html'%}
+{% include 'footer.html' %}
 
 {% block scripts %}
 <script>
@@ -171,18 +137,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const mapElement = document.getElementById('map');
     if (!mapElement) return;
 
-    // 1. Initialize map
     const map = L.map(mapElement, { 
         zoomControl: false 
     }).setView([-6.2088, 106.8456], 13);
 
-    // 2. Load OpenStreetMap HOT Tiles
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/">HOT</a>'
     }).addTo(map);
 
-    // 3. Bind map control buttons
     document.getElementById('btn-zoom-in')?.addEventListener('click', () => map.zoomIn());
     document.getElementById('btn-zoom-out')?.addEventListener('click', () => map.zoomOut());
     document.getElementById('btn-locate')?.addEventListener('click', () => {
@@ -195,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .openPopup();
     });
 
-    // 4. Fetch & Render Report Markers from API
     const apiUrl = mapElement.dataset.apiUrl;
     if (apiUrl) {
         fetchReportMarkers(map, apiUrl);
@@ -217,11 +179,6 @@ async function fetchReportMarkers(map, apiUrl) {
         const reports = data.reports || (Array.isArray(data) ? data : []);
         const markerGroup = L.layerGroup().addTo(map);
 
-        reports.forEach(report => {
-            const lat = parseFloat(report.latitude);
-            const lng = parseFloat(report.longitude);
-
-        // 1. Define the Red Icon
         const redIcon = L.divIcon({
             className: 'custom-red-marker',
             html: `
@@ -234,6 +191,10 @@ async function fetchReportMarkers(map, apiUrl) {
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
         });
+
+        reports.forEach(report => {
+            const lat = parseFloat(report.latitude);
+            const lng = parseFloat(report.longitude);
 
             if (!isNaN(lat) && !isNaN(lng)) {
                 const marker = L.marker([lat, lng], { icon: redIcon }).addTo(markerGroup);
