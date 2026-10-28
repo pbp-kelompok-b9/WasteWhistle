@@ -45,7 +45,7 @@ class WasteBankForm(ModelForm):
             ),
             "email": EmailInput(
                 attrs={
-                    "placeholder": "example@gmail.com",
+                    "placeholder": "contoh@gmail.com",
                 }
             ),
             "latitude": NumberInput(
