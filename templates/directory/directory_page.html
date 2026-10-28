@@ -54,7 +54,13 @@
 
                 <p class="directory-result-count" id="directory-result-count" aria-live="polite"></p>
 
-                <div class="directory-list" id="directory-results">
+                <div
+                    class="directory-list"
+                    id="directory-results"
+                    data-api-url="{% url 'directory:get_waste_bank_json' %}"
+                    data-can-edit="{% if user.is_superuser or is_staff %}true{% else %}false{% endif %}"
+                    data-edit-url-template="{% url 'directory:edit_waste_bank' '00000000-0000-0000-0000-000000000000' %}"
+                >
                     {% for bank in waste_banks %}
                     <article class="directory-bank-card directory-row" data-search="{{ bank.name }} {{ bank.address }} {{ bank.contact_number }} {{ bank.email }}">
                         <span class="directory-bank-card__number">{{ forloop.counter|stringformat:'02d' }}</span>
@@ -159,38 +165,141 @@
 
     <script>
         const directorySearch = document.getElementById("directory-search");
-        const directoryRows = Array.from(document.querySelectorAll(".directory-row"));
-        const noResultsMessage = document.getElementById("directory-no-results");
+        const directoryResults = document.getElementById("directory-results");
         const resultCount = document.getElementById("directory-result-count");
+        let searchRequest;
+        let searchTimer;
 
-        function filterDirectory() {
-            const query = (directorySearch?.value || "").trim().toLocaleLowerCase();
-            let visibleCount = 0;
+        function appendTextWithIcon(parent, iconMarkup, text) {
+            const icon = document.createElement("span");
+            icon.innerHTML = iconMarkup;
+            parent.append(icon, document.createTextNode(text));
+        }
 
-            directoryRows.forEach((row) => {
-                const matches = row.dataset.search.toLocaleLowerCase().includes(query);
-                row.hidden = !matches;
-                if (matches) visibleCount += 1;
-            });
+        function createContactChip(iconMarkup, text) {
+            const chip = document.createElement("span");
+            chip.className = "directory-contact-chip directory-count flex items-center gap-1";
+            appendTextWithIcon(chip, iconMarkup, text);
+            return chip;
+        }
 
-            if (noResultsMessage) {
-                noResultsMessage.hidden = directoryRows.length === 0 || visibleCount > 0;
+        function createDirectoryCard(bank, index) {
+            const fields = bank.fields || {};
+            const card = document.createElement("article");
+            card.className = "directory-bank-card directory-row";
+            card.dataset.search = [fields.name, fields.address, fields.contact_number, fields.email].join(" ");
+
+            const number = document.createElement("span");
+            number.className = "directory-bank-card__number";
+            number.textContent = String(index + 1).padStart(2, "0");
+
+            const body = document.createElement("div");
+            body.className = "directory-bank-card__body min-w-0 flex-1";
+
+            const title = document.createElement("div");
+            title.className = "directory-bank-card__title flex flex-wrap items-center gap-2";
+            const heading = document.createElement("h3");
+            heading.textContent = fields.name || "Unnamed waste bank";
+            const verified = document.createElement("span");
+            verified.className = "directory-open-label";
+            verified.innerHTML = '<span class="directory-dot directory-dot--green"></span>Verified';
+            title.append(heading, verified);
+
+            const address = document.createElement("p");
+            address.className = "directory-bank-card__address directory-count flex items-center gap-1";
+            appendTextWithIcon(
+                address,
+                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>',
+                fields.address || "Address not provided"
+            );
+
+            const contacts = document.createElement("div");
+            contacts.className = "directory-bank-card__contacts flex flex-wrap items-center gap-2";
+            if (fields.contact_number) {
+                contacts.appendChild(createContactChip(
+                    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"></path></svg>',
+                    fields.contact_number
+                ));
             }
-            if (resultCount) {
-                resultCount.textContent = directoryRows.length === 0
-                    ? "No locations to show"
-                    : `Showing ${visibleCount} of ${directoryRows.length} locations`;
+            if (fields.email) {
+                contacts.appendChild(createContactChip(
+                    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"></path></svg>',
+                    fields.email
+                ));
+            }
+            if (!fields.contact_number && !fields.email) {
+                contacts.appendChild(createContactChip("", "Contact not provided"));
+            }
+
+            body.append(title, address, contacts);
+            card.append(number, body);
+
+            if (directoryResults.dataset.canEdit === "true") {
+                const editLink = document.createElement("a");
+                editLink.className = "directory-bank-card__action directory-secondary-button p-2";
+                editLink.href = directoryResults.dataset.editUrlTemplate.replace(
+                    "00000000-0000-0000-0000-000000000000",
+                    bank.pk
+                );
+                editLink.setAttribute("aria-label", `Edit ${fields.name || "waste bank"}`);
+                editLink.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>';
+                card.appendChild(editLink);
+            }
+
+            return card;
+        }
+
+        function renderResults(banks, query) {
+            directoryResults.replaceChildren();
+            banks.forEach((bank, index) => directoryResults.appendChild(createDirectoryCard(bank, index)));
+
+            if (banks.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "directory-empty directory-empty--search";
+                empty.innerHTML = query
+                    ? "<strong>No locations match your search</strong><p>Try a different name or address.</p>"
+                    : "<strong>No waste banks listed yet</strong><p>Once a location is added, it will appear here for the community.</p>";
+                directoryResults.appendChild(empty);
+            }
+
+            resultCount.textContent = banks.length === 0
+                ? "No locations to show"
+                : `Showing ${banks.length} location${banks.length === 1 ? "" : "s"}`;
+        }
+
+        async function searchDirectory() {
+            const query = (directorySearch?.value || "").trim();
+            if (searchRequest) searchRequest.abort();
+            searchRequest = new AbortController();
+            resultCount.textContent = "Searching…";
+
+            try {
+                const response = await fetch(
+                    `${directoryResults.dataset.apiUrl}?name=${encodeURIComponent(query)}`,
+                    {
+                        headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" },
+                        signal: searchRequest.signal,
+                    }
+                );
+                if (!response.ok) throw new Error("Directory search failed");
+                renderResults(await response.json(), query);
+            } catch (error) {
+                if (error.name !== "AbortError") {
+                    resultCount.textContent = "Unable to load locations. Please try again.";
+                }
             }
         }
 
-        directorySearch?.addEventListener("input", filterDirectory);
+        directorySearch?.addEventListener("input", () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(searchDirectory, 250);
+        });
         document.addEventListener("keydown", (event) => {
             if (event.key === "/" && document.activeElement !== directorySearch) {
                 event.preventDefault();
                 directorySearch?.focus();
             }
         });
-        filterDirectory();
     </script>
 
 
