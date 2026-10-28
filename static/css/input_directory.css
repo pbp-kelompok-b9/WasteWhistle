@@ -32,6 +32,10 @@
     @apply pt-[28px] pb-[42px] max-sm:pt-4;
   }
 
+  .directory-form-page {
+    @apply pt-[28px] pb-[42px] max-sm:pt-4;
+  }
+
   .directory-topbar {
     @apply sticky top-0 z-50 bg-white/95 border-b border-[var(--directory-border)] backdrop-blur-md;
   }
@@ -99,6 +103,10 @@
     @apply text-[clamp(28px,3vw,38px)] font-extrabold leading-tight tracking-[-1px] max-sm:text-[29px];
   }
 
+  .directory-hero__copy {
+    @apply relative z-10 min-w-0;
+  }
+
   .directory-hero p {
     @apply max-w-[490px] mt-[11px] text-[#c1e7d0] text-[13px] leading-relaxed;
   }
@@ -149,6 +157,10 @@
     @apply grid grid-cols-[minmax(0,1fr)_340px] gap-[18px] items-start mt-[18px] max-[1080px]:grid-cols-[minmax(0,1fr)_300px] max-lg:grid-cols-1;
   }
 
+  .directory-layout > aside {
+    @apply lg:sticky lg:top-[84px] lg:self-start;
+  }
+
   .directory-panel,
   .directory-map-panel {
     @apply bg-[var(--directory-white)] border border-[var(--directory-border)] rounded-[19px] shadow-[var(--directory-shadow)] p-4;
@@ -156,6 +168,26 @@
 
   .directory-panel--list {
     @apply p-[23px] max-sm:p-4;
+  }
+
+  #directory-help {
+    @apply flex flex-col items-center p-5 text-center;
+  }
+
+  #directory-help .directory-empty__icon {
+    @apply mb-3 h-12 w-12;
+  }
+
+  #directory-help h2 {
+    @apply text-[15px] font-bold tracking-[-0.25px] text-[var(--directory-ink)];
+  }
+
+  #directory-help p {
+    @apply mt-1.5 max-w-[230px] text-[11px] leading-[1.5] text-[var(--directory-muted)];
+  }
+
+  #directory-help .directory-secondary-button {
+    @apply mt-4 px-4 py-2;
   }
 
   /* Panel Headers & Badges */
@@ -212,7 +244,7 @@
      COMMUNITY MAP ART & VECTOR GRAPHICS
      ========================================== */
   .directory-map-panel {
-    @apply p-5 flex flex-col gap-3.5 sticky top-[84px];
+    @apply p-5 flex flex-col gap-3.5;
   }
 
   .directory-map-art {
@@ -338,19 +370,75 @@
     @apply mt-1.5 text-[11px] leading-[1.5];
   }
 
+  .directory-empty--search {
+    @apply py-8;
+  }
+
   /* ==========================================
      CARDS & FORMS
      ========================================== */
+  .directory-list {
+    @apply grid gap-3;
+  }
+
   .directory-bank-card {
     @apply flex items-start gap-[13px] p-[15px] px-[13px] border border-[#e5efe8] rounded-xl transition-all duration-200 hover:border-[#b8dcc5] hover:shadow-[0_7px_20px_rgba(18,66,45,0.06)] hover:-translate-y-[1px] max-sm:p-3 max-sm:gap-2;
+  }
+
+  .directory-bank-card__number {
+    @apply mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#e8f6ec] text-[10px] font-extrabold text-[#268b52];
+  }
+
+  .directory-bank-card__body {
+    @apply min-w-0 flex-1;
+  }
+
+  .directory-bank-card__title h3 {
+    @apply min-w-0 overflow-hidden text-ellipsis text-[13px] font-extrabold leading-tight text-[var(--directory-ink)];
+  }
+
+  .directory-open-label {
+    @apply inline-flex items-center gap-1 rounded-full bg-[#eff9f1] px-2 py-1 text-[9px] font-extrabold text-[#268b52] whitespace-nowrap;
+  }
+
+  .directory-bank-card__address {
+    @apply min-w-0 overflow-hidden text-ellipsis;
+  }
+
+  .directory-bank-card__contacts {
+    @apply mt-2;
+  }
+
+  .directory-contact-chip {
+    @apply max-w-full overflow-hidden text-ellipsis rounded-md border border-[#e5efe8] bg-[#f7fbf8] px-2 py-1;
+  }
+
+  .directory-bank-card__action {
+    @apply shrink-0;
   }
 
   .directory-form-fields {
     @apply grid grid-cols-2 gap-y-[17px] gap-x-[14px] max-sm:grid-cols-1 max-sm:gap-[15px];
   }
 
+  .directory-form-page .directory-panel--list > .directory-panel__header {
+    @apply items-center justify-start gap-3;
+  }
+
+  .directory-form-page .directory-panel--list > .directory-panel__header .directory-empty__icon {
+    @apply mb-0 h-12 w-12 shrink-0;
+  }
+
+  .directory-form {
+    @apply mt-6;
+  }
+
   .directory-form-field {
     @apply min-w-0 flex flex-col gap-[7px];
+  }
+
+  .directory-form-field label {
+    @apply text-[11px] font-extrabold text-[var(--directory-ink)];
   }
 
   .directory-form-field--full {
@@ -368,5 +456,79 @@
 
   .directory-form-field textarea {
     @apply min-h-[96px] p-[12px_13px] resize-y leading-relaxed;
+  }
+
+  .directory-form-help {
+    @apply text-[10px] leading-[1.4] text-[var(--directory-muted)];
+  }
+
+  .directory-form-error-summary {
+    @apply mt-5 rounded-[11px] border border-[#f3c5bd] bg-[#fff5f2] px-3 py-2.5 text-[11px] text-[#a74e41];
+  }
+
+  .directory-form-error-summary p,
+  .directory-form-error {
+    @apply leading-[1.4];
+  }
+
+  .directory-form-error {
+    @apply text-[10px] font-semibold text-[#b64d3d];
+  }
+
+  .directory-form-field--invalid input,
+  .directory-form-field--invalid textarea {
+    @apply border-[#e49b8e] bg-[#fffaf9];
+  }
+
+  .directory-form-page aside > .directory-panel:first-child > h2 {
+    @apply mt-4 text-[15px] font-bold tracking-[-0.25px] text-[var(--directory-ink)];
+  }
+
+  .directory-form-page aside > .directory-panel:first-child > p {
+    @apply mt-1.5 text-[11px] leading-[1.5] text-[var(--directory-muted)];
+  }
+
+  .directory-form-tips {
+    @apply mt-5 grid gap-4;
+  }
+
+  .directory-form-tips li {
+    @apply flex items-start gap-3;
+  }
+
+  .directory-form-tips li > span {
+    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#e8f6ec] text-[9px] font-extrabold text-[#268b52];
+  }
+
+  .directory-form-tips li > div {
+    @apply min-w-0;
+  }
+
+  .directory-form-tips strong {
+    @apply block text-[11px] font-extrabold text-[var(--directory-ink)];
+  }
+
+  .directory-form-tips small {
+    @apply mt-0.5 block text-[10px] leading-[1.4] text-[var(--directory-muted)];
+  }
+
+  .directory-form-page aside > .directory-panel:last-child {
+    @apply flex items-start gap-3 bg-[#f7fbf8] border-[#cfe8d7];
+  }
+
+  .directory-form-page aside > .directory-panel:last-child > .directory-dot {
+    @apply mt-1.5;
+  }
+
+  .directory-form-page aside > .directory-panel:last-child > div {
+    @apply min-w-0;
+  }
+
+  .directory-form-page aside > .directory-panel:last-child strong {
+    @apply block text-[11px] font-extrabold text-[var(--directory-ink)];
+  }
+
+  .directory-form-page aside > .directory-panel:last-child p {
+    @apply mt-1 text-[10px] leading-[1.5] text-[var(--directory-muted)];
   }
 }
