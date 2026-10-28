@@ -78,7 +78,7 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3 mt-3">
-                                <button id="use-map-center" type="button" class="directory-secondary-button px-3 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed" disabled>Gunakan titik tengah peta</button>
+                                <button id="use-map-center" type="button" class="btn-secondary px-3 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed" disabled>Gunakan titik tengah peta</button>
                                 <p id="map-status" class="text-xs text-[var(--directory-muted)]" role="status" aria-live="polite">Belum ada titik dipilih.</p>
                             </div>
                             <p id="map-error" class="hidden mt-2 text-xs text-red-700" role="status"></p>
@@ -105,13 +105,11 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-3 mt-5">
-                        <a class="directory-secondary-button px-4 py-4" href="{% url 'directory:show_directory' %}">Batal</a>
-                        <button class="directory-report-button px-4 py-4" type="submit">
+                    <!-- Right-Aligned Action Buttons -->
+                    <div class="flex flex-wrap items-center justify-end gap-4 mt-6">
+                        <a class="text-sm font-semibold text-[#115D3F] hover:underline" href="{% url 'directory:show_directory' %}">Batal</a>
+                        <button class="btn-secondary py-3 px-6 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#115D3F]" type="submit">
                             {% if waste_bank %}Simpan Perubahan{% else %}Tambah Bank Sampah{% endif %}
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-                            </svg>
                         </button>
                     </div>
                 </form>
