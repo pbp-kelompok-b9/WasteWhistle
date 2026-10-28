@@ -1,8 +1,8 @@
 from django.contrib import messages
 from django.core import signing
 from django.core.paginator import Paginator
-from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET, require_http_methods
 from django.views.decorators.cache import never_cache
@@ -85,4 +85,42 @@ def create_report(request):
         "form": form, "preview": preview, "active_page": "reporting",
         "submission_token": submission_token,
         "submission_renewed": submission_renewed,
+    })
+
+
+@login_required(login_url="login_user")
+@require_http_methods(["GET", "POST"])
+def edit_report(request, pk):
+    report = get_object_or_404(Report, pk=pk, reporter=request.user)
+    form = ReportForm(
+        request.POST if request.method == "POST" else None,
+        initial={name: getattr(report, name) for name in ReportForm.base_fields},
+    )
+    preview = None
+    if request.method == "POST" and form.is_valid():
+        if request.POST.get("action") == "save":
+            # Update only editable fields; never reinsert a report deleted in another tab.
+            updated = Report.objects.filter(pk=report.pk, reporter=request.user).update(**form.cleaned_data)
+            if not updated:
+                raise Http404("Laporan tidak ditemukan.")
+            messages.success(request, f"Laporan #{report.pk} berhasil diperbarui.")
+            return redirect("reporting:list")
+        preview = form.cleaned_data
+    return render(request, "reporting/create.html", {
+        "form": form, "preview": preview, "active_page": "reporting",
+        "is_edit": True, "report": report,
+    })
+
+
+@login_required(login_url="login_user")
+@require_http_methods(["GET", "POST"])
+def delete_report(request, pk):
+    report = get_object_or_404(Report, pk=pk, reporter=request.user)
+    if request.method == "POST":
+        report_id = report.pk
+        report.delete()
+        messages.success(request, f"Laporan #{report_id} berhasil dihapus.")
+        return redirect("reporting:list")
+    return render(request, "reporting/confirm_delete.html", {
+        "report": report, "active_page": "reporting",
     })
