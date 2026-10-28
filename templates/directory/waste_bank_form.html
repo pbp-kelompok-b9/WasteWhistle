@@ -2,23 +2,27 @@
 {% load static %}
 
 {% block meta %}
-    <title>{% if waste_bank %}Edit Waste Bank{% else %}Add Waste Bank{% endif %} - Waste Whistle</title>
+    <title>{% if waste_bank %}Edit Bank Sampah{% else %}Tambah Bank Sampah{% endif %} - Waste Whistle</title>
     <link rel="stylesheet" href="{% static 'css/output_directory.css' %}">
+    <!-- Leaflet & Map Script Inclusions -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script defer src="{% static 'reporting/map.js' %}?v=4"></script>
 {% endblock meta %}
 
 {% block body %}
-    {%include 'topbar.html'%}
+    {% include 'topbar.html' %}
     <main class="directory-form-page">
         <section class="directory-hero">
             <div class="directory-hero__copy max-w-[580px]">
-                <div class="flex items-center gap-2 text-[10px] font-bold">DIRECTORY MANAGEMENT</div>
-                <h1>{% if waste_bank %}Update a waste bank{% else %}Add a waste bank{% endif %}</h1>
-                <p>{% if waste_bank %}Keep this community location accurate so people can find and contact it.{% else %}Help the community discover a trusted place to drop off recyclable materials.{% endif %}</p>
+                <div class="flex items-center gap-2 text-[10px] font-bold">MANAJEMEN DIREKTORI</div>
+                <h1>{% if waste_bank %}Perbarui bank sampah{% else %}Tambah bank sampah{% endif %}</h1>
+                <p>{% if waste_bank %}Jaga keakuratan informasi lokasi komunitas ini agar masyarakat dapat menemukan dan mehubunginya dengan mudah.{% else %}Bantu masyarakat menemukan tempat terpercaya untuk menyetorkan sampah yang dapat didaur ulang.{% endif %}</p>
             </div>
-            <span class="directory-status-pill"><span class="directory-dot directory-dot--green"></span>Staff access</span>
+            <span class="directory-status-pill"><span class="directory-dot directory-dot--green"></span>Akses Staf</span>
         </section>
 
-        <section class="directory-layout" aria-label="Waste bank details">
+        <section class="directory-layout" aria-label="Detail bank sampah">
             <div class="directory-panel directory-panel--list">
                 <div class="directory-panel__header">
                     <span class="directory-empty__icon">
@@ -27,8 +31,8 @@
                         </svg>
                     </span>
                     <div>
-                        <h2>Location details</h2>
-                        <p>Share the information visitors need before they arrive.</p>
+                        <h2>Detail lokasi</h2>
+                        <p>Bagikan informasi yang dibutuhkan pengunjung sebelum mereka datang.</p>
                     </div>
                 </div>
 
@@ -44,21 +48,67 @@
                     {% csrf_token %}
                     <div class="directory-form-fields">
                         {% for field in form %}
-                            <div class="directory-form-field{% if field.name == 'address' %} directory-form-field--full{% endif %}{% if field.errors %} directory-form-field--invalid{% endif %}">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.help_text %}<span class="directory-form-help">{{ field.help_text }}</span>{% endif %}
-                                {% for error in field.errors %}
-                                    <p class="directory-form-error">{{ error }}</p>
-                                {% endfor %}
-                            </div>
+                            {% if field.name != 'latitude' and field.name != 'longitude' %}
+                                <div class="directory-form-field{% if field.name == 'address' %} directory-form-field--full{% endif %}{% if field.errors %} directory-form-field--invalid{% endif %}">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}<span class="directory-form-help">{{ field.help_text }}</span>{% endif %}
+                                    {% for error in field.errors %}
+                                        <p class="directory-form-error">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         {% endfor %}
+
+                        <!-- Fitur Pilih Lokasi di Peta -->
+                        <div class="directory-form-field directory-form-field--full mt-2 pt-4 border-t border-[var(--directory-border)]">
+                            <label class="font-bold text-[var(--directory-ink)] text-sm">Lokasi di peta</label>
+                            <p id="map-help" class="text-xs text-[var(--directory-muted)] mb-3">Klik peta untuk memasang pin, lalu geser pin ke lokasi bank sampah. Kamu juga bisa mengisi koordinat di bawah peta.</p>
+                            
+                            <div class="relative z-0 overflow-hidden rounded-[14px] border border-[var(--directory-border)]">
+                                <div id="report-map" class="relative z-0 w-full bg-[#F2F8F4]" style="height: 360px;"
+                                     role="region" aria-label="Pilih lokasi di peta" aria-describedby="map-help map-status"
+                                     data-tile-url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png">
+                                    <p id="map-loading" class="p-4 text-xs text-[var(--directory-muted)]">Memuat peta… Koordinat juga dapat diisi secara manual.</p>
+                                </div>
+                                <div class="absolute top-3.5 left-3.5 flex flex-col bg-white rounded-xl shadow-md overflow-hidden z-10" role="group" aria-label="Kontrol zoom peta">
+                                    <button id="report-zoom-in" type="button" aria-label="Perbesar peta" aria-controls="report-map" class="w-8 h-8 flex items-center justify-center font-bold text-gray-700 bg-white border-b border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" disabled>+</button>
+                                    <button id="report-zoom-out" type="button" aria-label="Perkecil peta" aria-controls="report-map" class="w-8 h-8 flex items-center justify-center font-bold text-gray-700 bg-white disabled:opacity-50 disabled:cursor-not-allowed" disabled>&minus;</button>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3 mt-3">
+                                <button id="use-map-center" type="button" class="directory-secondary-button px-3 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed" disabled>Gunakan titik tengah peta</button>
+                                <p id="map-status" class="text-xs text-[var(--directory-muted)]" role="status" aria-live="polite">Belum ada titik dipilih.</p>
+                            </div>
+                            <p id="map-error" class="hidden mt-2 text-xs text-red-700" role="status"></p>
+                            <noscript><p class="mt-2 text-xs text-[var(--directory-muted)]">JavaScript tidak aktif. Isi latitude dan longitude secara manual.</p></noscript>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                                {% if form.latitude %}
+                                <div class="directory-form-field{% if form.latitude.errors %} directory-form-field--invalid{% endif %}">
+                                    <label for="{{ form.latitude.id_for_label }}">{{ form.latitude.label }}</label>
+                                    {{ form.latitude }}
+                                    {% if form.latitude.help_text %}<span class="directory-form-help">{{ form.latitude.help_text }}</span>{% endif %}
+                                    {% for error in form.latitude.errors %}<p class="directory-form-error">{{ error }}</p>{% endfor %}
+                                </div>
+                                {% endif %}
+                                {% if form.longitude %}
+                                <div class="directory-form-field{% if form.longitude.errors %} directory-form-field--invalid{% endif %}">
+                                    <label for="{{ form.longitude.id_for_label }}">{{ form.longitude.label }}</label>
+                                    {{ form.longitude }}
+                                    {% if form.longitude.help_text %}<span class="directory-form-help">{{ form.longitude.help_text }}</span>{% endif %}
+                                    {% for error in form.longitude.errors %}<p class="directory-form-error">{{ error }}</p>{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between gap-3 mt-5">
-                        <a class="directory-secondary-button px-4 py-4" href="{% url 'directory:show_directory' %}">Cancel</a>
+                        <a class="directory-secondary-button px-4 py-4" href="{% url 'directory:show_directory' %}">Batal</a>
                         <button class="directory-report-button px-4 py-4" type="submit">
-                            {% if waste_bank %}Save changes{% else %}Add waste bank{% endif %}
+                            {% if waste_bank %}Simpan Perubahan{% else %}Tambah Bank Sampah{% endif %}
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
                             </svg>
@@ -66,34 +116,8 @@
                     </div>
                 </form>
             </div>
-
-            <aside>
-                <div class="directory-panel">
-                    <div class="directory-panel__header">
-                        <span class="directory-empty__icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/>
-                            </svg>
-                        </span>
-                        <span class="directory-status-pill"><span class="directory-dot directory-dot--green"></span>Quick guide</span>
-                    </div>
-                    <h2>Make it useful for visitors</h2>
-                    <p>A few accurate details make every directory listing easier to trust.</p>
-                    <ol class="directory-form-tips">
-                        <li><span>01</span><div><strong>Use the public name</strong><small>Choose the name people will recognize locally.</small></div></li>
-                        <li><span>02</span><div><strong>Be precise with the address</strong><small>Add landmarks or neighborhood details when helpful.</small></div></li>
-                        <li><span>03</span><div><strong>Keep contact details current</strong><small>Visitors may call before bringing materials.</small></div></li>
-                    </ol>
-                </div>
-
-                <div class="directory-panel mt-5">
-                    <span class="directory-dot directory-dot--green"></span>
-                    <div><strong>Visible to the community</strong><p>This location will appear in the Waste Bank Directory after it is saved.</p></div>
-                </div>
-            </aside>
         </section>
     </main>
 
-    {% include 'footer.html'%}
-    
+    {% include 'footer.html' %}
 {% endblock body %}
