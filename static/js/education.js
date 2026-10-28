@@ -23,7 +23,6 @@ function setupQuiz() {
         return {
             id: element.dataset.id,
             item: element.textContent.trim(),
-            answer: element.dataset.answer,
         };
     });
 
@@ -39,14 +38,34 @@ function setupQuiz() {
     let currentQuestion = 0;    // soal ke berapa (0 = soal pertama)
     let score = 0;              // jumlah jawaban benar
     let hasAnswered = false;    // sudah menjawab soal ini atau belum
-    const answers = {};
+    
+    const answerUrl = playArea.dataset.answerUrl;
 
+    async function postJson(url, body) {
+        const csrfInput = document.querySelector(
+            "#quiz-csrf-form [name=csrfmiddlewaretoken]"
+        );
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfInput ? csrfInput.value : ""
+            },
+            body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        return { ok: response.ok, data: data };
+    }
+
+    function renderScore(value) {
+        scoreIndicator.textContent = "Skor: " + value + "/" + questions.length;
+    }
     /* Tampilkan soal yang sedang aktif */
     function showQuestion() {
         const question = questions[currentQuestion];
 
         progressText.textContent = "Soal " + (currentQuestion + 1) + " dari " + questions.length;
-        scoreIndicator.textContent = "Skor: " + score + "/3";
         itemText.textContent = question.item;
 
         // Reset: sembunyikan penjelasan, aktifkan lagi semua tong
@@ -62,53 +81,69 @@ function setupQuiz() {
 
 
     /* Dipanggil saat pengguna mengklik salah satu tong */
-    function handleAnswer(chosenBin) {
-        // Kalau soal ini sudah dijawab, abaikan klik berikutnya
+    async function handleAnswer(chosenBin) {
         if (hasAnswered) {
             return;
         }
         hasAnswered = true;
 
+        // Matikan tombol langsung supaya tidak bisa klik dua kali selagi menunggu server
+        binButtons.forEach(function (button) { button.disabled = true; });
+
         const question = questions[currentQuestion];
-        answers[question.id] = chosenBin;
-        const isCorrect = (chosenBin === question.answer);
 
-        if (isCorrect) {
-            score = score + 1;
-        }
-        scoreIndicator.textContent = "Skor: " + score + "/3";
+        try {
+            const result = await postJson(answerUrl, {
+                question_id: question.id,
+                answer: chosenBin
+            });
 
-        // Cari tulisan di tong yang benar
-        let correctLabel = question.answer;
-        binButtons.forEach(function (button) {
-            if (button.dataset.bin === question.answer) {
-                correctLabel = button.textContent;
+            if (!result.ok) {
+                feedbackText.textContent = result.data.error ||
+                    "Jawaban tidak dapat dikirim. Coba lagi.";
+                feedbackText.hidden = false;
+                hasAnswered = false;
+                binButtons.forEach(function (button) { button.disabled = false; });
+                return;
             }
-        });
 
-        // Tampilkan hasil + penjelasan cara menanganinya
-        if (isCorrect) {
-            feedbackText.textContent = "Benar!";
-        } else {
-            feedbackText.textContent = "Belum tepat. Sampah ini masuk ke " + correctLabel + ".";
-        }
-        feedbackText.hidden = false;
+            const data = result.data;
 
-        // Matikan semua tong selain tong yang benar
-        binButtons.forEach(function (button) {
-            button.disabled = true;
-
-            if (button.dataset.bin === question.answer) {
-                button.classList.add("is-correct");
+            if (data.correct) {
+                score = score + 1;
             }
-        });
+            renderScore(score);
 
-        // Tombol berikutnya berubah jadi "Lihat skor" di soal terakhir
-        const isLastQuestion = (currentQuestion === questions.length - 1);
-        nextButton.textContent = isLastQuestion ? "Lihat skor" : "Soal berikutnya";
-        nextButton.hidden = false;
+            // Cari tulisan tong yang benar + tandai tombolnya
+            let correctLabel = data.correct_bin;
+            binButtons.forEach(function (button) {
+                if (button.dataset.bin === data.correct_bin) {
+                    correctLabel = button.textContent;
+                    button.classList.add("is-correct");
+                }
+            });
+
+            let message = data.correct
+                ? "Benar!"
+                : "Belum tepat. Sampah ini masuk ke " + correctLabel + ".";
+            if (data.chosen !== chosenBin) {
+                message = "Jawaban pertamamu untuk soal ini yang dipakai. " + message;
+            }
+            feedbackText.textContent = message;
+            feedbackText.hidden = false;
+
+            const isLastQuestion = (currentQuestion === questions.length - 1);
+            nextButton.textContent = isLastQuestion ? "Lihat skor" : "Soal berikutnya";
+            nextButton.hidden = false;
+
+        } catch (error) {
+            console.error(error);
+            feedbackText.textContent = "Tidak dapat terhubung ke server. Silakan coba lagi.";
+            feedbackText.hidden = false;
+            hasAnswered = false;
+            binButtons.forEach(function (button) { button.disabled = false; });
+        }
     }
-
 
     /* Pindah ke soal berikutnya, atau tampilkan skor kalau soal sudah habis */
     function goToNext() {
@@ -123,38 +158,22 @@ function setupQuiz() {
 
     /* Tampilkan skor akhir */        
     async function showResult() {
-        const submitUrl = playArea.dataset.submitUrl;
-        const csrfInput = document.querySelector(
-            "#quiz-csrf-form [name=csrfmiddlewaretoken]"
-        );
-
         nextButton.disabled = true;
         scoreText.textContent = "Menyimpan hasil kuis...";
 
         try {
-            const response = await fetch(submitUrl, {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrfInput ? csrfInput.value : ""
-                },
-                body: JSON.stringify({ answers: answers })
-            });
+            const result = await postJson(playArea.dataset.submitUrl, {});
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                feedbackText.textContent = data.error ||
+            if (!result.ok) {
+                feedbackText.textContent = result.data.error ||
                     "Hasil kuis tidak dapat disimpan. Muat ulang halaman dan coba lagi.";
                 feedbackText.hidden = false;
                 nextButton.disabled = false;
                 return;
             }
 
-            scoreText.textContent =
-                data.score + "/3";
-            scoreIndicator.textContent = "Skor: " + data.score + "/3";
+            scoreText.textContent = result.data.score + "/" + result.data.total;
+            renderScore(result.data.score);
 
             playArea.hidden = true;
             resultBox.hidden = false;
@@ -196,7 +215,7 @@ function createGuideItem(guide) {
 
     const badge = document.createElement("span");
     badge.className = "ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize tracking-[0.04em] category-badge category-" + guide.category;
-    badge.textContent = guide.category_display || guide.category;
+    badge.textContent = guide.category;
 
     summary.append(name, badge);
 

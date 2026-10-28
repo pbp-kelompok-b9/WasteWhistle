@@ -27,15 +27,16 @@
     <section class="card" id="daily-quiz">
         <div class="quiz-heading flex items-center justify-between gap-4 max-[540px]:items-start max-[540px]:flex-col max-[540px]:gap-2">
             <h2 class="text-[22px] font-bold leading-tight tracking-[-0.3px] text-[#16241F]">Quiz: Tempat Sampah yang Mana?</h2>
-            <span class="shrink-0 text-[13px] font-bold text-[#6C7D75]" id="quiz-score-indicator">Skor: {{ daily_score|default:0 }}/3</span>
+            <span class="shrink-0 text-[13px] font-bold text-[#6C7D75]" id="quiz-score-indicator">Skor: {{ daily_score|default:0 }}/{{ quiz_size }}</span>
         </div>
         <ul id="quiz-data" hidden>
-            {% for question in questions %}<li data-id="{{ question.id }}" data-answer="{{ question.item.category }}">{{ question.item.name }}</li>{% endfor %}
+            {% for question in questions %}<li data-id="{{ question.id }}">{{ question.item.name }}</li>{% endfor %}
         </ul>
         <br>
         <form id="quiz-csrf-form" hidden>{% csrf_token %}</form>
         <div id="quiz-play" data-submit-url="{% url 'submit_quiz_api' %}"
-             data-can-play="{% if user.is_authenticated and not already_played and questions %}true{% else %}false{% endif %}">
+            data-answer-url="{% url 'answer_question_api' %}"
+            data-can-play="{% if user.is_authenticated and not already_played and questions %}true{% else %}false{% endif %}">
             <p class="mt-3 text-[13px] text-[#6C7D75]" id="quiz-progress">{% if questions %}Soal 1 dari {{ questions|length }}{% endif %}</p>
             <p class="my-1 mb-4 text-[16px] font-bold" id="quiz-item">{% if not user.is_authenticated %}Masuk untuk mengikuti kuis{% elif already_played %}Kuis hari ini sudah selesai{% elif not questions %}Belum ada kuis yang tersedia{% endif %}</p>
             <div class="flex flex-wrap gap-3">

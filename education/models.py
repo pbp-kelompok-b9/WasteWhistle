@@ -4,8 +4,8 @@ from django.utils import timezone
 import math
 import uuid
 
-def _plural(number, word):
-    return f"{number:,} {word}"
+def _format_duration(number, unit):
+    return f"{number:,}".replace(",", ".") + f" {unit}"
 
 class WasteGuide(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -47,14 +47,14 @@ class DecompositionInfo(models.Model):
         days = self.estimated_days
  
         if days < 30:
-            return _plural(days, "hari")
+            return _format_duration(days, "hari")
  
         if days < 365:
             months = min(round(days / 30), 11)
-            return _plural(months, "bulan")
+            return _format_duration(months, "bulan")
  
         years = round(days / 365)
-        return _plural(years, "tahun")
+        return _format_duration(years, "tahun")
 
     @property
     def bar_percent(self):

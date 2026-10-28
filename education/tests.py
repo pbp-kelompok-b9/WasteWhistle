@@ -1,4 +1,4 @@
-import json
+import json, uuid
 from datetime import date
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.db import IntegrityError
 from .models import DecompositionInfo, MythOrFact, QuizAttempt, QuizQuestion, WasteGuide
-from .views import SESSION_KEY
+from .views import SESSION_KEY, QUIZ_SIZE
 
 class EducationModelTests(TestCase):
     def test_waste_guide_string_and_category_choices(self):
@@ -38,6 +38,8 @@ class EducationModelTests(TestCase):
             (364, "11 bulan"),
             (365, "1 tahun"),
             (730, "2 tahun"),
+            (365 * 450, "450 tahun"),
+            (365 * 1000, "1.000 tahun"),
         ]
         for days, expected in cases:
             with self.subTest(days=days):
@@ -165,6 +167,32 @@ class EducationPageTests(TestCase):
             self.client.session[SESSION_KEY]["date"], timezone.localdate().isoformat()
         )
 
+    def test_stale_session_questions_are_replaced(self):
+        user = get_user_model().objects.create_user(username="Han Sooyoung", password="omniscient")
+        self.client.force_login(user)
+        self.make_questions(3)
+        session = self.client.session
+        session[SESSION_KEY] = {"date": "2000-01-01", "question_ids": ["a", "b", "c"]}
+        session.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(len(response.context["questions"]), 3)
+        self.assertEqual(
+            self.client.session[SESSION_KEY]["date"], timezone.localdate().isoformat()
+        )
+
+    def test_quiz_markup_does_not_leak_answers(self):
+        user = get_user_model().objects.create_user(username="Jung Heewon", password="sword")
+        self.client.force_login(user)
+        self.make_questions(3)
+
+        response = self.client.get(self.url)
+
+        self.assertNotContains(response, 'data-answer="')
+        self.assertContains(response, 'data-answer-url="')
+        self.assertEqual(self.client.session[SESSION_KEY]["answers"], {})
+
     def test_authenticated_user_without_three_questions_sees_empty_state(self):
         user = get_user_model().objects.create_user(username="Halo", password="evensowedo")
         self.client.force_login(user)
@@ -187,7 +215,8 @@ class EducationPageTests(TestCase):
         self.assertTrue(response.context["already_played"])
         self.assertEqual(response.context["daily_score"], 2)
         self.assertEqual(response.context["questions"], [])
-        self.assertContains(response, "skor: 2/3")
+        self.assertContains(response, f"skor: 2/{QUIZ_SIZE}")
+        self.assertEqual(response.context["quiz_size"], QUIZ_SIZE)
         self.assertContains(response, 'data-can-play="false"')
 
     def test_page_orders_guides_and_decomposition_data(self):
@@ -244,7 +273,6 @@ class WasteGuideApiTests(TestCase):
                 "id": str(self.guide_a.id),
                 "name": self.guide_a.name,
                 "category": "anorganik",
-                "category_display": "Sampah Anorganik",
                 "description": self.guide_a.description,
                 "handling_instruction": self.guide_a.handling_instruction,
             },
@@ -252,7 +280,6 @@ class WasteGuideApiTests(TestCase):
                 "id": str(self.guide_b.id),
                 "name": self.guide_b.name,
                 "category": "organik",
-                "category_display": "Sampah Organik",
                 "description": self.guide_b.description,
                 "handling_instruction": self.guide_b.handling_instruction,
             },
@@ -274,14 +301,12 @@ class WasteGuideApiTests(TestCase):
 
         self.assertEqual(response.status_code, 405)
 
+class QuizFixtureMixin:
+    """Dipakai SubmitQuizApiTests dan AnswerQuestionApiTests."""
 
-class SubmitQuizApiTests(TestCase):
-    def setUp(self):
-        self.url = reverse("submit_quiz_api")
-        self.user = get_user_model().objects.create_user(username="Lloyd Frontera", password="money")
+    def create_quiz_questions(self):
         self.questions = []
-        categories = ["organik", "anorganik", "b3"]
-        for index, category in enumerate(categories):
+        for index, category in enumerate(["organik", "anorganik", "b3"]):
             guide = WasteGuide.objects.create(
                 name=f"Quiz item {index}",
                 category=category,
@@ -290,25 +315,29 @@ class SubmitQuizApiTests(TestCase):
             )
             self.questions.append(QuizQuestion.objects.create(item=guide))
 
-    def put_quiz_in_session(self, ids=None, day=None):
+    def put_quiz_in_session(self, ids=None, day=None, answers=None):
         session = self.client.session
         session[SESSION_KEY] = {
             "date": (day or timezone.localdate()).isoformat(),
             "question_ids": ids if ids is not None else [str(q.id) for q in self.questions],
+            "answers": answers if answers is not None else {},
         }
         session.save()
 
-    def submit(self, answers=None, raw=None):
-        if raw is not None:
-            return self.client.post(self.url, data=raw, content_type="application/json")
-        return self.client.post(
-            self.url,
-            data=json.dumps({"answers": answers}),
-            content_type="application/json",
-        )
+    def correct_answers(self):
+        return {str(q.id): q.item.category for q in self.questions}
+    
+class SubmitQuizApiTests(QuizFixtureMixin, TestCase):
+    def setUp(self):
+        self.url = reverse("submit_quiz_api")
+        self.user = get_user_model().objects.create_user(username="Lloyd Frontera", password="money")
+        self.create_quiz_questions()
+
+    def submit(self):
+        return self.client.post(self.url)
 
     def test_anonymous_submission_is_unauthorized(self):
-        response = self.submit({})
+        response = self.submit()
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), {"error": "Silakan masuk terlebih dahulu."})
@@ -322,12 +351,12 @@ class SubmitQuizApiTests(TestCase):
 
     def test_submission_requires_a_valid_current_quiz_session(self):
         self.client.force_login(self.user)
-        response = self.submit({})
+        response = self.submit()
         self.assertEqual(response.status_code, 400)
         self.assertIn("Kuis tidak ditemukan", response.json()["error"])
 
         self.put_quiz_in_session(day=date(2000, 1, 1))
-        response = self.submit({})
+        response = self.submit()
         self.assertEqual(response.status_code, 400)
         self.assertIn("Kuis tidak ditemukan", response.json()["error"])
 
@@ -336,47 +365,38 @@ class SubmitQuizApiTests(TestCase):
         for ids in ["not-a-list", [str(self.questions[0].id)] * 3, [1, 2, 3]]:
             with self.subTest(ids=ids):
                 self.put_quiz_in_session(ids=ids)
-                response = self.submit({})
+                response = self.submit()
                 self.assertEqual(response.status_code, 400)
                 self.assertIn("Kuis tidak ditemukan", response.json()["error"])
 
-    def test_submission_rejects_invalid_json_and_invalid_answers_shape(self):
+    def test_submission_requires_all_questions_answered_in_session(self):
         self.client.force_login(self.user)
-        self.put_quiz_in_session()
+        partial = dict(list(self.correct_answers().items())[:-1])
 
-        for raw in ["{", json.dumps([]), json.dumps({"answers": []}), json.dumps({})]:
-            with self.subTest(raw=raw):
-                response = self.submit(raw=raw)
-                self.assertEqual(response.status_code, 400)
-
-    def test_submission_requires_exactly_all_question_ids_and_valid_categories(self):
-        self.client.force_login(self.user)
-        self.put_quiz_in_session()
-        expected = {str(question.id): question.item.category for question in self.questions}
-
-        invalid_answers = [
-            {},
-            {**expected, "unexpected-id": "organik"},
-            {key: value for key, value in list(expected.items())[:-1]},
-            {**expected, str(self.questions[0].id): "kategori-salah"},
-            {**expected, str(self.questions[0].id): 1},
-        ]
-        for answers in invalid_answers:
+        for answers in [{}, partial]:
             with self.subTest(answers=answers):
-                response = self.submit(answers)
+                self.put_quiz_in_session(answers=answers)
+                response = self.submit()
                 self.assertEqual(response.status_code, 400)
                 self.assertIn("Jawab semua soal", response.json()["error"])
                 self.assertFalse(QuizAttempt.objects.filter(user=self.user).exists())
 
+    def test_submission_ignores_answers_sent_in_request_body(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session(answers={str(q.id): "residu" for q in self.questions})
+        forged = json.dumps({"answers": self.correct_answers(), "score": 3})
+
+        response = self.client.post(self.url, data=forged, content_type="application/json")
+
+        self.assertEqual(response.json(), {"score": 0, "total": 3})
+
     def test_submission_scores_answers_saves_attempt_and_consumes_session(self):
         self.client.force_login(self.user)
-        self.put_quiz_in_session()
-        answers = {
-            str(question.id): question.item.category for question in self.questions
-        }
+        answers = self.correct_answers()
         answers[str(self.questions[1].id)] = "residu"
+        self.put_quiz_in_session(answers=answers)
 
-        response = self.submit(answers)
+        response = self.submit()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"score": 2, "total": 3})
@@ -386,10 +406,10 @@ class SubmitQuizApiTests(TestCase):
 
     def test_submission_reports_deleted_quiz_questions(self):
         self.client.force_login(self.user)
-        self.put_quiz_in_session()
+        self.put_quiz_in_session(answers=self.correct_answers())
         self.questions[0].delete()
 
-        response = self.submit({})
+        response = self.submit()
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("Soal kuis berubah", response.json()["error"])
@@ -397,12 +417,11 @@ class SubmitQuizApiTests(TestCase):
 
     def test_user_can_only_submit_once_per_day(self):
         self.client.force_login(self.user)
-        self.put_quiz_in_session()
-        answers = {str(q.id): q.item.category for q in self.questions}
-        first = self.submit(answers)
+        self.put_quiz_in_session(answers=self.correct_answers())
+        first = self.submit()
         self.assertEqual(first.status_code, 200)
 
-        second = self.submit(answers)
+        second = self.submit()
 
         self.assertEqual(second.status_code, 409)
         self.assertIn("sudah mengikuti", second.json()["error"])
@@ -413,6 +432,112 @@ class SubmitQuizApiTests(TestCase):
         self.put_quiz_in_session()
         QuizAttempt.objects.create(user=self.user, attempt_date=timezone.localdate(), score=1)
 
-        response = self.submit({})
+        response = self.submit()
 
         self.assertEqual(response.status_code, 409)
+
+class AnswerQuestionApiTests(QuizFixtureMixin, TestCase):
+    def setUp(self):
+        self.url = reverse("answer_question_api")
+        self.user = get_user_model().objects.create_user(username="Yoo Joonghyuk", password="regressor")
+        self.create_quiz_questions()
+        self.question = self.questions[0]        
+
+    def answer(self, question_id=None, answer="organik", raw=None):
+        if raw is not None:
+            return self.client.post(self.url, data=raw, content_type="application/json")
+        body = {"question_id": question_id or str(self.question.id), "answer": answer}
+        return self.client.post(self.url, data=json.dumps(body), content_type="application/json")
+
+    def test_anonymous_is_unauthorized(self):
+        self.assertEqual(self.answer().status_code, 401)
+
+    def test_non_post_method_is_rejected(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+
+    def test_requires_a_valid_current_quiz_session(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.answer().status_code, 400)
+
+    def test_rejects_malformed_session_answers(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session(answers=["not", "a", "dictionary"])
+
+        response = self.answer()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"error": "Data jawaban tidak valid."})
+
+    def test_existing_attempt_is_rejected(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session()
+        QuizAttempt.objects.create(user=self.user, attempt_date=timezone.localdate(), score=1)
+
+        self.assertEqual(self.answer().status_code, 409)
+
+    def test_rejects_invalid_payloads(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session()
+        qid = str(self.question.id)
+
+        bad_bodies = [
+            "{",
+            json.dumps([]),
+            json.dumps({}),
+            json.dumps({"question_id": qid}),                           # tanpa answer
+            json.dumps({"question_id": qid, "answer": "kategori-salah"}),
+            json.dumps({"question_id": qid, "answer": 1}),
+            json.dumps({"question_id": 1, "answer": "organik"}),
+            json.dumps({"question_id": str(uuid.uuid4()), "answer": "organik"}),  # bukan soal hari ini
+        ]
+        for raw in bad_bodies:
+            with self.subTest(raw=raw):
+                self.assertEqual(self.answer(raw=raw).status_code, 400)
+
+    def test_correct_answer_is_reported_and_stored_in_session(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session()
+
+        response = self.answer(answer="organik")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"correct": True, "correct_bin": "organik", "chosen": "organik"},
+        )
+        self.assertEqual(
+            self.client.session[SESSION_KEY]["answers"],
+            {str(self.question.id): "organik"},
+        )
+
+    def test_wrong_answer_reveals_correct_bin(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session()
+
+        response = self.answer(answer="residu")
+
+        self.assertEqual(
+            response.json(),
+            {"correct": False, "correct_bin": "organik", "chosen": "residu"},
+        )
+
+    def test_first_answer_is_locked(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session()
+        self.answer(answer="residu")
+
+        response = self.answer(answer="organik")     # coba ganti jawaban
+
+        self.assertFalse(response.json()["correct"])
+        self.assertEqual(response.json()["chosen"], "residu")
+
+    def test_answers_flow_into_submit_score(self):
+        self.client.force_login(self.user)
+        self.put_quiz_in_session()
+        for question in self.questions:
+            self.answer(question_id=str(question.id), answer=question.item.category)
+
+        response = self.client.post(reverse("submit_quiz_api"))
+
+        self.assertEqual(response.json(), {"score": 3, "total": 3})
