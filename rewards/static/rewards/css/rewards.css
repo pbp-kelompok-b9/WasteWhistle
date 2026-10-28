@@ -603,3 +603,37 @@
   line-height: 1.6;
   white-space: pre-line; /* enter di deskripsi tetap jadi baris baru */
 }
+
+.reward-btn-link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+/* ---------- Ikon voucher (ukuran dikunci) ---------- */
+.redeemed-icon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  border-radius: 10px;
+  background: var(--rw-mint-100);
+  overflow: hidden;
+}
+
+.redeemed-icon img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  max-width: none;
+  object-fit: cover;
+}
+
+/* cegah isi panel melebarkan kolom grid */
+.redeemed-panel,
+.redeemed-item,
+.redeemed-info {
+  min-width: 0;
+}

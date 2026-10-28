@@ -9,10 +9,18 @@
 
     <div class="rewards-head">
       <h1 class="rewards-title">Rewards</h1>
-      
-        <button type="button" class="rw-btn rw-btn-primary" data-modal-open="create">+ Tambah hadiah</button>
-      
+        {% if user.is_staff %}
+          <button type="button" class="rw-btn rw-btn-primary" data-modal-open="create">+ Tambah hadiah</button>
+        {% endif %} 
     </div>
+
+    {% if messages %}
+      <ul class="rewards-messages" role="status">
+      {% for message in messages %}
+        <li class="rewards-message rewards-message-{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+         </ul>
+    {% endif %}
 
     <div class="rewards-layout">
 
@@ -76,19 +84,25 @@
                 </p>
 
                 {% if reward.terkunci %}
-                  <button type="button" class="reward-btn" disabled>Locked</button>
+                <button type="button" class="reward-btn" disabled>Locked</button>
+                {% elif reward.stok <= 0 %}
+                <button type="button" class="reward-btn" disabled>Habis</button>
+                {% elif user.is_authenticated %}
+                <form method="post" action="{% url 'rewards:redeem_reward' reward.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="reward-btn">Redeem</button>
+                </form>
                 {% else %}
-                  <form method="post" action="{% url 'rewards:redeem_reward' reward.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="reward-btn">Redeem</button>
-                  </form>
+                <a href="{% url 'login' %}" class="reward-btn reward-btn-link">Sign in untuk menukar</a>
                 {% endif %}
 
+                {% if user.is_staff %}
                 <div class="reward-admin">
                     <button type="button" class="rw-btn rw-btn-ghost js-edit-reward"
                             data-action="{% url 'rewards:reward_update' reward.pk %}"
                             data-nama="{{ reward.nama }}"
                             data-deskripsi="{{ reward.deskripsi }}"
+                            data-kategori="{{ reward.kategori }}"
                             data-harga="{{ reward.harga_poin }}"
                             data-stok="{{ reward.stok }}"
                             data-gambar="{{ reward.gambar }}">Ubah</button>
@@ -99,6 +113,7 @@
                       <button type="submit" class="rw-btn rw-btn-ghost rw-btn-danger">Hapus</button>
                     </form>
                 </div>
+                {% endif %}
 
               </div>
             </article>
@@ -118,14 +133,18 @@
   <ul class="redeemed-list" id="redeemed-list">
     {% for item in redemptions %}
       <li class="redeemed-item">
-        <div class="redeemed-icon" aria-hidden="true"></div>
+        <div class="redeemed-icon" aria-hidden="true">
+          {% if item.reward.gambar %}
+            <img src="{{ item.reward.gambar }}" alt="">
+          {% endif %}
+        </div>
         <div class="redeemed-info">
           <p class="redeemed-name">{{ item.reward.nama }}</p>
           <p class="redeemed-meta">
             {{ item.tanggal|date:"d M Y" }}{% if item.kode %}, kode {{ item.kode }}{% endif %}
           </p>
         </div>
-        <span class="status-pill status-{{ item.status }}">{{ item.status|capfirst }}</span>
+        <span class="status-pill status-selesai">{{ item.poin_dipakai }}</span>
       </li>
     {% empty %}
       <li class="redeemed-empty">
@@ -139,7 +158,9 @@
   </div>
 </main>
 
-{% include 'rewards/components/reward_form_modal.html' %}
+{% if user.is_staff %}
+  {% include 'rewards/components/reward_form_modal.html' %}
+{% endif %}
 
 <dialog id="detail-modal" class="rw-modal" aria-labelledby="detail-title">
   <div class="rw-modal-form">
