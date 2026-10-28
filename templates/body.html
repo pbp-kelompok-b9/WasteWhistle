@@ -66,11 +66,9 @@
         <section class="flex flex-col gap-3 min-w-0">
             <div class="searchbar">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" placeholder="Search ward streets, canals, trash spots…">
+                <!-- Search input wired up for live filtering -->
+                <input id="dashboard-search" type="text" placeholder="Cari laporan berdasarkan judul atau patokan lokasi…">
                 <div class="flex gap-1 bg-[#F0F6F2] rounded-full p-1 shrink-0">
-                    <a class="chip is-active" href="#">1 km</a>
-                    <a class="chip" href="#">5 km</a>
-                    <a class="chip" href="#">Semua Wilayah</a>
                 </div>
             </div>
 
@@ -94,16 +92,20 @@
             </div>
         </section>
 
-        <!-- Dynamic Activity Log Card -->
+        <!-- Dynamic Activity Log Card with max height scrollbar -->
         <aside class="card flex flex-col gap-[14px] min-w-0">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-between gap-2">
                 <h2 class="text-[16.5px] font-extrabold text-[#101F19] tracking-[-0.2px]">Laporan Terbaru</h2>
+                <span class="text-[11px] font-semibold text-[#8CA096]">{{ dispatch_logs|length }} laporan</span>
             </div>
 
-            <div class="flex flex-col gap-[10px] flex-1">
+            <!-- Scrollable feed container -->
+            <div class="feed-list">
                 {% for r in dispatch_logs %}
                 <article class="feed-item cursor-pointer hover:bg-[#F0F6F2] p-2 rounded-lg transition-colors select-none"
                          data-id="{{ r.id }}"
+                         data-title="{{ r.title|lower }}"
+                         data-note="{{ r.location_note|lower }}"
                          data-lat="{{ r.latitude|unlocalize }}"
                          data-lng="{{ r.longitude|unlocalize }}">
                     <span class="thumb thumb-1">
@@ -138,6 +140,7 @@
 {% block scripts %}
 <script>
 const reportMarkersMap = {};
+const reportMarkersList = []; // Track markers for search filtering
 let reportLayerGroup, bankLayerGroup;
 let reportsVisible = true;
 let banksVisible = true;
@@ -146,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mapElement = document.getElementById('map');
     if (!mapElement) return;
 
-    const map = L.map(mapElement, { zoomControl: false }).setView([-6.2088, 106.8456], 13);
+    const map = L.map(mapElement, { zoomControl: false, minZoom: 5, maxZoom: 20 }).setView([-6.2088, 106.8456], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -221,6 +224,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Real-Time Search Filtering for Feed & Map Markers
+    const searchInput = document.getElementById('dashboard-search');
+    searchInput?.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+
+        // 1. Filter Feed Items
+        document.querySelectorAll('.feed-item').forEach(item => {
+            const title = item.dataset.title || '';
+            const note = item.dataset.note || '';
+            if (title.includes(query) || note.includes(query)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // 2. Filter Map Report Markers
+        reportMarkersList.forEach(({ id, marker, title, note }) => {
+            const matches = title.includes(query) || note.includes(query);
+            if (query === '' || matches) {
+                if (reportsVisible && !reportLayerGroup.hasLayer(marker)) {
+                    marker.addTo(reportLayerGroup);
+                }
+            } else {
+                if (reportLayerGroup.hasLayer(marker)) {
+                    reportLayerGroup.removeLayer(marker);
+                }
+            }
+        });
+    });
 });
 
 async function fetchReportMarkers(layerGroup, apiUrl, map) {
@@ -257,7 +291,15 @@ async function fetchReportMarkers(layerGroup, apiUrl, map) {
                 `;
                 marker.bindPopup(popupContent);
 
-                if (report.id) reportMarkersMap[report.id] = marker;
+                if (report.id) {
+                    reportMarkersMap[report.id] = marker;
+                }
+                reportMarkersList.push({
+                    id: report.id,
+                    marker: marker,
+                    title: (report.title || '').toLowerCase(),
+                    note: (report.location_note || '').toLowerCase()
+                });
             }
         });
 
