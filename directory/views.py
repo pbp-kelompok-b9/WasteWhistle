@@ -53,6 +53,8 @@ def get_waste_bank_json(request):
                 "address": waste_bank.address,
                 "contact_number": waste_bank.contact_number,
                 "email": waste_bank.email,
+                "latitude": waste_bank.latitude,
+                "longitude": waste_bank.longitude,
             }
         })
     return JsonResponse(data, safe=False)
