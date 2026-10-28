@@ -18,6 +18,7 @@ def show_directory(request):
         "is_staff": request.user.groups.filter(name='Staff').exists(),
         "form": WasteBankForm(),
         "waste_banks": waste_banks,
+        "active_page": "directory"
     }
     return render(request, "directory/directory_page.html", context)
 
