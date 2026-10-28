@@ -3,7 +3,7 @@ from django import forms
 
 class ReportForm(forms.Form):
     title = forms.CharField(
-        label="Judul laporan", max_length=120,
+        label="Judul Laporan", max_length=120,
         help_text="Maksimal 120 karakter. Tulis kondisi utama yang kamu temukan.",
         widget=forms.TextInput(attrs={"placeholder": "Contoh: Tumpukan sampah di dekat halte"}),
     )
@@ -13,7 +13,7 @@ class ReportForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 5, "placeholder": "Ceritakan kondisi sampah di lokasi…"}),
     )
     location_note = forms.CharField(
-        label="Patokan lokasi", max_length=200, required=False,
+        label="Patokan Lokasi", max_length=200, required=False,
         help_text="Opsional, maksimal 200 karakter. Sebutkan bangunan atau tempat terdekat.",
         widget=forms.TextInput(attrs={"placeholder": "Contoh: Di samping gerbang kampus"}),
     )

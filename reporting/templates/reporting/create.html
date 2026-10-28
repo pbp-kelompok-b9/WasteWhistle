@@ -1,26 +1,27 @@
 {% extends 'base.html' %}
 {% load static l10n %}
+
 {% block meta %}
     <title>Tambah Laporan - Waste Whistle</title>
+    <link rel="stylesheet" href="{% static 'css/output_reporting.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
     <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script> 
     <script defer src="{% static 'reporting/map.js' %}?v=4"></script>
     <script defer src="{% static 'reporting/form.js' %}?v=1"></script>
 {% endblock meta %}
+
 {% block body %}
 {% include 'topbar.html' %}
 <main class="reporting-container">
     <a class="reporting-back-link" href="{% url 'reporting:list' %}">&larr; Kembali ke Laporan Saya</a>
     <section class="reporting-card" aria-labelledby="report-title">
         <span class="reporting-badge">LAPOR SAMPAH</span>
-        <h1 id="report-title" class="reporting-title">Tambah laporan</h1>
+        <h1 id="report-title" class="reporting-title">Tambah Laporan</h1>
         <p class="reporting-subtitle">Temukan tumpukan sampah di sekitarmu? Bantu catat kondisi dan lokasinya agar lebih mudah ditemukan.</p>
         
         <form id="report-form" class="reporting-form" method="post" action="{% url 'reporting:create' %}" data-renew-submission="{{ submission_renewed|yesno:'true,false' }}" novalidate>
             {% csrf_token %}
             <input type="hidden" name="submission_token" value="{{ submission_token }}">
-            <h2 class="reporting-section-title">Detail laporan</h2>
-            <p class="reporting-section-desc">Isi detail dan pilih lokasi sampah. Kamu bisa melihat preview sebelum mengirim laporan.</p>
             
             {% if form.errors %}
             <div class="reporting-alert-error" role="alert">
@@ -42,10 +43,10 @@
             {% endfor %}
 
             <fieldset class="reporting-fieldset">
-                <legend class="reporting-legend">Lokasi sampah</legend>
+                <legend class="reporting-legend">Lokasi Sampah</legend>
                 <p id="map-help" class="reporting-section-desc mb-4">Klik peta untuk memasang pin, lalu geser pin ke lokasi sampah. Kamu juga bisa mengisi koordinat di bawah peta.</p>
                 <div class="reporting-map-wrapper">
-                    <div id="report-map" class="reporting-map-canvas"
+                    <div id="report-map" class="reporting-map-canvas" style="height: 360px;"
                          role="region" aria-label="Pilih lokasi sampah di peta" aria-describedby="map-help map-status"
                          data-tile-url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png">
                         <p id="map-loading" class="p-5 text-sm text-[#64766D]">Memuat peta… Koordinat juga dapat diisi secara manual.</p>
