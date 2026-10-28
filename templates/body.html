@@ -15,8 +15,8 @@
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
         <article class="stat-card">
             <div class="flex flex-col min-w-0">
-                <span class="stat-label">Sampah Dikendalikan</span>
-                <span class="stat-value">{{ stat_waste_kg|default:"0" }}<small>kg</small></span>
+                <span class="stat-label">Total Bank Sampah</span>
+                <span class="stat-value">{{ stat_waste_banks|default:"0" }}</span>
             </div>
             <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="M9.344 5.811 10.437 3.92a1.83 1.83 0 0 1 1.548-.888 1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="M13.378 9.633 14.475 13.73l4.096-1.098"/></svg>
@@ -25,8 +25,8 @@
 
         <article class="stat-card">
             <div class="flex flex-col min-w-0">
-                <span class="stat-label">Lokasi Aktif</span>
-                <span class="stat-value">{{ stat_open_spots|default:"0" }}</span>
+                <span class="stat-label">Total Titik Sampah</span>
+                <span class="stat-value">{{ stat_total_reports|default:"0" }}</span>
             </div>
             <span class="stat-icon stat-icon-warn">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
@@ -35,8 +35,8 @@
 
         <article class="stat-card">
             <div class="flex flex-col min-w-0">
-                <span class="stat-label">Pembersihan Terverifikasi</span>
-                <span class="stat-value">{{ stat_verified|default:"0" }}</span>
+                <span class="stat-label">Laporan Saya</span>
+                <span class="stat-value">{{ stat_user_reports|default:"0" }}</span>
             </div>
             <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
