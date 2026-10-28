@@ -12,7 +12,7 @@
         {% with total=waste_banks|length %}
         <section class="directory-hero">
             <div class="directory-hero__copy max-w-[580px]">
-                <div class="flex items-center gap-2 text-[10px] font-bold"><span class="directory-dot directory-dot--light"></span>COMMUNITY NETWORK</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold"><span class="directory-dot directory-dot--light"></span>JARINGAN KOMUNITAS</div>
                 <h1>Directory Bank Sampah</h1>
                 <p>Temukan lokasi bank sampah di dekat Anda.</p>
                 <div class="directory-hero__meta">
@@ -22,7 +22,7 @@
                 </div>
             </div>
             <div class="directory-hero__stat" aria-label="Total waste banks">
-                <span class="directory-hero__stat-label">Network coverage</span>
+                <span class="directory-hero__stat-label">Total ada</span>
                 <strong>{{ total }}</strong>
                 <span>bank sampah aktif</span>
                 <svg class="directory-hero__shape" viewBox="0 0 180 180" aria-hidden="true">
@@ -36,8 +36,7 @@
                 <div class="directory-panel__header">
                     <div>
                         <div class="directory-title-line">
-                            <h2>Bank sampah terdekat</h2>
-                            <span class="directory-status-pill"><span class="directory-dot directory-dot--green"></span>Open network</span>
+                            <h2>Bank Sampah Terdekat</h2>
                         </div>
                         <p>Telusuri lokasinya dan hubungi pihak terkait sebelum Anda berkunjung.</p>
                     </div>
@@ -48,7 +47,7 @@
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
                     </svg>
-                    <input id="directory-search" type="search" value="{{ name_query }}" placeholder="Search by waste bank name or address" autocomplete="off">
+                    <input id="directory-search" type="search" value="{{ name_query }}" placeholder="Cari dengan nama bank atau alamat" autocomplete="off">
                     <kbd>/</kbd>
                 </label>
 
