@@ -110,6 +110,13 @@
     latitude.addEventListener("input", syncManualCoordinates);
     longitude.addEventListener("input", syncManualCoordinates);
 
+    // Browsers can restore form values after this script runs on Back/reload.
+    window.addEventListener("pageshow", () => {
+        window.requestAnimationFrame(() => {
+            if (readCoordinates()) syncManualCoordinates();
+        });
+    });
+
     if (savedPoint) updateMarker(savedPoint);
     else status.textContent = "Belum ada titik dipilih. Tampilan awal: Jakarta.";
 })();

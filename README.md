@@ -17,7 +17,7 @@ Dashboard dan halaman reporting memerlukan login. Tombol **Lapor Sampah** membuk
 `/reporting/` (Laporan Saya). Klik **Tambah laporan** untuk membuka `/reporting/create/`.
 Jika mengakses form saat belum login, setelah login pengguna kembali ke form.
 
-### Laporan Saya dan penyimpanan laporan
+### Reporting tahap 4: Laporan Saya dan penyimpanan laporan
 
 - **Laporan Saya** menampilkan laporan milik akun yang sedang login, terbaru di atas,
   dengan 10 laporan per halaman. Akun yang belum punya laporan melihat tampilan kosong.
@@ -25,12 +25,23 @@ Jika mengakses form saat belum login, setelah login pengguna kembali ke form.
   ulang, menyimpan ke database, lalu kembali ke Laporan Saya dengan pesan berhasil.
 - Tanggal dan jam dibuat tampil dalam WIB. Refresh halaman daftar tidak mengirim
   ulang form, dan laporan tetap tersedia setelah logout lalu login kembali.
+- Setiap form baru memiliki identitas pengiriman yang terikat ke akun login.
+  Pengiriman ulang dari form yang sama tidak membuat laporan ganda atau mengubah
+  waktu dibuat. Untuk laporan baru, buka **Tambah laporan** lagi.
+- Jika isian diubah lewat tombol Back setelah laporan terkirim, aplikasi meminta
+  pengguna mengirim kembali sebagai laporan baru; laporan sebelumnya tetap utuh.
 - Model `reporting.models.Report` berisi `reporter` (relasi user), `title`,
   `description`, `location_note`, `latitude`, `longitude`, dan `created_at`.
   Pelapor dan waktu dibuat ditentukan server, bukan input pengguna. Model ini dapat
   dipakai saat integrasi modul Display Report; halaman ini khusus riwayat pribadi.
+- Field internal `submission_id` mencegah pengiriman ganda lewat batasan unik di
+  database. Laporan lama tetap didukung dengan nilai kosong pada field ini.
 - Setelah menarik perubahan, jalankan `python manage.py migrate` sebelum membuka
   reporting. Preview dari versi sebelumnya belum tersimpan, jadi tidak menjadi riwayat.
+
+Pengecekan alur demo: **Lapor Sampah → Tambah laporan → isi detail dan pilih pin →
+Lihat preview → Kirim laporan → Laporan Saya**. Pastikan laporan tetap ada setelah
+refresh/login ulang dan akun lain tidak melihatnya. Preview saja tidak menyimpan.
 
 ### Reporting tahap 3: pilih lokasi
 

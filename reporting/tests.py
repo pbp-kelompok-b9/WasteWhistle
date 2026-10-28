@@ -1,12 +1,14 @@
+from datetime import datetime, timedelta, timezone as datetime_timezone
+from decimal import Decimal
+from uuid import uuid4
+
 from django.contrib.auth import get_user_model
-from django.db import connection
+from django.db import IntegrityError, connection, transaction
 from django.test import Client, SimpleTestCase, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.translation import override
 from django.utils import timezone
-from datetime import timedelta
-from decimal import Decimal
 
 from .forms import ReportForm
 from .models import Report
@@ -199,8 +201,10 @@ class ReportHistoryTests(TestCase):
 
     def test_save_uses_authenticated_owner_and_persists_after_refresh(self):
         before = timezone.now()
+        token = self.client.get(reverse("reporting:create")).context["submission_token"]
         response = self.client.post(reverse("reporting:create"), {
             **self.data, "action": "save", "reporter": self.other.pk,
+            "submission_token": token,
             "created_at": "2000-01-01T00:00:00Z", "location_note": "Di depan gerbang",
         })
         self.assertRedirects(response, reverse("reporting:list"))
@@ -227,6 +231,82 @@ class ReportHistoryTests(TestCase):
             self.assertTrue(response.context["form"].errors)
             self.assertIsNone(response.context["preview"])
         self.assertFalse(Report.objects.exists())
+
+    def test_repeated_submission_only_saves_once(self):
+        url = reverse("reporting:create")
+        response = self.client.get(url)
+        data = {**self.data, "action": "save", "submission_token": response.context["submission_token"]}
+        self.assertRedirects(self.client.post(url, data), reverse("reporting:list"))
+        first = Report.objects.first()
+        original_time = first.created_at
+        self.assertRedirects(self.client.post(url, data), reverse("reporting:list"))
+        self.assertEqual(Report.objects.count(), 1)
+        first.refresh_from_db()
+        self.assertEqual(first.title, self.data["title"])
+        self.assertEqual(first.created_at, original_time)
+
+    def test_preview_and_validation_error_keep_the_same_submission(self):
+        url = reverse("reporting:create")
+        token = self.client.get(url).context["submission_token"]
+        invalid = self.client.post(url, {**self.data, "action": "save", "submission_token": token, "latitude": "91"})
+        self.assertFalse(Report.objects.exists())
+        self.assertEqual(invalid.context["submission_token"], token)
+        preview = self.client.post(url, {**self.data, "action": "preview", "submission_token": token})
+        self.assertFalse(Report.objects.exists())
+        self.assertEqual(preview.context["submission_token"], token)
+        self.assertRedirects(self.client.post(url, {**self.data, "action": "save", "submission_token": token}), reverse("reporting:list"))
+        self.assertEqual(Report.objects.count(), 1)
+
+    def test_new_forms_can_create_distinct_reports_with_identical_details(self):
+        url = reverse("reporting:create")
+        tokens = [self.client.get(url).context["submission_token"] for _ in range(2)]
+        self.assertNotEqual(*tokens)
+        for token in tokens:
+            self.assertRedirects(self.client.post(url, {**self.data, "action": "save", "submission_token": token}), reverse("reporting:list"))
+        self.assertEqual(Report.objects.count(), 2)
+
+    def test_invalid_or_other_users_submission_token_does_not_save(self):
+        url = reverse("reporting:create")
+        self.client.force_login(self.other)
+        other_token = self.client.get(url).context["submission_token"]
+        self.client.force_login(self.owner)
+        for token in ("", "not-a-token", other_token):
+            with self.subTest(token=token):
+                response = self.client.post(url, {**self.data, "action": "save", "submission_token": token})
+                self.assertContains(response, "Form perlu diperbarui")
+                self.assertEqual(response.context["form"]["title"].value(), self.data["title"])
+                self.assertFalse(Report.objects.exists())
+        renewed = response.context["submission_token"]
+        self.assertRedirects(self.client.post(url, {**self.data, "action": "save", "submission_token": renewed}), reverse("reporting:list"))
+
+    def test_back_button_edits_do_not_overwrite_an_already_saved_report(self):
+        url = reverse("reporting:create")
+        token = self.client.get(url).context["submission_token"]
+        self.client.post(url, {**self.data, "action": "save", "submission_token": token})
+        changed = {**self.data, "title": "Laporan lain", "action": "save", "submission_token": token}
+        response = self.client.post(url, changed)
+        self.assertContains(response, "sebagai laporan baru")
+        self.assertEqual(Report.objects.count(), 1)
+        self.assertEqual(Report.objects.get().title, self.data["title"])
+        changed["submission_token"] = response.context["submission_token"]
+        self.assertRedirects(self.client.post(url, changed), reverse("reporting:list"))
+        self.assertEqual(Report.objects.count(), 2)
+
+    def test_submission_id_is_unique_at_database_level(self):
+        submission_id = uuid4()
+        Report.objects.create(reporter=self.owner, submission_id=submission_id, **self.data)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Report.objects.create(reporter=self.owner, submission_id=submission_id, **self.data)
+        self.assertEqual(Report.objects.count(), 1)
+
+    def test_creation_time_is_shown_in_wib_across_midnight(self):
+        report = Report.objects.create(reporter=self.owner, **self.data)
+        utc_time = datetime(2026, 10, 27, 19, 5, tzinfo=datetime_timezone.utc)
+        Report.objects.filter(pk=report.pk).update(created_at=utc_time)
+        with override("en-us"):
+            response = self.client.get(reverse("reporting:list"))
+        self.assertContains(response, "28 Oct 2026, 02:05 WIB")
+        self.assertContains(response, 'datetime="2026-10-28T02:05:00+07:00"')
 
     def test_history_is_private_even_with_other_user_query(self):
         mine = Report.objects.create(reporter=self.owner, **self.data)

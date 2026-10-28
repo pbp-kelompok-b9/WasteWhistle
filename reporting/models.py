@@ -19,6 +19,7 @@ class Report(models.Model):
         validators=[MinValueValidator(-180), MaxValueValidator(180)],
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    submission_id = models.UUIDField(null=True, blank=True, unique=True, editable=False)
 
     class Meta:
         ordering = ["-created_at", "-pk"]
