@@ -18,7 +18,7 @@
     </section>
     <section class="mt-8" aria-labelledby="history-title">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 id="history-title" class="text-xl font-bold text-[#11352B]">Riwayat laporan</h2>
+            <h2 id="history-title" class="text-xl font-bold text-[#11352B]">Riwayat Laporan</h2>
             <span class="text-sm text-[#64766D]">{{ page_obj.paginator.count }} laporan</span>
         </div>
         <div class="grid gap-4">
@@ -38,6 +38,10 @@
                     <p class="mt-3 text-sm text-[#64766D]">Koordinat: {{ report.latitude|unlocalize }}, {{ report.longitude|unlocalize }}</p>
                     <a class="inline-block mt-2 text-sm font-semibold text-[#115D3F] hover:underline" href="https://www.openstreetmap.org/?mlat={{ report.latitude|unlocalize }}&amp;mlon={{ report.longitude|unlocalize }}#map=17/{{ report.latitude|unlocalize }}/{{ report.longitude|unlocalize }}" target="_blank" rel="noopener noreferrer">Lihat titik di OpenStreetMap &nearr;</a>
                 </details>
+                <div class="mt-4 flex flex-wrap items-center gap-4 justify-end" role="group" aria-label="Kelola laporan {{ report.title }}">
+                    <a class="btn-secondary text-sm" href="{% url 'reporting:edit' report.pk %}">Edit</a>
+                    <a class="text-sm font-semibold text-red-700 hover:underline" href="{% url 'reporting:delete' report.pk %}">Hapus</a>
+                </div>
             </article>
             {% empty %}
             <div class="card p-8 sm:p-12 text-center border border-dashed border-[#B4CEBE]">

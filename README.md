@@ -43,6 +43,25 @@ Pengecekan alur demo: **Lapor Sampah → Tambah laporan → isi detail dan pilih
 Lihat preview → Kirim laporan → Laporan Saya**. Pastikan laporan tetap ada setelah
 refresh/login ulang dan akun lain tidak melihatnya. Preview saja tidak menyimpan.
 
+### Mengedit dan menghapus laporan sendiri
+
+- Akun yang sudah login dapat memakai tombol **Edit** atau **Hapus** pada kartu
+  laporannya di **Laporan Saya**. Pemeriksaan pemilik juga dilakukan di server:
+  URL laporan akun lain atau ID yang tidak ada mengembalikan **404**.
+- **Edit** (`/reporting/<id>/edit/`, `reporting:edit`) mengisi form dan pin dengan
+  data tersimpan. Judul, deskripsi, patokan, serta koordinat dapat diperbarui.
+  Preview dan Batal tidak menyimpan; **Simpan perubahan** memperbarui laporan
+  yang sama. ID, pelapor, waktu dibuat, dan identitas pengiriman tetap.
+- **Hapus** (`/reporting/<id>/delete/`, `reporting:delete`) membuka konfirmasi.
+  GET tidak menghapus apa pun; hanya POST **Ya, hapus laporan** yang menghapus
+  laporan tersebut secara permanen. Batal kembali ke daftar.
+- Kedua aksi membutuhkan sesi login dan POST dengan token CSRF untuk menyimpan
+  perubahan. Validasi form edit sama dengan tambah laporan. Input yang salah tetap
+  ditampilkan untuk diperbaiki tanpa mengubah laporan tersimpan.
+- Endpoint JSON langsung mencerminkan hasil edit/hapus pada permintaan berikutnya.
+  Peta yang sudah terbuka perlu mengambil JSON kembali untuk memperbarui markernya.
+  Fitur ini tidak memerlukan migration tambahan.
+
 ### JSON laporan untuk peta dashboard
 
 Method `show_json` di `reporting/views.py` mengubah data model `Report` menjadi

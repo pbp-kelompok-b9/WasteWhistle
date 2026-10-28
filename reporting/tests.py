@@ -353,6 +353,148 @@ class ReportHistoryTests(TestCase):
         self.assertFalse(Report.objects.exists())
 
 
+class ReportManagementTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = get_user_model().objects.create_user(username="edit-owner")
+        cls.other = get_user_model().objects.create_user(username="edit-other")
+
+    def setUp(self):
+        self.client.force_login(self.owner)
+        self.data = {
+            "title": "Sampah dekat halte", "description": "Plastik berserakan.",
+            "location_note": "Depan halte", **COORDINATES,
+        }
+        self.report = Report.objects.create(reporter=self.owner, submission_id=uuid4(), **self.data)
+        self.report.refresh_from_db()
+        self.edit_url = reverse("reporting:edit", args=[self.report.pk])
+        self.delete_url = reverse("reporting:delete", args=[self.report.pk])
+
+    def test_owner_has_links_and_prefilled_edit_form(self):
+        history = self.client.get(reverse("reporting:list"))
+        self.assertContains(history, f'href="{self.edit_url}"')
+        self.assertContains(history, f'href="{self.delete_url}"')
+        response = self.client.get(self.edit_url)
+        self.assertContains(response, "Edit laporan")
+        self.assertContains(response, "Simpan perubahan")
+        self.assertContains(response, f'action="{self.edit_url}"')
+        self.assertNotContains(response, 'name="submission_token"')
+        self.assertNotContains(response, "reporting/form.js")
+        for name in self.data:
+            self.assertEqual(response.context["form"][name].value(), getattr(self.report, name))
+
+    def test_edit_updates_fields_and_json_but_preserves_identity_owner_and_creation_time(self):
+        original_time, submission_id = self.report.created_at, self.report.submission_id
+        changed = {
+            "title": "Sampah di gerbang", "description": "Ada tambahan sampah.",
+            "location_note": "", "latitude": "0.000000", "longitude": "106.123456",
+        }
+        for _ in range(2):
+            response = self.client.post(self.edit_url, {
+                **changed, "action": "save", "reporter": self.other.pk, "id": 99999,
+                "created_at": "2000-01-01T00:00:00Z", "submission_id": str(uuid4()),
+            })
+            self.assertRedirects(response, reverse("reporting:list"))
+        self.report.refresh_from_db()
+        self.assertEqual(Report.objects.count(), 1)
+        self.assertEqual(self.report.reporter, self.owner)
+        self.assertEqual(self.report.created_at, original_time)
+        self.assertEqual(self.report.submission_id, submission_id)
+        for name in ("title", "description", "location_note"):
+            self.assertEqual(getattr(self.report, name), changed[name])
+        self.assertEqual(self.report.latitude, Decimal(changed["latitude"]))
+        self.assertEqual(self.report.longitude, Decimal(changed["longitude"]))
+        row = self.client.get(reverse("reporting:show_json")).json()["reports"][0]
+        self.assertEqual(row["id"], self.report.pk)
+        self.assertEqual(row["title"], changed["title"])
+        self.assertEqual(row["latitude"], 0)
+        self.assertEqual(row["longitude"], 106.123456)
+
+    def test_invalid_edit_retains_input_without_updating_database(self):
+        before = Report.objects.values().get()
+        for invalid in ({"title": " "}, {"description": ""}, {"latitude": "91"}, {"longitude": "181"}):
+            with self.subTest(invalid=invalid):
+                response = self.client.post(self.edit_url, {**self.data, "action": "save", **invalid})
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.context["form"].errors)
+                for name, value in invalid.items():
+                    self.assertEqual(response.context["form"][name].value(), value)
+                self.assertEqual(Report.objects.values().get(), before)
+
+    def test_preview_and_missing_action_do_not_save_edits(self):
+        before = Report.objects.values().get()
+        for action in ({"action": "preview"}, {}):
+            response = self.client.post(self.edit_url, {**self.data, "title": "Judul preview", **action})
+            self.assertEqual(response.context["preview"]["title"], "Judul preview")
+            self.assertEqual(Report.objects.values().get(), before)
+            self.assertContains(response, f'action="{self.edit_url}"')
+
+    def test_delete_get_only_confirms_and_post_removes_only_selected_report(self):
+        other = Report.objects.create(reporter=self.other, **self.data)
+        mine = Report.objects.create(reporter=self.owner, **self.data)
+        response = self.client.get(self.delete_url)
+        self.assertContains(response, "Hapus laporan ini?")
+        self.assertContains(response, self.report.title)
+        self.assertContains(response, "Ya, hapus laporan")
+        self.assertContains(response, f'href="{reverse("reporting:list")}"')
+        self.assertEqual(Report.objects.count(), 3)
+        response = self.client.post(self.delete_url)
+        self.assertRedirects(response, reverse("reporting:list"))
+        self.assertSetEqual(set(Report.objects.values_list("pk", flat=True)), {mine.pk, other.pk})
+        ids = [r["id"] for r in self.client.get(reverse("reporting:show_json")).json()["reports"]]
+        self.assertNotIn(self.report.pk, ids)
+
+    def test_other_users_cannot_view_preview_edit_or_delete_by_guessing_id(self):
+        before = Report.objects.values().get()
+        self.client.force_login(self.other)
+        for url in (self.edit_url, self.delete_url):
+            for method in (self.client.get, self.client.post):
+                with self.subTest(url=url, method=method.__name__):
+                    response = method(url, {**self.data, "action": "save", "reporter": self.owner.pk})
+                    self.assertEqual(response.status_code, 404)
+                    self.assertNotContains(response, self.report.title, status_code=404)
+        self.assertEqual(Report.objects.values().get(), before)
+
+    def test_guests_are_sent_to_login_and_cannot_modify_reports(self):
+        before = Report.objects.values().get()
+        self.client.logout()
+        for url in (self.edit_url, self.delete_url):
+            for method in (self.client.get, self.client.post):
+                data = {} if method == self.client.get else {**self.data, "action": "save"}
+                response = method(url, data)
+                self.assertRedirects(response, f"/login/?next={url}")
+        self.assertEqual(Report.objects.values().get(), before)
+
+    def test_edit_and_delete_require_csrf_tokens(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.owner)
+        before = Report.objects.values().get()
+        for url in (self.edit_url, self.delete_url):
+            self.assertEqual(client.post(url, {**self.data, "action": "save"}).status_code, 403)
+        self.assertEqual(Report.objects.values().get(), before)
+        for url in (self.edit_url, self.delete_url):
+            self.assertEqual(client.get(url).status_code, 200)
+            response = client.post(url, {
+                **self.data, "action": "save", "csrfmiddlewaretoken": client.cookies["csrftoken"].value,
+            })
+            self.assertRedirects(response, reverse("reporting:list"))
+        self.assertFalse(Report.objects.exists())
+
+    def test_deleted_report_cannot_be_edited_or_deleted_again(self):
+        self.report.delete()
+        for url in (self.edit_url, self.delete_url):
+            for method in (self.client.get, self.client.post):
+                self.assertEqual(method(url, {**self.data, "action": "save"}).status_code, 404)
+        self.assertFalse(Report.objects.exists())
+
+    def test_unsupported_methods_do_not_change_data(self):
+        before = Report.objects.values().get()
+        for url in (self.edit_url, self.delete_url):
+            for method in (self.client.put, self.client.patch, self.client.delete):
+                self.assertEqual(method(url, {**self.data, "action": "save"}).status_code, 405)
+        self.assertEqual(Report.objects.values().get(), before)
+
+
 class ReportJSONTests(TestCase):
     @classmethod
     def setUpTestData(cls):
