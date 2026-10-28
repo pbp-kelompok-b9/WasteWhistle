@@ -75,9 +75,9 @@
             </div>
 
             <div class="flex items-center gap-[10px] flex-wrap">
-                <span class="text-[10px] font-extrabold tracking-[0.14em] text-[#8CA096] mr-[2px]">LAYERS</span>
-                <a class="chip chip-white hover:chip-tinted" href="#"><span class="dot dot-red"></span>Sampah</a>
-                <a class="chip chip-white hover:chip-tinted" href="#"><span class="dot dot-green"></span>Bank Sampah</a>
+                <span class="text-[10px] font-extrabold tracking-[0.14em] text-[#8CA096] mr-[2px]">FILTER</span>
+                <a id="layer-reports" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-red"></span>Sampah</a>
+                <a id="layer-banks" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-green"></span>Bank Sampah</a>
             </div>
 
             <div class="map-box relative overflow-hidden rounded-[20px] h-[450px]">
@@ -138,6 +138,9 @@
 {% block scripts %}
 <script>
 const reportMarkersMap = {};
+let reportLayerGroup, bankLayerGroup;
+let reportsVisible = true;
+let banksVisible = true;
 
 document.addEventListener('DOMContentLoaded', function() {
     const mapElement = document.getElementById('map');
@@ -160,12 +163,45 @@ document.addEventListener('DOMContentLoaded', function() {
         L.marker(e.latlng).addTo(map).bindPopup('<b>Lokasi Anda Sekarang</b>').openPopup();
     });
 
+    // Initialize Layer Groups globally
+    reportLayerGroup = L.layerGroup().addTo(map);
+    bankLayerGroup = L.layerGroup().addTo(map);
+
     const reportApiUrl = mapElement.dataset.apiUrl;
     const wasteBankApiUrl = mapElement.dataset.wasteBankUrl;
 
-    if (reportApiUrl) fetchReportMarkers(map, reportApiUrl);
-    if (wasteBankApiUrl) fetchWasteBankMarkers(map, wasteBankApiUrl);
+    if (reportApiUrl) fetchReportMarkers(reportLayerGroup, reportApiUrl, map);
+    if (wasteBankApiUrl) fetchWasteBankMarkers(bankLayerGroup, wasteBankApiUrl);
 
+    // Layer Toggle Click Handlers
+    const layerReportsBtn = document.getElementById('layer-reports');
+    const layerBanksBtn = document.getElementById('layer-banks');
+
+    layerReportsBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        reportsVisible = !reportsVisible;
+        if (reportsVisible) {
+            map.addLayer(reportLayerGroup);
+            layerReportsBtn.classList.add('is-active');
+        } else {
+            map.removeLayer(reportLayerGroup);
+            layerReportsBtn.classList.remove('is-active');
+        }
+    });
+
+    layerBanksBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        banksVisible = !banksVisible;
+        if (banksVisible) {
+            map.addLayer(bankLayerGroup);
+            layerBanksBtn.classList.add('is-active');
+        } else {
+            map.removeLayer(bankLayerGroup);
+            layerBanksBtn.classList.remove('is-active');
+        }
+    });
+
+    // Interactive Dispatch Logs (Click feed item to fly to map pin)
     document.querySelectorAll('.feed-item').forEach(item => {
         item.addEventListener('click', () => {
             const id = item.dataset.id;
@@ -173,6 +209,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const lng = parseFloat(item.dataset.lng);
 
             if (!isNaN(lat) && !isNaN(lng)) {
+                if (!reportsVisible) {
+                    reportsVisible = true;
+                    map.addLayer(reportLayerGroup);
+                    layerReportsBtn?.classList.add('is-active');
+                }
                 map.flyTo([lat, lng], 17, { duration: 1.2 });
                 if (id && reportMarkersMap[id]) {
                     setTimeout(() => reportMarkersMap[id].openPopup(), 1200);
@@ -182,14 +223,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-async function fetchReportMarkers(map, apiUrl) {
+async function fetchReportMarkers(layerGroup, apiUrl, map) {
     try {
         const response = await fetch(apiUrl, { headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" } });
         if (!response.ok) return;
         const data = await response.json();
         const reports = data.reports || (Array.isArray(data) ? data : []);
-        const markerGroup = L.layerGroup().addTo(map);
-
 
         const redIcon = L.divIcon({
             className: 'custom-red-marker',
@@ -202,7 +241,7 @@ async function fetchReportMarkers(map, apiUrl) {
             const lng = parseFloat(report.longitude);
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const marker = L.marker([lat, lng], { icon: redIcon }).addTo(markerGroup);
+                const marker = L.marker([lat, lng], { icon: redIcon }).addTo(layerGroup);
                 
                 let dateStr = report.created_at ? new Date(report.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
                 const popupContent = `
@@ -222,33 +261,27 @@ async function fetchReportMarkers(map, apiUrl) {
             }
         });
 
-        if (markerGroup.getLayers().length > 0) {
-            map.fitBounds(L.featureGroup(markerGroup.getLayers()).getBounds(), { padding: [40, 40] });
+        if (layerGroup.getLayers().length > 0 && map) {
+            map.fitBounds(L.featureGroup(layerGroup.getLayers()).getBounds(), { padding: [40, 40] });
         }
     } catch (err) {
         console.error("Error loading report markers:", err);
     }
 }
 
-async function fetchWasteBankMarkers(map, apiUrl) {
+async function fetchWasteBankMarkers(layerGroup, apiUrl) {
     try {
         const response = await fetch(apiUrl, { headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" } });
         if (!response.ok) return;
         const data = await response.json();
         const banks = Array.isArray(data) ? data : [];
-        const bankGroup = L.layerGroup().addTo(map);
 
         const greenIcon = L.divIcon({
             className: 'custom-green-marker',
             html: `
                 <svg width="28" height="42" viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Pin Body -->
                     <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#0C4A35"/>
-                    
-                    <!-- White Background Badge Circle -->
                     <circle cx="12" cy="11" r="7.5" fill="#FFFFFF"/>
-                    
-                    <!-- Building / Bank Icon -->
                     <path d="M12 6.5L6.5 9.5V10.5H17.5V9.5L12 6.5ZM8 11.5H9.5V14.5H8V11.5ZM11.25 11.5H12.75V14.5H11.25V11.5ZM14.5 11.5H16V14.5H14.5V11.5ZM6 15.5V16.5H18V15.5H6Z" fill="#0C4A35"/>
                 </svg>
             `,
@@ -263,7 +296,7 @@ async function fetchWasteBankMarkers(map, apiUrl) {
             const lng = parseFloat(fields.longitude);
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const marker = L.marker([lat, lng], { icon: greenIcon }).addTo(bankGroup);
+                const marker = L.marker([lat, lng], { icon: greenIcon }).addTo(layerGroup);
                 const popupContent = `
                     <div style="min-width: 190px; font-family: 'Plus Jakarta Sans', sans-serif;">
                         <span style="font-size: 9px; font-weight: 800; color: #0C4A35; background: #E5F7EA; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">BANK SAMPAH</span>
