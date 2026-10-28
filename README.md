@@ -43,6 +43,81 @@ Pengecekan alur demo: **Lapor Sampah → Tambah laporan → isi detail dan pilih
 Lihat preview → Kirim laporan → Laporan Saya**. Pastikan laporan tetap ada setelah
 refresh/login ulang dan akun lain tidak melihatnya. Preview saja tidak menyimpan.
 
+### JSON laporan untuk peta dashboard
+
+Method `show_json` di `reporting/views.py` mengubah data model `Report` menjadi
+`JsonResponse`. Endpoint **GET `/reporting/json/`**, nama URL **`reporting:show_json`**.
+
+- Menggunakan sesi login Django yang sama dengan dashboard. Pengunjung yang belum
+  login menerima HTTP **401** dengan JSON `{"error": "Silakan login untuk melihat laporan."}`,
+  bukan redirect ke HTML login. Metode selain GET ditolak dengan **405**.
+- Peta bersama mengambil **semua laporan yang sudah disimpan**, dari semua akun,
+  urutan terbaru dahulu. Endpoint ini belum memakai pagination atau filter area;
+  jika data membesar, tambahkan pagination/filter batas peta bersama konsumennya.
+  Halaman **Laporan Saya** (`/reporting/`) tetap hanya menampilkan laporan akun sendiri.
+- Respons memakai object `reports` berisi array. Saat kosong: `{"reports": []}`.
+  Ini JSON biasa, bukan GeoJSON atau format serializer Django `pk`/`fields`.
+- `latitude` dan `longitude` berupa **angka JSON**, siap digunakan di Leaflet dalam
+  urutan `[latitude, longitude]`. `created_at` berupa string ISO 8601 dengan zona waktu;
+  frontend dapat memformatnya menjadi WIB. Koordinat tetap disimpan sebagai Decimal di DB.
+- Hanya field yang diperlukan untuk menampilkan laporan dikirim. Data akun pelapor
+  dan `submission_id` tidak disertakan. Respons diberi `Cache-Control: no-store`.
+- Tidak ada perubahan model/migration baru untuk endpoint ini. Sesudah merge, tetap
+  jalankan `python manage.py migrate` bila migration reporting sebelumnya belum diterapkan.
+
+Contoh respons (data ilustrasi):
+
+```json
+{
+  "reports": [
+    {
+      "id": 12,
+      "title": "Sampah dekat halte",
+      "description": "Plastik berserakan.",
+      "location_note": "Dekat gerbang",
+      "latitude": -6.362,
+      "longitude": 106.827,
+      "created_at": "2026-10-28T03:00:00+00:00"
+    }
+  ]
+}
+```
+
+Contoh integrasi untuk teman modul peta: letakkan di script **template Django**,
+di dalam callback `DOMContentLoaded` setelah variabel Leaflet `map` dibuat.
+Jika memakai file JS eksternal, teruskan URL melalui atribut `data-*` dari template.
+Dashboard dan endpoint harus berada di origin yang sama agar sesi login dipakai.
+
+```javascript
+const reportMarkers = L.layerGroup().addTo(map);
+
+async function loadReports() {
+    const response = await fetch("{% url 'reporting:show_json' %}", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+    });
+    if (response.status === 401) throw new Error("Silakan login kembali.");
+    if (!response.ok) throw new Error("Laporan gagal dimuat.");
+
+    const { reports } = await response.json();
+    reportMarkers.clearLayers();
+    for (const report of reports) {
+        const popup = document.createElement("div");
+        // Isi laporan adalah teks pengguna; jangan masukkan ke innerHTML.
+        popup.textContent = `${report.title}: ${report.description}`;
+        L.marker([report.latitude, report.longitude])
+            .bindPopup(popup)
+            .addTo(reportMarkers);
+    }
+}
+
+loadReports().catch((error) => console.error(error.message));
+```
+
+Contoh ini belum dipasang ke dashboard; penggabungan marker dilakukan di modul peta.
+Pengecekan: login, buka `/reporting/json/`, kirim laporan lewat form, lalu muat ulang
+endpoint. Preview saja tidak muncul, dan pengiriman ulang tidak menambah objek ganda.
+
 ### Reporting tahap 3: pilih lokasi
 
 - Isi judul, deskripsi, dan patokan lokasi (opsional).

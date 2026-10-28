@@ -351,3 +351,91 @@ class ReportHistoryTests(TestCase):
         response = self.client.post(reverse("reporting:list"), {**self.data, "action": "save"})
         self.assertEqual(response.status_code, 405)
         self.assertFalse(Report.objects.exists())
+
+
+class ReportJSONTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = get_user_model().objects.create_user(username="map-owner")
+        cls.other = get_user_model().objects.create_user(username="map-other")
+
+    def setUp(self):
+        self.client.force_login(self.owner)
+        self.url = reverse("reporting:show_json")
+        self.data = {
+            "title": "Sampah dekat halte", "description": "Plastik berserakan.",
+            "location_note": "Dekat gerbang", **COORDINATES,
+        }
+
+    def test_guests_receive_json_error_instead_of_login_html(self):
+        Report.objects.create(reporter=self.owner, **self.data)
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), {"error": "Silakan login untuk melihat laporan."})
+        self.assertNotIn("Location", response)
+        self.assertIn("no-store", response["Cache-Control"])
+
+    def test_empty_map_returns_empty_array(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertEqual(response.json(), {"reports": []})
+        self.assertIn("no-store", response["Cache-Control"])
+
+    def test_map_shares_report_details_without_account_or_submission_fields(self):
+        mine = Report.objects.create(reporter=self.owner, submission_id=uuid4(), **self.data)
+        other = Report.objects.create(reporter=self.other, **{**self.data, "title": "Laporan akun lain"})
+        timestamp = datetime(2026, 10, 27, 19, 5, tzinfo=datetime_timezone.utc)
+        Report.objects.filter(pk=mine.pk).update(created_at=timestamp)
+        Report.objects.filter(pk=other.pk).update(created_at=timestamp + timedelta(minutes=1))
+        with override("de"):
+            payload = self.client.get(self.url).json()
+        self.assertEqual(set(payload), {"reports"})
+        self.assertEqual([row["id"] for row in payload["reports"]], [other.pk, mine.pk])
+        self.assertEqual(payload["reports"][1], {
+            "id": mine.pk, "title": self.data["title"],
+            "description": self.data["description"], "location_note": self.data["location_note"],
+            "latitude": -6.362, "longitude": 106.827,
+            "created_at": "2026-10-27T19:05:00+00:00",
+        })
+        history = self.client.get(reverse("reporting:list"))
+        self.assertEqual(list(history.context["page_obj"]), [mine])
+
+    def test_map_includes_more_than_one_history_page_and_numeric_boundaries(self):
+        coordinates = [("0", "0"), ("-90", "-180"), ("90", "180"), ("-6.123456", "106.654321")]
+        for lat, lng in coordinates + [("1", "2")] * 7:
+            Report.objects.create(reporter=self.owner, **{
+                **self.data, "latitude": lat, "longitude": lng,
+            })
+        rows = self.client.get(self.url).json()["reports"]
+        self.assertEqual(len(rows), 11)
+        for row in rows:
+            self.assertIsInstance(row["latitude"], (int, float))
+            self.assertIsInstance(row["longitude"], (int, float))
+        for lat, lng in coordinates:
+            self.assertIn((float(lat), float(lng)), [(r["latitude"], r["longitude"]) for r in rows])
+
+    def test_endpoint_cannot_write_reports(self):
+        report = Report.objects.create(reporter=self.owner, **self.data)
+        for method in (self.client.post, self.client.put, self.client.patch, self.client.delete):
+            with self.subTest(method=method.__name__):
+                response = method(self.url, {"title": "Diubah"})
+                self.assertEqual(response.status_code, 405)
+                self.assertEqual(response["Allow"], "GET")
+        report.refresh_from_db()
+        self.assertEqual(report.title, self.data["title"])
+        self.assertEqual(Report.objects.count(), 1)
+
+    def test_saved_report_appears_once_but_preview_does_not(self):
+        create_url = reverse("reporting:create")
+        token = self.client.get(create_url).context["submission_token"]
+        data = {**self.data, "submission_token": token}
+        self.client.post(create_url, {**data, "action": "preview"})
+        self.assertEqual(self.client.get(self.url).json(), {"reports": []})
+        for _ in range(2):
+            response = self.client.post(create_url, {**data, "action": "save"})
+            self.assertRedirects(response, reverse("reporting:list"))
+        rows = self.client.get(self.url).json()["reports"]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["id"], Report.objects.get().pk)

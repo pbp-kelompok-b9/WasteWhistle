@@ -1,13 +1,37 @@
 from django.contrib import messages
 from django.core import signing
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.cache import never_cache
 
 from .forms import ReportForm
 from .models import Report
 from .submissions import new_submission_token, read_submission_id
+
+
+@never_cache
+@require_GET
+def show_json(request):
+    """Shared map data for signed-in users; personal history stays owner-only."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Silakan login untuk melihat laporan."}, status=401)
+
+    reports = [
+        {
+            "id": report.pk,
+            "title": report.title,
+            "description": report.description,
+            "location_note": report.location_note,
+            "latitude": float(report.latitude),
+            "longitude": float(report.longitude),
+            "created_at": report.created_at.isoformat(),
+        }
+        for report in Report.objects.all()
+    ]
+    return JsonResponse({"reports": reports})
 
 
 @login_required(login_url="login_user")
