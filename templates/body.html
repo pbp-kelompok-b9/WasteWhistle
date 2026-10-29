@@ -1,5 +1,10 @@
 {% load l10n %}
 
+{% block extra_head %}
+<!-- Leaflet CSS for map styling -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+{% endblock %}
+
 <main class="page-container">
 
     {# ---------- Header hub ---------- #}
@@ -26,7 +31,7 @@
         <article class="stat-card">
             <div class="flex flex-col min-w-0">
                 <span class="stat-label">Total Titik Sampah</span>
-                <span class="stat-value">{{ stat_total_reports|default:"0" }}</span>
+                <span id="stat-total-reports" class="stat-value">{{ stat_total_reports|default:"0" }}</span>
             </div>
             <span class="stat-icon stat-icon-warn">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
@@ -70,10 +75,12 @@
                 <div class="flex gap-1 bg-[#F0F6F2] rounded-full p-1 shrink-0"></div>
             </div>
 
+            <!-- Filter Section: Red (Belum Selesai), Green (Selesai), Blue (Bank Sampah) -->
             <div class="flex items-center gap-[10px] flex-wrap">
                 <span class="text-[10px] font-extrabold tracking-[0.14em] text-[#8CA096] mr-[2px]">FILTER</span>
-                <a id="layer-reports" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-red"></span>Sampah</a>
-                <a id="layer-banks" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-green"></span>Bank Sampah</a>
+                <a id="layer-reports-unresolved" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-red"></span>Belum Selesai</a>
+                <a id="layer-reports-resolved" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-green"></span>Selesai</a>
+                <a id="layer-banks" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-blue"></span>Bank Sampah</a>
             </div>
 
             <div class="map-box relative overflow-hidden rounded-[20px] h-[450px]">
@@ -90,39 +97,72 @@
             </div>
         </section>
 
-        <!-- Dynamic Activity Log Card with max height scrollbar -->
+        <!-- Dynamic Activity Log Card -->
         <aside class="card flex flex-col gap-[14px] min-w-0">
             <div class="flex items-center justify-between gap-2">
                 <h2 class="text-[16.5px] font-extrabold text-[#101F19] tracking-[-0.2px]">Laporan Terbaru</h2>
-                <span class="text-[11px] font-semibold text-[#8CA096]">{{ dispatch_logs|length }} laporan</span>
+                <span id="feed-count" class="text-[11px] font-semibold text-[#8CA096]">{{ dispatch_logs|length }} laporan</span>
             </div>
 
             <!-- Scrollable feed container -->
-            <div class="feed-list">
+            <div id="feed-list" class="feed-list">
                 {% for r in dispatch_logs %}
-                <article class="feed-item cursor-pointer hover:bg-[#F0F6F2] p-2 rounded-lg transition-colors select-none"
+                <article class="feed-item cursor-pointer hover:bg-[#F0F6F2] p-2.5 rounded-xl transition-colors select-none flex items-start gap-3 justify-between"
                          data-id="{{ r.id }}"
                          data-title="{{ r.title|lower }}"
                          data-note="{{ r.location_note|lower }}"
                          data-lat="{{ r.latitude|unlocalize }}"
-                         data-lng="{{ r.longitude|unlocalize }}">
-                    <span class="thumb thumb-1">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                    </span>
-                    <div class="feed-body min-w-0">
-                        <div class="flex items-center gap-[6px] flex-wrap">
-                            <span class="avatar avatar-sm">{{ r.reporter.username|first|upper }}</span>
-                            <strong class="text-[12.5px] text-[#12241D] font-bold whitespace-nowrap">{{ r.reporter.username }}</strong>
-                            <span class="text-[11px] text-[#8CA096] font-semibold whitespace-nowrap">· {{ r.created_at|timesince }} lalu</span>
-                        </div>
-                        <h4 class="text-[13.5px] font-bold text-[#16241F] tracking-[-0.1px] mt-1">{{ r.title }}</h4>
-                        {% if r.location_note %}
-                        <span class="flex items-center gap-[5px] text-[11.5px] text-[#64766D] mt-1">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                            {{ r.location_note }}
+                         data-lng="{{ r.longitude|unlocalize }}"
+                         data-resolved="{{ r.is_resolved|yesno:'true,false' }}">
+                    <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                        <span class="thumb thumb-1 shrink-0">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         </span>
-                        {% endif %}
+                        <div class="feed-body min-w-0 flex-1">
+                            <div class="flex items-center gap-[6px] flex-wrap">
+                                <span class="avatar avatar-sm">{{ r.reporter.username|first|upper }}</span>
+                                <strong class="text-[12.5px] text-[#12241D] font-bold whitespace-nowrap">{{ r.reporter.username }}</strong>
+                                <span class="text-[11px] text-[#8CA096] font-semibold whitespace-nowrap">· {{ r.created_at|timesince }} lalu</span>
+                                <span class="status-badge-container">
+                                    {% if r.is_resolved %}
+                                    <span class="badge-status badge-status-verified">Selesai</span>
+                                    {% else %}
+                                    <span class="badge-status badge-status-urgent">Belum Selesai</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <h4 class="text-[13.5px] font-bold text-[#16241F] tracking-[-0.1px] mt-1">{{ r.title }}</h4>
+                            {% if r.location_note %}
+                            <span class="flex items-center gap-[5px] text-[11.5px] text-[#64766D] mt-1">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {{ r.location_note }}
+                            </span>
+                            {% endif %}
+                        </div>
                     </div>
+
+                    <!-- Right Action Container: Checkmark Icon & Delete Trash Icon side-by-side -->
+                    {% if request.user.is_staff or request.user.is_superuser or is_staff or r.reporter == request.user %}
+                    <div class="flex items-center gap-1 shrink-0 self-start mt-0.5">
+                        {% if not r.is_resolved %}
+                        <button type="button"
+                                class="mark-resolved-btn w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-[#8CA096] hover:text-[#0C4A35] hover:bg-[#DCF3E4] transition-colors duration-150 cursor-pointer border-none bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#11734F]"
+                                data-id="{{ r.id }}"
+                                title="Tandai Selesai"
+                                aria-label="Tandai {{ r.title }} selesai">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </button>
+                        {% endif %}
+                        <button type="button"
+                                class="delete-report-btn w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-[#8CA096] hover:text-[#E5484D] hover:bg-[#FDECEC] transition-colors duration-150 cursor-pointer border-none bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#11734F]"
+                                data-id="{{ r.id }}"
+                                data-title="{{ r.title }}"
+                                title="Hapus laporan"
+                                aria-label="Hapus laporan {{ r.title }}">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                        </button>
+                    </div>
+                    {% endif %}
                 </article>
                 {% empty %}
                 <div class="border-[1.5px] border-dashed border-[#C4E8D3] rounded-[14px] py-[22px] px-4 text-center text-[12.5px] font-semibold text-[#8CA096] leading-[1.6]">
@@ -227,8 +267,9 @@
 {% include 'footer.html' %}
 
 {% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-// greet pengguna berdasarkan waktu
 document.addEventListener('DOMContentLoaded', function() {
     const username = "{{ username }}";
     const hour = new Date().getHours();
@@ -250,11 +291,44 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+const canDeleteReports = {% if request.user.is_staff or request.user.is_superuser or is_staff %}true{% else %}false{% endif %};
+const currentUsername = "{{ request.user.username }}";
+const deleteReportUrlTemplate = "{% url 'reporting:delete' 0 %}";
+const markDoneUrlTemplate = "{% url 'reporting:mark_done' 0 %}";
+
 const reportMarkersMap = {};
-const reportMarkersList = []; // Track markers for search filtering
-let reportLayerGroup, bankLayerGroup;
-let reportsVisible = true;
+const reportMarkersList = [];
+let unresolvedReportLayerGroup, resolvedReportLayerGroup, bankLayerGroup;
+let unresolvedReportsVisible = true;
+let resolvedReportsVisible = true;
 let banksVisible = true;
+
+// Leaflet DivIcons
+const redIcon = L.divIcon({
+    className: 'custom-red-marker',
+    html: `<svg width="25" height="41" viewBox="0 0 24 36" fill="none"><path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#DC2626"/><circle cx="12" cy="11" r="4.5" fill="#FFFFFF"/></svg>`,
+    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+});
+
+const greenIcon = L.divIcon({
+    className: 'custom-green-marker',
+    html: `<svg width="25" height="41" viewBox="0 0 24 36" fill="none"><path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#16A34A"/><circle cx="12" cy="11" r="5" fill="#FFFFFF"/><path d="M9.8 11L11.2 12.4L14.2 9.4" stroke="#16A34A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+});
+
+const blueIcon = L.divIcon({
+    className: 'custom-blue-marker',
+    html: `
+        <svg width="28" height="42" viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#2563EB"/>
+            <circle cx="12" cy="11" r="7.5" fill="#FFFFFF"/>
+            <path d="M12 6.5L6.5 9.5V10.5H17.5V9.5L12 6.5ZM8 11.5H9.5V14.5H8V11.5ZM11.25 11.5H12.75V14.5H11.25V11.5ZM14.5 11.5H16V14.5H14.5V11.5ZM6 15.5V16.5H18V15.5H6Z" fill="#2563EB"/>
+        </svg>
+    `,
+    iconSize: [28, 42], 
+    iconAnchor: [14, 42], 
+    popupAnchor: [0, -38]
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     const mapElement = document.getElementById('map');
@@ -267,6 +341,10 @@ document.addEventListener('DOMContentLoaded', function() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/">HOT</a>'
     }).addTo(map);
 
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 250);
+
     document.getElementById('btn-zoom-in')?.addEventListener('click', () => map.zoomIn());
     document.getElementById('btn-zoom-out')?.addEventListener('click', () => map.zoomOut());
     document.getElementById('btn-locate')?.addEventListener('click', () => {
@@ -277,29 +355,43 @@ document.addEventListener('DOMContentLoaded', function() {
         L.marker(e.latlng).addTo(map).bindPopup('<b>Lokasi Anda Sekarang</b>').openPopup();
     });
 
-    // Initialize Layer Groups globally
-    reportLayerGroup = L.layerGroup().addTo(map);
+    // Layer Groups
+    unresolvedReportLayerGroup = L.layerGroup().addTo(map);
+    resolvedReportLayerGroup = L.layerGroup().addTo(map);
     bankLayerGroup = L.layerGroup().addTo(map);
 
     const reportApiUrl = mapElement.dataset.apiUrl;
     const wasteBankApiUrl = mapElement.dataset.wasteBankUrl;
 
-    if (reportApiUrl) fetchReportMarkers(reportLayerGroup, reportApiUrl, map);
+    if (reportApiUrl) fetchReportMarkers(map);
     if (wasteBankApiUrl) fetchWasteBankMarkers(bankLayerGroup, wasteBankApiUrl);
 
-    // Layer Toggle Click Handlers
-    const layerReportsBtn = document.getElementById('layer-reports');
+    // Layer Toggle Handlers
+    const layerUnresolvedBtn = document.getElementById('layer-reports-unresolved');
+    const layerResolvedBtn = document.getElementById('layer-reports-resolved');
     const layerBanksBtn = document.getElementById('layer-banks');
 
-    layerReportsBtn?.addEventListener('click', (e) => {
+    layerUnresolvedBtn?.addEventListener('click', (e) => {
         e.preventDefault();
-        reportsVisible = !reportsVisible;
-        if (reportsVisible) {
-            map.addLayer(reportLayerGroup);
-            layerReportsBtn.classList.add('is-active');
+        unresolvedReportsVisible = !unresolvedReportsVisible;
+        if (unresolvedReportsVisible) {
+            map.addLayer(unresolvedReportLayerGroup);
+            layerUnresolvedBtn.classList.add('is-active');
         } else {
-            map.removeLayer(reportLayerGroup);
-            layerReportsBtn.classList.remove('is-active');
+            map.removeLayer(unresolvedReportLayerGroup);
+            layerUnresolvedBtn.classList.remove('is-active');
+        }
+    });
+
+    layerResolvedBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        resolvedReportsVisible = !resolvedReportsVisible;
+        if (resolvedReportsVisible) {
+            map.addLayer(resolvedReportLayerGroup);
+            layerResolvedBtn.classList.add('is-active');
+        } else {
+            map.removeLayer(resolvedReportLayerGroup);
+            layerResolvedBtn.classList.remove('is-active');
         }
     });
 
@@ -315,28 +407,49 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Interactive Dispatch Logs (Click feed item to fly to map pin)
+    // Interactive Feed Log Clicks
     document.querySelectorAll('.feed-item').forEach(item => {
         item.addEventListener('click', () => {
             const id = item.dataset.id;
             const lat = parseFloat(item.dataset.lat);
             const lng = parseFloat(item.dataset.lng);
+            const isResolved = item.dataset.resolved === 'true';
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                if (!reportsVisible) {
-                    reportsVisible = true;
-                    map.addLayer(reportLayerGroup);
-                    layerReportsBtn?.classList.add('is-active');
+                if (isResolved && !resolvedReportsVisible) {
+                    resolvedReportsVisible = true;
+                    map.addLayer(resolvedReportLayerGroup);
+                    layerResolvedBtn?.classList.add('is-active');
+                } else if (!isResolved && !unresolvedReportsVisible) {
+                    unresolvedReportsVisible = true;
+                    map.addLayer(unresolvedReportLayerGroup);
+                    layerUnresolvedBtn?.classList.add('is-active');
                 }
                 map.flyTo([lat, lng], 17, { duration: 1.2 });
                 if (id && reportMarkersMap[id]) {
-                    setTimeout(() => reportMarkersMap[id].openPopup(), 1200);
+                    setTimeout(() => reportMarkersMap[id].marker.openPopup(), 1200);
                 }
             }
         });
     });
 
-    // Real-Time Search Filtering for Feed & Map Markers
+    // "Tandai Selesai" button click
+    document.querySelectorAll('.mark-resolved-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            markReportAsResolved(btn.dataset.id, btn);
+        });
+    });
+
+    // Delete button click
+    document.querySelectorAll('.delete-report-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteReport(btn.dataset.id, btn.dataset.title, btn);
+        });
+    });
+
+    // Search Filter
     const searchInput = document.getElementById('dashboard-search');
     searchInput?.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
@@ -352,74 +465,111 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // 2. Filter Map Report Markers
-        reportMarkersList.forEach(({ id, marker, title, note }) => {
+        // 2. Filter Map Markers
+        reportMarkersList.forEach(entry => {
+            const { marker, title, note, is_resolved } = entry;
             const matches = title.includes(query) || note.includes(query);
-            if (query === '' || matches) {
-                if (reportsVisible && !reportLayerGroup.hasLayer(marker)) {
-                    marker.addTo(reportLayerGroup);
-                }
+            const targetLayer = is_resolved ? resolvedReportLayerGroup : unresolvedReportLayerGroup;
+            const isVisible = is_resolved ? resolvedReportsVisible : unresolvedReportsVisible;
+
+            if ((query === '' || matches) && isVisible) {
+                if (!targetLayer.hasLayer(marker)) marker.addTo(targetLayer);
             } else {
-                if (reportLayerGroup.hasLayer(marker)) {
-                    reportLayerGroup.removeLayer(marker);
-                }
+                if (targetLayer.hasLayer(marker)) targetLayer.removeLayer(marker);
             }
         });
     });
 });
 
-async function fetchReportMarkers(layerGroup, apiUrl, map) {
+async function fetchReportMarkers(map) {
     try {
-        const response = await fetch(apiUrl, { headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" } });
+        const response = await fetch(document.getElementById('map').dataset.apiUrl, { headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" } });
         if (!response.ok) return;
         const data = await response.json();
         const reports = data.reports || (Array.isArray(data) ? data : []);
-
-        const redIcon = L.divIcon({
-            className: 'custom-red-marker',
-            html: `<svg width="25" height="41" viewBox="0 0 24 36" fill="none"><path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#DC2626"/><circle cx="12" cy="11" r="4.5" fill="#FFFFFF"/></svg>`,
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
-        });
 
         reports.forEach(report => {
             const lat = parseFloat(report.latitude);
             const lng = parseFloat(report.longitude);
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const marker = L.marker([lat, lng], { icon: redIcon }).addTo(layerGroup);
-                
-                let dateStr = report.created_at ? new Date(report.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
-                const popupContent = `
-                    <div style="min-width: 200px; font-family: 'Plus Jakarta Sans', sans-serif;">
-                        <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #11352B;">${escapeHtml(report.title || 'Laporan Sampah')}</h4>
-                        <p style="margin: 0 0 6px 0; font-size: 12px; color: #1A202C; line-height: 1.4;">${escapeHtml(report.description || 'Tidak ada deskripsi.')}</p>
-                        ${report.location_note ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #64766D; font-style: italic;">📍 <strong>Patokan:</strong> ${escapeHtml(report.location_note)}</p>` : ''}
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px solid #E2EDE6; font-size: 10px; color: #64766D;">
-                            <span>${dateStr ? '📅 ' + dateStr : ''}</span>
-                            <span style="font-weight: 600; color: #115D3F;">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
-                        </div>
-                    </div>
-                `;
-                marker.bindPopup(popupContent);
+                const isResolved = Boolean(report.is_resolved);
+                const markerIcon = isResolved ? greenIcon : redIcon;
+                const targetLayer = isResolved ? resolvedReportLayerGroup : unresolvedReportLayerGroup;
 
-                if (report.id) {
-                    reportMarkersMap[report.id] = marker;
-                }
+                const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(targetLayer);
+                
+                reportMarkersMap[report.id] = { marker, report };
                 reportMarkersList.push({
                     id: report.id,
                     marker: marker,
                     title: (report.title || '').toLowerCase(),
-                    note: (report.location_note || '').toLowerCase()
+                    note: (report.location_note || '').toLowerCase(),
+                    is_resolved: isResolved
                 });
+
+                bindReportPopup(marker, report);
             }
         });
 
-        if (layerGroup.getLayers().length > 0 && map) {
-            map.fitBounds(L.featureGroup(layerGroup.getLayers()).getBounds(), { padding: [40, 40] });
+        const allLayers = [...unresolvedReportLayerGroup.getLayers(), ...resolvedReportLayerGroup.getLayers()];
+        if (allLayers.length > 0 && map) {
+            map.fitBounds(L.featureGroup(allLayers).getBounds(), { padding: [40, 40] });
         }
     } catch (err) {
         console.error("Error loading report markers:", err);
     }
+}
+
+function bindReportPopup(marker, report) {
+    let dateStr = report.created_at ? new Date(report.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
+    
+    const isResolved = Boolean(report.is_resolved);
+    const statusBadgeHtml = isResolved 
+        ? `<span style="font-size: 9px; font-weight: 800; color: #0E8A47; background: #DCF3E4; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">SELESAI</span>`
+        : `<span style="font-size: 9px; font-weight: 800; color: #DC3D43; background: #FDE8E8; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">BELUM SELESAI</span>`;
+
+    const resolveBtnHtml = (!isResolved) ? `
+        <button type="button" class="popup-resolve-btn flex items-center justify-center gap-1.5 w-full mt-2.5 py-1.5 px-3 rounded-full border-none cursor-pointer text-[11.5px] font-bold bg-[#DCF3E4] text-[#0C4A35] hover:bg-[#B9F2CD] transition-colors duration-150">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Tandai Selesai
+        </button>` : '';
+
+    const deleteBtnHtml = (canDeleteReports && report.id) ? `
+        <button type="button" class="popup-delete-btn flex items-center justify-center gap-1.5 w-full mt-1.5 py-1.5 px-3 rounded-full border-none cursor-pointer text-[11.5px] font-bold bg-[#FDECEC] text-[#DC2626] hover:bg-[#E5484D] hover:text-white transition-colors duration-150">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            Hapus Laporan
+        </button>` : '';
+
+    const popupContent = `
+        <div style="min-width: 200px; font-family: 'Plus Jakarta Sans', sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                ${statusBadgeHtml}
+            </div>
+            <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #11352B;">${escapeHtml(report.title || 'Laporan Sampah')}</h4>
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: #1A202C; line-height: 1.4;">${escapeHtml(report.description || 'Tidak ada deskripsi.')}</p>
+            ${report.location_note ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #64766D; font-style: italic;">📍 <strong>Patokan:</strong> ${escapeHtml(report.location_note)}</p>` : ''}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px solid #E2EDE6; font-size: 10px; color: #64766D;">
+                <span>${dateStr ? '📅 ' + dateStr : ''}</span>
+                <span style="font-weight: 600; color: #115D3F;">${parseFloat(report.latitude).toFixed(5)}, ${parseFloat(report.longitude).toFixed(5)}</span>
+            </div>
+            ${resolveBtnHtml}
+            ${deleteBtnHtml}
+        </div>
+    `;
+
+    const popupEl = document.createElement('div');
+    popupEl.innerHTML = popupContent;
+
+    popupEl.querySelector('.popup-resolve-btn')?.addEventListener('click', (e) => {
+        markReportAsResolved(report.id, e.currentTarget);
+    });
+
+    popupEl.querySelector('.popup-delete-btn')?.addEventListener('click', (e) => {
+        deleteReport(report.id, report.title, e.currentTarget);
+    });
+
+    marker.bindPopup(popupEl);
 }
 
 async function fetchWasteBankMarkers(layerGroup, apiUrl) {
@@ -429,30 +579,16 @@ async function fetchWasteBankMarkers(layerGroup, apiUrl) {
         const data = await response.json();
         const banks = Array.isArray(data) ? data : [];
 
-        const greenIcon = L.divIcon({
-            className: 'custom-green-marker',
-            html: `
-                <svg width="28" height="42" viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#0C4A35"/>
-                    <circle cx="12" cy="11" r="7.5" fill="#FFFFFF"/>
-                    <path d="M12 6.5L6.5 9.5V10.5H17.5V9.5L12 6.5ZM8 11.5H9.5V14.5H8V11.5ZM11.25 11.5H12.75V14.5H11.25V11.5ZM14.5 11.5H16V14.5H14.5V11.5ZM6 15.5V16.5H18V15.5H6Z" fill="#0C4A35"/>
-                </svg>
-            `,
-            iconSize: [28, 42], 
-            iconAnchor: [14, 42], 
-            popupAnchor: [0, -38]
-        });
-
         banks.forEach(item => {
             const fields = item.fields || item;
             const lat = parseFloat(fields.latitude);
             const lng = parseFloat(fields.longitude);
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const marker = L.marker([lat, lng], { icon: greenIcon }).addTo(layerGroup);
+                const marker = L.marker([lat, lng], { icon: blueIcon }).addTo(layerGroup);
                 const popupContent = `
                     <div style="min-width: 190px; font-family: 'Plus Jakarta Sans', sans-serif;">
-                        <span style="font-size: 9px; font-weight: 800; color: #0C4A35; background: #E5F7EA; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">BANK SAMPAH</span>
+                        <span style="font-size: 9px; font-weight: 800; color: #1D4ED8; background: #E7F0FE; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">BANK SAMPAH</span>
                         <h4 style="margin: 6px 0 3px 0; font-size: 14px; font-weight: 700; color: #10251D;">${escapeHtml(fields.name || 'Bank Sampah')}</h4>
                         <p style="margin: 0 0 4px 0; font-size: 11px; color: #6D8076;">📍 ${escapeHtml(fields.address || '-')}</p>
                         ${fields.contact_number ? `<p style="margin: 0 0 2px 0; font-size: 11px; color: #6D8076;">📞 ${escapeHtml(fields.contact_number)}</p>` : ''}
@@ -467,7 +603,136 @@ async function fetchWasteBankMarkers(layerGroup, apiUrl) {
     }
 }
 
-// --- DROPDOWN CONTROLLER (With Stacking Context Fix) ---
+// --- AJAX MARK REPORT AS RESOLVED ---
+async function markReportAsResolved(id, triggerBtn) {
+    if (!id) return;
+    const markUrl = markDoneUrlTemplate.replace(/\/0\/$/, `/${id}/`);
+    if (triggerBtn) triggerBtn.disabled = true;
+
+    try {
+        const response = await fetch(markUrl, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCsrfToken()
+            },
+            credentials: 'same-origin'
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            alert(data.message || 'Gagal mengubah status laporan.');
+            if (triggerBtn) triggerBtn.disabled = false;
+            return;
+        }
+
+        updateReportToResolvedUI(id);
+    } catch (err) {
+        console.error('Error marking report as resolved:', err);
+        alert('Gagal mengubah status laporan.');
+        if (triggerBtn) triggerBtn.disabled = false;
+    }
+}
+
+function updateReportToResolvedUI(id) {
+    // 1. Update Sidebar Feed Item
+    const feedItem = document.querySelector(`.feed-item[data-id="${id}"]`);
+    if (feedItem) {
+        feedItem.dataset.resolved = "true";
+
+        const badgeContainer = feedItem.querySelector('.status-badge-container');
+        if (badgeContainer) {
+            badgeContainer.innerHTML = `<span class="badge-status badge-status-verified">Selesai</span>`;
+        }
+
+        const resolveBtn = feedItem.querySelector('.mark-resolved-btn');
+        if (resolveBtn) resolveBtn.remove();
+    }
+
+    // 2. Update Map Marker
+    const markerData = reportMarkersMap[id];
+    if (markerData) {
+        const { marker, report } = markerData;
+        report.is_resolved = true;
+
+        marker.setIcon(greenIcon);
+
+        unresolvedReportLayerGroup.removeLayer(marker);
+        resolvedReportLayerGroup.addLayer(marker);
+
+        bindReportPopup(marker, report);
+
+        const entry = reportMarkersList.find(m => String(m.id) === String(id));
+        if (entry) entry.is_resolved = true;
+    }
+}
+
+// --- DELETE REPORT ---
+async function deleteReport(id, title, triggerBtn) {
+    if (!canDeleteReports || !id) return;
+
+    const label = title ? `"${title}"` : `#${id}`;
+    if (!confirm(`Hapus laporan ${label}? Tindakan ini tidak dapat dibatalkan.`)) return;
+
+    const url = deleteReportUrlTemplate.replace(/\/0\/delete\/$/, `/${id}/delete/`);
+    if (triggerBtn) triggerBtn.disabled = true;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
+            credentials: 'same-origin'
+        });
+
+        let data = {};
+        try { data = await response.json(); } catch (_) {}
+
+        if (!response.ok || response.redirected) {
+            alert(data.message || 'Gagal menghapus laporan.');
+            if (triggerBtn) triggerBtn.disabled = false;
+            return;
+        }
+
+        removeReportFromUI(id);
+    } catch (err) {
+        console.error('Error deleting report:', err);
+        alert('Gagal menghapus laporan.');
+        if (triggerBtn) triggerBtn.disabled = false;
+    }
+}
+
+function removeReportFromUI(id) {
+    const markerData = reportMarkersMap[id];
+    if (markerData) {
+        markerData.marker.closePopup();
+        unresolvedReportLayerGroup.removeLayer(markerData.marker);
+        resolvedReportLayerGroup.removeLayer(markerData.marker);
+        delete reportMarkersMap[id];
+    }
+    const idx = reportMarkersList.findIndex(m => String(m.id) === String(id));
+    if (idx !== -1) reportMarkersList.splice(idx, 1);
+
+    const feedList = document.getElementById('feed-list');
+    document.querySelector(`.feed-item[data-id="${id}"]`)?.remove();
+
+    const remaining = feedList ? feedList.querySelectorAll('.feed-item').length : 0;
+    const feedCount = document.getElementById('feed-count');
+    if (feedCount) feedCount.textContent = `${remaining} laporan`;
+
+    if (feedList && remaining === 0) {
+        feedList.innerHTML = `
+            <div class="border-[1.5px] border-dashed border-[#C4E8D3] rounded-[14px] py-[22px] px-4 text-center text-[12.5px] font-semibold text-[#8CA096] leading-[1.6]">
+                Belum ada catatan sekarang.
+            </div>`;
+    }
+
+    const totalStat = document.getElementById('stat-total-reports');
+    if (totalStat) {
+        totalStat.textContent = Math.max(0, (parseInt(totalStat.textContent, 10) || 0) - 1);
+    }
+}
+
+// --- DROPDOWN CONTROLLER ---
 function toggleCommentDropdown(event, menuId) {
     event.stopPropagation();
     const targetMenu = document.getElementById(menuId);
@@ -475,14 +740,12 @@ function toggleCommentDropdown(event, menuId) {
 
     const isCurrentlyHidden = targetMenu.classList.contains('hidden');
 
-    // Reset all dropdowns & restore card z-indexes
     document.querySelectorAll('.comment-dropdown-menu').forEach(menu => {
         menu.classList.add('hidden');
         const article = menu.closest('article');
         if (article) article.style.zIndex = '';
     });
 
-    // Open target menu & elevate parent article z-index so it stays ON TOP of subsequent cards
     if (isCurrentlyHidden) {
         targetMenu.classList.remove('hidden');
         const parentArticle = targetMenu.closest('article');
@@ -500,13 +763,12 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// --- AJAX COMMENT HANDLERS (ADD, EDIT, DELETE) ---
+// --- AJAX COMMENT HANDLERS ---
 document.addEventListener('DOMContentLoaded', function() {
     const addCommentForm = document.getElementById('add-comment-form');
     const commentContainer = document.getElementById('comment-list-container');
     const badgeCount = document.getElementById('comment-count-badge');
 
-    // 1. Add Comment AJAX
     addCommentForm?.addEventListener('submit', async function(e) {
         e.preventDefault();
         const textarea = document.getElementById('comment-content');
@@ -578,9 +840,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 2. Click Handler for Inline Edit & Cancel Edit
     commentContainer?.addEventListener('click', function(e) {
-        // Handle Edit Button Click
         const editBtn = e.target.closest('.edit-comment-btn');
         if (editBtn) {
             e.preventDefault();
@@ -590,11 +850,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const article = document.getElementById(`comment-${commentId}`);
             if (!article) return;
 
-            // Close all dropdowns & restore card z-indexes
             document.querySelectorAll('.comment-dropdown-menu').forEach(menu => menu.classList.add('hidden'));
             if (article) article.style.zIndex = '';
 
-            // Check if already editing
             if (article.querySelector('.edit-comment-form')) return;
 
             const commentTextEl = article.querySelector('.comment-text');
@@ -623,7 +881,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Handle Cancel Edit Button Click
         const cancelBtn = e.target.closest('.cancel-edit-btn');
         if (cancelBtn) {
             e.preventDefault();
@@ -638,15 +895,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 3. Form Submit Handler for Edit and Delete Forms
     commentContainer?.addEventListener('submit', async function(e) {
-        // Handle Edit Form AJAX Submission
         if (e.target.classList.contains('edit-comment-form')) {
             e.preventDefault();
             const form = e.target;
             const article = form.closest('article');
             const commentTextEl = article?.querySelector('.comment-text');
-
             const formData = new FormData(form);
 
             try {
@@ -663,11 +917,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         commentTextEl.classList.remove('hidden');
                     }
 
-                    // Dynamically append (diedit) badge if not already present
                     const metaContainer = article.querySelector('.comment-meta-info');
                     if (metaContainer && !metaContainer.querySelector('.edited-badge')) {
-                        const editedBadgeHtml = `<span class="edited-badge text-[10.5px] font-semibold italic text-[#8CA096]">(diedit)</span>`;
-                        metaContainer.insertAdjacentHTML('beforeend', editedBadgeHtml);
+                        metaContainer.insertAdjacentHTML('beforeend', `<span class="edited-badge text-[10.5px] font-semibold italic text-[#8CA096]">(diedit)</span>`);
                     }
 
                     form.remove();
@@ -680,7 +932,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Handle Delete Form AJAX Submission
         if (e.target.classList.contains('delete-comment-form')) {
             e.preventDefault();
             const form = e.target;
@@ -713,10 +964,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateBadgeCount(change) {
         if (!badgeCount) return;
-        const currentText = badgeCount.textContent.trim();
-        const count = parseInt(currentText) || 0;
-        const newCount = Math.max(0, count + change);
-        badgeCount.textContent = `${newCount} Komentar`;
+        const count = parseInt(badgeCount.textContent.trim()) || 0;
+        badgeCount.textContent = `${Math.max(0, count + change)} Komentar`;
     }
 });
 
