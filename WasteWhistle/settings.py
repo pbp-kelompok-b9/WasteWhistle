@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'directory',
+    'education',
     'comment',
     'reporting.apps.ReportingConfig',
 ]

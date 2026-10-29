@@ -1,0 +1,59 @@
+{% if item %}
+<div class="education-modal-header">
+    <div>
+        <h2 id="education-modal-title">Hapus {{ label|lower }}?</h2>
+    </div>
+    <button type="button" class="education-modal-close" aria-label="Tutup" onclick="document.getElementById('educationModal').close()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+</div>
+<div class="education-delete-preview">
+    <strong>{% if key == 'guide' %}{{ item.name }}{% elif key == 'decomposition' %}{{ item.material_name }}{% else %}{{ item.statement }}{% endif %}</strong>
+    <p>Item ini akan dihapus dari halaman edukasi.</p>
+</div>
+<form method="post" action="{% url 'education_delete' key item.pk %}"
+      hx-post="{% url 'education_delete' key item.pk %}"
+      hx-target="#education-modal-content" hx-swap="innerHTML">
+    {% csrf_token %}
+    <div class="education-admin-actions">
+        <button type="submit" class="education-admin-danger">Ya, hapus</button>
+        <button type="button" class="education-admin-secondary" onclick="document.getElementById('educationModal').close()">Batal</button>
+    </div>
+</form>
+{% else %}
+<div class="education-modal-header">
+    <div>
+        <h2 id="education-modal-title">{% if action == 'edit' %}Pilih item untuk diedit{% else %}Pilih item untuk dihapus{% endif %}</h2>
+        <p class="education-modal-description">{{ label }}</p>
+    </div>
+    <button type="button" class="education-modal-close" aria-label="Tutup" onclick="document.getElementById('educationModal').close()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+</div>
+<ul class="education-picker-list">
+    {% for item in items %}
+        <li>
+            <div class="education-admin-copy">
+                {% if key == 'guide' %}<strong>{{ item.name }}</strong><small>{{ item.get_category_display }}</small>
+                {% elif key == 'decomposition' %}<strong>{{ item.material_name }}</strong><small>{{ item.formatted_duration }}</small>
+                {% else %}<strong>{{ item.statement }}</strong><small>{{ item.get_is_myth_display }}</small>{% endif %}
+            </div>
+            {% if action == 'edit' %}
+                <button type="button" class="education-picker-icon education-picker-icon--edit" aria-label="Edit {{ item }}" title="Edit"
+                    hx-get="{% url 'education_edit_form' key item.pk %}"
+                    hx-target="#education-modal-content" hx-swap="innerHTML">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+                </button>
+            {% else %}
+                <button type="button" class="education-picker-icon education-picker-icon--delete" aria-label="Hapus {{ item }}" title="Hapus"
+                    hx-get="{% url 'education_delete_confirm' key item.pk %}"
+                    hx-target="#education-modal-content" hx-swap="innerHTML">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>
+                </button>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li class="education-picker-empty">Belum ada item {{ label|lower }}.</li>
+    {% endfor %}
+</ul>
+{% endif %}

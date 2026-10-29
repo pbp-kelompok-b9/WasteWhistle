@@ -1,0 +1,26 @@
+<div class="education-modal-header">
+    <div>
+        <h2 id="education-modal-title" >{% if item %}Edit{% else %}Tambah{% endif %} {{ label }}</h2>
+    </div>
+    <button type="button" class="education-modal-close" aria-label="Tutup" onclick="document.getElementById('educationModal').close()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+</div>
+<form class="education-admin-form" method="post"
+      action="{% if item %}{% url 'education_update' key item.pk %}{% else %}{% url 'education_create' key %}{% endif %}"
+      hx-post="{% if item %}{% url 'education_update' key item.pk %}{% else %}{% url 'education_create' key %}{% endif %}"
+      hx-target="#education-modal-content" hx-swap="innerHTML">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="education-admin-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+        <div class="education-admin-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<p class="education-admin-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+    {% endfor %}
+    <div class="education-admin-actions">
+        <button type="submit">{% if item %}Simpan perubahan{% else %}Tambah{% endif %}</button>
+        <button type="button" class="education-admin-secondary" onclick="document.getElementById('educationModal').close()">Batal</button>
+    </div>
+</form>
