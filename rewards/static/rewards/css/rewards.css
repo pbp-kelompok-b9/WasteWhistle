@@ -1,0 +1,773 @@
+/* ===== Halaman Rewards (WasteWhistle) =====
+   Semua class diawali rewards-/points-/reward-/redeemed-/status- supaya
+   tidak bentrok dengan CSS milik tim. */
+
+.rewards-page {
+  --rw-green-900: #064e3b;
+  --rw-green-600: #047857;
+  --rw-green-300: #8fc4b3;
+  --rw-mint-100: #d1f7e3;
+  --rw-page-bg: #eef6f1;
+  --rw-ink: #0f172a;
+  --rw-muted: #475569;
+  --rw-border: #d5e2da;
+  --rw-locked-bg: #e2e8f0;
+
+  background: var(--rw-page-bg);
+  color: var(--rw-ink);
+  min-height: 100vh;
+  padding: 28px 0 48px;
+}
+
+.rewards-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.rewards-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+}
+
+/* ---------- Layout dua kolom ---------- */
+.rewards-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.rewards-main {
+  min-width: 0;
+}
+
+/* ---------- Kartu poin ---------- */
+.points-card {
+  background: #f4faf7;
+  border: 1.5px dashed #b6cfc2;
+  border-radius: 18px;
+  padding: 28px 32px 32px;
+  margin-bottom: 24px;
+}
+
+.points-total {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.points-level {
+  color: var(--rw-muted);
+  font-size: 0.95rem;
+  margin: 0 0 20px;
+}
+
+.points-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.dot-filled { background: var(--rw-green-600); }
+
+.dot-empty {
+  border: 1.5px dashed var(--rw-green-600);
+  background: transparent;
+}
+
+/* ---------- Katalog hadiah ---------- */
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.reward-card {
+  background: #fff;
+  border: 1px solid var(--rw-border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-image {
+  height: 120px;
+  background: var(--rw-mint-100);
+}
+
+.reward-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reward-card.is-locked .reward-image { background: var(--rw-locked-bg); }
+
+.reward-body {
+  padding: 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.reward-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reward-cost {
+  color: var(--rw-muted);
+  font-size: 0.85rem;
+  margin: 0 0 12px;
+}
+
+.reward-body form { margin: auto 0 0; }
+
+.reward-btn {
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--rw-green-600);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-top: auto;
+}
+
+.reward-btn:hover:not(:disabled) { background: var(--rw-green-900); }
+
+.reward-btn:focus-visible {
+  outline: 3px solid #86d9b4;
+  outline-offset: 2px;
+}
+
+.reward-btn:disabled {
+  background: var(--rw-green-300);
+  cursor: not-allowed;
+}
+
+.reward-empty {
+  grid-column: 1 / -1;
+  color: var(--rw-muted);
+}
+
+/* ---------- Panel voucher yang sudah ditukar (kanan) ---------- */
+.redeemed-panel {
+  background: #fff;
+  border: 1px solid var(--rw-border);
+  border-radius: 18px;
+  padding: 20px 18px;
+  position: sticky;
+  top: 24px;
+}
+
+.redeemed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.redeemed-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.redeemed-count {
+  min-width: 26px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rw-mint-100);
+  color: var(--rw-green-900);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.redeemed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 170px);
+  overflow-y: auto;
+}
+
+.redeemed-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px dashed #b6cfc2;
+  border-radius: 14px;
+  background: #f8fcfa;
+}
+
+.redeemed-icon {
+  flex: 0 0 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--rw-mint-100);
+}
+
+.redeemed-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.redeemed-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 2px;
+  overflow-wrap: anywhere;
+}
+
+.redeemed-meta {
+  font-size: 0.78rem;
+  color: var(--rw-muted);
+  margin: 0;
+}
+
+.redeemed-empty {
+  color: var(--rw-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.redeemed-empty a {
+  color: var(--rw-green-600);
+  font-weight: 600;
+}
+
+/* ---------- Label status ---------- */
+.status-pill {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--rw-locked-bg);
+  color: var(--rw-muted);
+}
+
+.status-selesai  { background: var(--rw-mint-100); color: var(--rw-green-900); }
+.status-diproses { background: #fef3c7; color: #92400e; }
+.status-ditolak  { background: #fee2e2; color: #991b1b; }
+
+/* ---------- Responsif ---------- */
+@media (max-width: 1100px) {
+  .rewards-layout { grid-template-columns: minmax(0, 1fr) 280px; }
+  .reward-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 860px) {
+  /* panel pindah ke bawah katalog */
+  .rewards-layout { grid-template-columns: 1fr; }
+  .redeemed-panel { position: static; }
+  .redeemed-list { max-height: none; }
+}
+
+@media (max-width: 560px) {
+  .reward-grid { grid-template-columns: 1fr; }
+  .points-card { padding: 22px 20px 24px; }
+  .points-total, .rewards-title { font-size: 1.6rem; }
+}
+
+/* ===================== Modal ===================== */
+.rw-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+
+  width: min(520px, 92vw);
+  max-height: 90vh;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  overflow: hidden;
+}
+ 
+.rw-modal[open] { animation: rw-pop 0.18s ease-out; }
+ 
+.rw-modal::backdrop { background: rgba(15, 23, 42, 0.5); }
+ 
+@keyframes rw-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+ 
+@media (prefers-reduced-motion: reduce) {
+  .rw-modal[open] { animation: none; }
+}
+ 
+.rw-modal-form {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+ 
+.rw-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #d5e2da;
+}
+ 
+.rw-modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+ 
+.rw-modal-close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: #475569;
+  cursor: pointer;
+}
+.rw-modal-close:hover { background: #eef6f1; }
+ 
+.rw-modal-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+ 
+.rw-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.rw-field input,
+.rw-field textarea,
+.rw-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid #b6cfc2;
+  border-radius: 12px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.rw-field input:focus,
+.rw-field textarea:focus,
+.rw-field select:focus {
+  outline: none;
+  border-color: #047857;
+  box-shadow: 0 0 0 3px #bfe9d3;
+}
+ 
+.rw-field input::placeholder,
+.rw-field textarea::placeholder { color: #94a3b8; }
+ 
+.rw-field input:focus,
+.rw-field textarea:focus {
+  outline: none;
+  border-color: #047857;
+  box-shadow: 0 0 0 3px #bfe9d3;
+}
+ 
+.rw-field-error {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  color: #b91c1c;
+}
+ 
+.rw-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid #d5e2da;
+  background: #f8fcfa;
+}
+ 
+@media (max-width: 560px) {
+  .rewards-head { flex-wrap: wrap; }
+  .rw-modal-foot .rw-btn { flex: 1; }
+}
+
+/* ===================== Tombol umum ===================== */
+.rewards-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+ 
+.rewards-head .rewards-title { margin: 0; }
+ 
+.rw-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+ 
+.rw-btn:focus-visible {
+  outline: 3px solid #86d9b4;
+  outline-offset: 2px;
+}
+ 
+.rw-btn-primary { background: #047857; color: #fff; }
+.rw-btn-primary:hover { background: #064e3b; }
+ 
+.rw-btn-ghost {
+  background: #fff;
+  color: #064e3b;
+  border-color: #b6cfc2;
+}
+.rw-btn-ghost:hover { background: #eef6f1; }
+ 
+.rw-btn-danger { color: #991b1b; border-color: #f2b8b8; }
+.rw-btn-danger:hover { background: #fee2e2; }
+
+/* ---------- Label kategori di kartu ---------- */
+.reward-image { position: relative; }
+
+.reward-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #064e3b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ---------- Bar filter ---------- */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.rw-chip {
+  padding: 7px 14px;
+  border: 1px solid #b6cfc2;
+  border-radius: 999px;
+  background: #fff;
+  color: #064e3b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rw-chip:hover { background: #eef6f1; }
+
+.rw-chip.is-active {
+  background: #047857;
+  border-color: #047857;
+  color: #fff;
+}
+
+.filter-price { display: flex; align-items: center; gap: 8px; }
+
+.filter-price label { font-size: 0.85rem; color: #475569; }
+
+.filter-price input {
+  width: 110px;
+  padding: 8px 12px;
+  border: 1px solid #b6cfc2;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.filter-price .rw-btn { padding: 8px 14px; font-size: 0.85rem; }
+
+/* ---------- Aksi petugas di kartu: Ubah dan Hapus sejajar ---------- */
+.reward-body .reward-admin {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.reward-body .reward-admin > * {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+.reward-body .reward-admin form {
+  display: block;
+}
+
+.reward-body .reward-admin .rw-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 0;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* ---------- Deskripsi di kartu ---------- */
+.reward-desc {
+  margin: 2px 0 6px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--rw-muted);
+
+  /* potong jadi maksimal 2 baris */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reward-more {
+  align-self: flex-start;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rw-green-600);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.reward-more:hover { color: var(--rw-green-900); }
+
+/* ---------- Modal detail ---------- */
+.detail-meta {
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--rw-green-600);
+}
+
+.detail-desc {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-line; /* enter di deskripsi tetap jadi baris baru */
+}
+
+.reward-btn-link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+/* ---------- Ikon voucher (ukuran dikunci) ---------- */
+.redeemed-icon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  border-radius: 10px;
+  background: var(--rw-mint-100);
+  overflow: hidden;
+}
+
+.redeemed-icon img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  max-width: none;
+  object-fit: cover;
+}
+
+/* cegah isi panel melebarkan kolom grid */
+.redeemed-panel,
+.redeemed-item,
+.redeemed-info {
+  min-width: 0;
+}
+
+/* ===================== Toast ===================== */
+.rw-toast-stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(360px, calc(100vw - 24px));
+  pointer-events: none;           /* area kosong tidak menghalangi klik */
+}
+
+.rw-toast {
+  --rw-toast-color: #0369a1;      /* info (bawaan) */
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 12px 16px 14px;
+  border: 1px solid #d5e2da;
+  border-left: 5px solid var(--rw-toast-color);
+  border-radius: 14px;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+  pointer-events: auto;
+  animation: rw-toast-in 0.25s ease-out;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.rw-toast-success { --rw-toast-color: #047857; }
+.rw-toast-error   { --rw-toast-color: #b91c1c; }
+.rw-toast-warning { --rw-toast-color: #b45309; }
+
+.rw-toast.is-leaving {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+.rw-toast-icon {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--rw-toast-color);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+}
+
+.rw-toast-icon::before { content: "i"; }
+.rw-toast-success .rw-toast-icon::before { content: "\2713"; }
+.rw-toast-error   .rw-toast-icon::before { content: "!"; }
+.rw-toast-warning .rw-toast-icon::before { content: "!"; }
+
+.rw-toast-text {
+  flex: 1;
+  margin: 1px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.rw-toast-close {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #475569;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rw-toast-close:hover { background: #eef6f1; }
+
+.rw-toast-close:focus-visible {
+  outline: 3px solid #86d9b4;
+  outline-offset: 1px;
+}
+
+/* batang waktu: berjalan mundur, berhenti saat kursor di atas toast */
+.rw-toast-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 100%;
+  background: var(--rw-toast-color);
+  opacity: 0.55;
+  transform-origin: left;
+  animation: rw-toast-bar var(--rw-toast-ms, 4500ms) linear forwards;
+}
+
+.rw-toast:hover .rw-toast-bar,
+.rw-toast:focus-within .rw-toast-bar {
+  animation-play-state: paused;
+}
+
+@keyframes rw-toast-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes rw-toast-bar {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-toast { animation: none; transition: none; }
+  .rw-toast-bar { opacity: 0; }   /* tetap berjalan agar toast hilang otomatis */
+}
+
+@media (max-width: 560px) {
+  .rw-toast-stack { top: 12px; right: 12px; left: 12px; width: auto; }
+}
+
+.rewards-page [hidden] { display: none !important; }
+
+button.rw-chip { font-family: inherit; cursor: pointer; }
+
+.rw-state {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--rw-muted);
+}

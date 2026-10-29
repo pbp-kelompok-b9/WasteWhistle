@@ -1,0 +1,141 @@
+{# Modal tambah / ubah hadiah (Tailwind) #}
+
+
+<dialog id="reward-modal" aria-labelledby="reward-modal-title"
+        class="fixed inset-0 m-auto h-fit w-[min(520px,92vw)] max-h-[90vh] p-0 border-0 rounded-[18px] bg-white text-slate-900 shadow-[0_24px_60px_rgba(15,23,42,0.28)] overflow-hidden backdrop:bg-slate-900/50 open:animate-[rw-pop_0.18s_ease-out] motion-reduce:open:animate-none">
+  <form method="post" id="reward-form" class="flex flex-col max-h-[90vh]"
+        data-create-url="{% url 'rewards:create_reward_ajax' %}"
+        data-update-url="{% url 'rewards:update_reward_ajax' 0 %}">
+    {% csrf_token %}
+
+    <header class="flex items-center justify-between px-[22px] py-[18px] border-b border-[#d5e2da]">
+      <h2 id="reward-modal-title" class="m-0 text-[1.15rem] font-bold">Tambah hadiah</h2>
+      <button type="button" data-modal-close aria-label="Tutup"
+              class="w-[34px] h-[34px] border-0 rounded-full bg-transparent text-[1.6rem] leading-none text-[#475569] cursor-pointer hover:bg-[#eef6f1]">&times;</button>
+    </header>
+
+    <div class="px-[22px] py-5 overflow-y-auto flex flex-col gap-4">
+      {% for field in form %}
+        <div class="rw-field">
+          <label for="{{ field.id_for_label }}" class="block mb-1.5 text-[0.88rem] font-semibold">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endfor %}
+    </div>
+
+    <footer class="flex justify-end gap-2.5 px-[22px] py-3.5 border-t border-[#d5e2da] bg-[#f8fcfa]">
+      <button type="button" data-modal-close
+              class="flex-1 min-[561px]:flex-none inline-block px-[18px] py-2.5 border border-[#b6cfc2] rounded-full bg-white text-[#064e3b] text-[0.9rem] font-semibold leading-tight cursor-pointer transition-colors hover:bg-[#eef6f1] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#86d9b4]">Batal</button>
+      <button type="submit"
+              class="flex-1 min-[561px]:flex-none inline-block px-[18px] py-2.5 border border-transparent rounded-full bg-[#047857] text-white text-[0.9rem] font-semibold leading-tight cursor-pointer transition-colors hover:bg-[#064e3b] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#86d9b4]">Simpan</button>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  const modal = document.getElementById('reward-modal');
+  if (!modal) return;
+
+  const form = document.getElementById('reward-form');
+  const title = document.getElementById('reward-modal-title');
+  const submitButton = form.querySelector('button[type="submit"]');
+  const CREATE_URL = form.dataset.createUrl;
+  const UPDATE_URL = form.dataset.updateUrl;   // berisi angka 0 sebagai penanda id
+
+  let editingId = null;   // null = mode tambah, selain itu = id hadiah yang diubah
+
+  function setField(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = (value === null || value === undefined) ? '' : value;
+  }
+
+  function clearErrors() {
+    form.querySelectorAll('.rw-field-error').forEach(function (el) { el.remove(); });
+  }
+
+  function showFieldErrors(errors) {
+    Object.entries(errors).forEach(function (entry) {
+      const name = entry[0];
+      const list = entry[1];
+      const input = form.querySelector('[name="' + name + '"]');
+      const wrapper = input ? input.closest('.rw-field') : null;
+      if (!wrapper) return;
+      const p = document.createElement('p');
+      // class rw-field-error dipertahankan hanya sebagai penanda untuk clearErrors()
+      p.className = 'rw-field-error mt-1.5 mb-0 text-[0.82rem] text-[#b91c1c]';
+      p.textContent = list.map(function (e) { return e.message; }).join(' ');
+      wrapper.appendChild(p);
+    });
+  }
+
+  function openCreate() {
+    form.reset();
+    clearErrors();
+    editingId = null;
+    title.textContent = 'Tambah hadiah';
+    modal.showModal();
+  }
+
+  function openEdit(id, reward) {
+    if (!reward) return;
+    form.reset();
+    clearErrors();
+    editingId = id;
+    title.textContent = 'Ubah hadiah';
+    setField('id_nama', reward.nama);
+    setField('id_deskripsi', reward.deskripsi);
+    setField('id_kategori', reward.kategori);
+    setField('id_harga_poin', reward.harga_poin);
+    setField('id_stok', reward.stok);
+    setField('id_gambar', reward.gambar);
+    modal.showModal();
+  }
+
+  async function submitForm(event) {
+    event.preventDefault();
+    clearErrors();
+    submitButton.disabled = true;
+
+    const url = editingId ? UPDATE_URL.replace('/0/', '/' + editingId + '/') : CREATE_URL;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': window.CSRF_TOKEN, 'Accept': 'application/json' },
+        body: new FormData(form),
+      });
+      const result = await response.json().catch(function () { return {}; });
+
+      if (response.ok) {
+        modal.close();
+        window.showToast(result.message || 'Hadiah tersimpan.', 'success');
+        document.dispatchEvent(new CustomEvent('rewards:changed'));
+      } else {
+        if (result.errors) showFieldErrors(result.errors);
+        window.showToast(
+          result.message || (result.errors ? 'Periksa kembali isian form.' : 'Terjadi kesalahan (status ' + response.status + ').'),
+          'error'
+        );
+      }
+    } catch (error) {
+      console.error('Error saving reward:', error);
+      window.showToast('Tidak dapat terhubung ke server. Silakan coba lagi.', 'error');
+    } finally {
+      submitButton.disabled = false;
+    }
+  }
+
+  form.addEventListener('submit', submitForm);
+
+  modal.querySelectorAll('[data-modal-close]').forEach(function (btn) {
+    btn.addEventListener('click', function () { modal.close(); });
+  });
+
+  // klik area gelap di luar kotak = tutup
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  // dipanggil oleh reward_list.html
+  window.rewardModal = { openCreate: openCreate, openEdit: openEdit };
+})();
+</script>

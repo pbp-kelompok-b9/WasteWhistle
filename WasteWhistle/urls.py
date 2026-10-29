@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from WasteWhistle.views import *
+from rewards.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +29,6 @@ urlpatterns = [
     path('directory/', include('directory.urls')),
     path('education/', include("education.urls")),
     path('reporting/', include('reporting.urls')),
-    path('comment/', include('comment.urls'))
+    path('comment/', include('comment.urls')),
+    path('rewards/', include('rewards.urls')),
 ]
