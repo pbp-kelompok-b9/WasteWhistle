@@ -296,6 +296,26 @@ function setupGuideSearch() {
         }
     }
 
+    document.body.addEventListener("educationContentChanged", async function () {
+        try {
+            const response = await fetch(window.location.href, { credentials: "same-origin" });
+            if (!response.ok) throw new Error("Gagal menyegarkan konten edukasi.");
+            const page = new DOMParser().parseFromString(await response.text(), "text/html");
+            ["decomposition", "myths-facts"].forEach(function (id) {
+                const current = document.getElementById(id);
+                const fresh = page.getElementById(id);
+                if (current && fresh) current.replaceChildren(...fresh.childNodes);
+            });
+            const freshGuides = page.getElementById("guide-results");
+            if (freshGuides) {
+                resultsBox.replaceChildren(...freshGuides.childNodes);
+                await loadGuides(searchInput.value.trim());
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
+
     /* Setiap ketik: batalkan timer lama, pasang timer baru */
     searchInput.addEventListener("input", function () {
         clearTimeout(timerId);
@@ -305,6 +325,26 @@ function setupGuideSearch() {
         }, 250);
     });
 }
+
+document.body.addEventListener("htmx:afterSwap", function (event) {
+    if (event.detail.target?.id === "education-modal-content") {
+        if (event.detail.xhr?.getResponseHeader("HX-Trigger")?.includes("educationContentChanged")) return;
+        const modal = document.getElementById("educationModal");
+        if (modal && !modal.open) modal.showModal();
+    }
+});
+
+document.body.addEventListener("htmx:afterRequest", function (event) {
+    const xhr = event.detail.xhr;
+    if (event.detail.successful && xhr?.getResponseHeader("HX-Trigger")?.includes("educationContentChanged")) {
+        document.getElementById("educationModal")?.close();
+        const status = document.getElementById("education-crud-status");
+        if (status) {
+            status.textContent = "Konten edukasi berhasil diperbarui.";
+            window.setTimeout(function () { status.textContent = ""; }, 3500);
+        }
+    }
+});
 
 
 setupQuiz();

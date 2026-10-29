@@ -1,8 +1,13 @@
 import json
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
+from django.contrib.auth.decorators import login_required, permission_required
+from django.http import Http404
+from django.shortcuts import get_object_or_404
+
+from .forms import DecompositionInfoForm, MythOrFactForm, WasteGuideForm
 
 from education.models import (
     DecompositionInfo,
@@ -14,6 +19,12 @@ from education.models import (
 
 QUIZ_SIZE = 3                   
 SESSION_KEY = "daily_quiz"      
+
+EDUCATION_TYPES = {
+    "guide": (WasteGuide, WasteGuideForm, "Panduan sampah"),
+    "decomposition": (DecompositionInfo, DecompositionInfoForm, "Lama penguraian"),
+    "myth": (MythOrFact, MythOrFactForm, "Mitos atau fakta"),
+}
 
 def get_saved_question_ids(request):
     saved = request.session.get(SESSION_KEY)
@@ -86,6 +97,106 @@ def show_edu(request):
         "myths_facts": MythOrFact.objects.all(),
     }
     return render(request, "education.html", context)
+
+
+def _education_type(key):
+    try:
+        return EDUCATION_TYPES[key]
+    except KeyError as error:
+        raise Http404("Jenis konten edukasi tidak ditemukan.") from error
+
+def _mutation_response():
+    response = HttpResponse("")
+    response["HX-Trigger"] = "educationContentChanged"
+    return response
+
+
+@login_required
+@permission_required("education.manage_education_content", raise_exception=True)
+@require_GET
+def education_item_picker(request, kind):
+    model, _, label = _education_type(kind)
+    action = request.GET.get("action")
+    if action not in {"edit", "delete"}:
+        raise Http404("Aksi pengelolaan tidak ditemukan.")
+    return render(request, "education/item_action_modal.html", {
+        "key": kind,
+        "label": label,
+        "action": action,
+        "items": model.objects.order_by("pk"),
+    })
+
+@login_required
+@permission_required("education.manage_education_content", raise_exception=True)
+@require_GET
+def education_create_form(request, kind):
+    _, form_class, label = _education_type(kind)
+    return render(request, "education/content_form_modal.html", {
+        "key": kind, "label": label, "form": form_class(),
+    })
+
+@login_required
+@permission_required("education.manage_education_content", raise_exception=True)
+@require_POST
+def education_create(request, kind):
+    _, form_class, _ = _education_type(kind)
+    form = form_class(request.POST)
+    if form.is_valid():
+        form.save()
+        return _mutation_response()
+    return render(request, "education/content_form_modal.html", {
+        "key": kind, "label": EDUCATION_TYPES[kind][2], "form": form,
+    })
+
+@login_required
+@permission_required("education.manage_education_content", raise_exception=True)
+@require_GET
+def education_edit_form(request, kind, pk):
+    model, form_class, _ = _education_type(kind)
+    item = get_object_or_404(model, pk=pk)
+    return render(request, "education/content_form_modal.html", {
+        "key": kind, "label": EDUCATION_TYPES[kind][2],
+        "form": form_class(instance=item), "item": item,
+    })
+
+
+@login_required
+@permission_required("education.manage_education_content", raise_exception=True)
+@require_GET
+def education_delete_confirm(request, kind, pk):
+    model, _, label = _education_type(kind)
+    return render(request, "education/item_action_modal.html", {
+        "key": kind,
+        "label": label,
+        "action": "confirm-delete",
+        "item": get_object_or_404(model, pk=pk),
+    })
+
+
+@login_required
+@permission_required("education.manage_education_content", raise_exception=True)
+@require_POST
+def education_update(request, kind, pk):
+    model, form_class, _ = _education_type(kind)
+    item = get_object_or_404(model, pk=pk)
+    form = form_class(request.POST, instance=item)
+    if form.is_valid():
+        form.save()
+        return _mutation_response()
+    return render(request, "education/content_form_modal.html", {
+        "key": kind, "label": EDUCATION_TYPES[kind][2],
+        "form": form, "item": item,
+    })
+
+
+@login_required
+@permission_required("education.manage_education_content", raise_exception=True)
+@require_POST
+def education_delete(request, kind, pk):
+    model, _, _ = _education_type(kind)
+    item = get_object_or_404(model, pk=pk)
+    item.delete()
+    return _mutation_response()
 
 @require_GET
 def waste_guide_api(request):

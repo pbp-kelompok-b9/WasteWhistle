@@ -21,13 +21,22 @@ class WasteGuide(models.Model):
     description = models.TextField()
     handling_instruction = models.TextField()
 
+    class Meta:
+        permissions = [
+            ("manage_education_content", "Can manage education content"),
+        ]
+
     def __str__(self):
         return self.name
 
 class MythOrFact(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    CLASSIFICATION_CHOICES = (
+        (True, "Mitos"),
+        (False, "Fakta"),
+    )
     statement = models.CharField(max_length=255)
-    is_myth = models.BooleanField()
+    is_myth = models.BooleanField(choices=CLASSIFICATION_CHOICES, verbose_name="Klasifikasi")
     explanation = models.TextField()
     source_url = models.URLField(blank=True)
 

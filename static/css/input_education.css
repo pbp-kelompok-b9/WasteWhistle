@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source "../../templates/education.html";
+@source "../../templates/education/**/*.html";
 @source "../../templates/topbar.html";
 @source "../js/education.js";
 
@@ -91,6 +92,69 @@ body:has(.education-page) > header:not(.topbar) { display: none; }
 .flip-toggle:checked ~ .flip-front { transform: rotateY(180deg); }
 .flip-toggle:checked ~ .flip-back { transform: rotateY(0deg); }
 .flip-toggle:focus-visible ~ .flip-front { outline: 3px solid #10B981; }
+
+.education-admin-card { min-width: 0; padding: 18px; border: 1px solid #E2EDE6; border-radius: 18px; background: #F8FBF9; }
+.education-admin-heading, .education-admin-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.education-admin-heading { margin-bottom: 14px; }
+.education-admin-heading h3 { font-size: 16px; font-weight: 800; color: #16241F; }
+.education-admin-heading span, .education-admin-copy small { color: #6C7D75; font-size: 12px; }
+.education-admin-add { padding: 8px 13px; border: 0; border-radius: 999px; background: #11734F; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+.education-admin-form { display: grid; gap: 14px; }
+.education-admin-field { display: grid; gap: 5px; }
+.education-admin-field label { font-size: 12px; font-weight: 600; }
+.education-admin-input { width: 100%; min-height: 38px; padding: 8px 10px; border: 1px solid #D5E2D9; border-radius: 8px; background: white; color: #1A202C; }
+.education-admin-input:is(select) { appearance: none; padding-right: 38px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236C7D75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 15px; }
+textarea.education-admin-input { min-height: 76px; resize: vertical; }
+.education-admin-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.education-admin-actions button { padding: 8px 13px; border: 0; border-radius: 999px; background: #11734F; color: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: background-color 140ms, color 140ms; }
+.education-admin-actions button:not(.education-admin-secondary):not(.education-admin-danger):hover { background: #B9F2CD; color: #0B3B2E; }
+.education-admin-actions button.education-admin-secondary { border: 1px solid #D5E2D9; background: white; color: #285343; }
+.education-admin-actions button.education-admin-secondary:hover { background: #F1F5F2; color: #16241F; }
+.education-admin-actions button.education-admin-danger { background: #B42318; }
+.education-admin-actions button.education-admin-danger:hover { background: #FDE2DE; color: #7A271A; }
+.education-admin-list { display: grid; gap: 8px; margin-top: 12px; padding: 0; list-style: none; }
+.education-admin-row { padding: 10px; border: 1px solid #E2EDE6; border-radius: 10px; background: white; }
+.education-admin-copy { display: grid; min-width: 0; gap: 3px; overflow-wrap: anywhere; }
+.education-admin-copy strong { font-size: 13px; font-weight: 600; }
+.education-admin-empty, .education-admin-error, .education-admin-errors { color: #B42318; font-size: 12px; }
+.education-admin-row form { margin: 0; }
+.education-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.education-crud-buttons { display: flex; flex: 0 0 auto; gap: 6px; }
+.education-crud-button { display: grid; width: 34px; height: 34px; padding: 0; place-items: center; border: 0; border-radius: 10px; background: transparent; color: #11734F; cursor: pointer; transition: color 140ms; }
+.education-crud-button:hover { color: #34D399; }
+.education-crud-button--delete { color: #B42318; }
+.education-crud-button--delete:hover { color: #F87171; }
+.education-crud-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.education-modal { position: fixed; inset: 0; width: min(620px, calc(100% - 28px)); max-width: none; max-height: min(88vh, 820px); margin: auto; padding: 0; overflow: auto; border: 1px solid #DDE9E1; border-radius: 20px; background: #fff; color: #1A202C; box-shadow: 0 24px 80px #102c1f40; }
+.education-modal::backdrop { background: #10251dcc; backdrop-filter: blur(3px); }
+.education-modal-shell { padding: 24px; }
+.education-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.education-modal-header h2 { color: #16241F; font-size: 22px; font-weight: 700; }
+.education-modal-eyebrow { margin-bottom: 4px; color: #11734F; font-size: 10px; font-weight: 600; letter-spacing: .12em; }
+.education-modal-close { display: grid; flex: 0 0 36px; width: 36px; height: 36px; padding: 0; place-items: center; border: 1px solid #D5E2D9; border-radius: 50%; background: #fff; color: #285343; cursor: pointer; transition: background-color 140ms, color 140ms; }
+.education-modal-close:hover { background: #F1F5F2; color: #16241F; }
+.education-modal-close svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.education-modal-content:empty { display: none; }
+.education-modal-description { margin-top: 4px; color: #6C7D75; font-size: 13px; }
+.education-picker-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.education-picker-list > li { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid #E2EDE6; border-radius: 12px; background: #F8FBF9; }
+.education-picker-empty { color: #6C7D75; font-size: 13px; }
+.education-picker-icon { display: grid; flex: 0 0 34px; width: 34px; height: 34px; padding: 0; place-items: center; border: 0; border-radius: 10px; background: transparent; color: #11734F; cursor: pointer; transition: color 140ms; }
+.education-picker-icon:hover { color: #34D399; }
+.education-picker-icon--delete { color: #B42318; }
+.education-picker-icon--delete:hover { color: #F87171; }
+.education-picker-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.education-delete-preview { margin-bottom: 18px; padding: 14px; border: 1px solid #F4C7C2; border-radius: 12px; background: #FFF7F6; overflow-wrap: anywhere; }
+.education-delete-preview p { margin-top: 5px; color: #6C7D75; font-size: 13px; }
+.education-crud-status { position: fixed; right: 20px; bottom: 20px; z-index: 20; max-width: min(420px, calc(100vw - 40px)); padding: 10px 16px; border-radius: 12px; background: #0B3B2E; color: #fff; box-shadow: 0 8px 28px #10251d30; }
+.education-crud-status:empty { display: none; }
+
+@media (max-width: 540px) {
+    .education-modal-shell { padding: 18px; }
+    .education-admin-row { align-items: flex-start; }
+    .education-section-heading { align-items: flex-start; }
+    .education-crud-button { width: 32px; height: 32px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
     .flip-front,
