@@ -87,7 +87,7 @@ class EducationModelTests(TestCase):
         self.assertEqual(attempt.attempt_date, timezone.localdate())
         self.assertEqual(attempt.score, 0)
         self.assertEqual(str(attempt), f"{user} - {timezone.localdate()}")
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError):
             QuizAttempt.objects.create(user=user, attempt_date=timezone.localdate())
 
     @staticmethod
@@ -207,7 +207,7 @@ class EducationPageTests(TestCase):
         self.assertContains(response, "Belum ada kuis yang tersedia")
         self.assertContains(response, 'data-can-play="false"')
 
-    def test_already_played_user_sees_saved_score(self):
+    def test_already_played_user_sees_centered_star_score(self):
         user = get_user_model().objects.create_user(username="Roh Haeil", password="anotherday")
         self.client.force_login(user)
         self.make_questions(3)
@@ -218,9 +218,18 @@ class EducationPageTests(TestCase):
         self.assertTrue(response.context["already_played"])
         self.assertEqual(response.context["daily_score"], 2)
         self.assertEqual(response.context["questions"], [])
-        self.assertContains(response, f"skor: 2/{QUIZ_SIZE}")
+        self.assertContains(
+            response,
+            f'id="quiz-result" class="quiz-result" data-score="2" '
+            f'data-total="{QUIZ_SIZE}">',
+        )
+        self.assertContains(response, 'id="quiz-score">2</span>')
+        self.assertEqual(response.content.count(b"data-score-star"), 3)
+        self.assertNotContains(
+            response, "Kamu telah menyelesaikan kuis hari ini dengan skor"
+        )
         self.assertEqual(response.context["quiz_size"], QUIZ_SIZE)
-        self.assertContains(response, 'data-can-play="false"')
+        self.assertContains(response, 'data-can-play="false" hidden>')
 
     def test_page_orders_guides_and_decomposition_data(self):
         guide_last = WasteGuide.objects.create(
