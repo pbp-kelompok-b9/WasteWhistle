@@ -29,7 +29,6 @@
     <section class="card" id="daily-quiz">
         <div class="quiz-heading flex items-center justify-between gap-4 max-[540px]:items-start max-[540px]:flex-col max-[540px]:gap-2">
             <h2 class="text-[19px] font-bold leading-tight tracking-[-0.3px] text-[#16241F]">Quiz: Tempat Sampah yang Mana?</h2>
-            <span class="shrink-0 text-[13px] font-bold text-[#6C7D75]" id="quiz-score-indicator">Skor: {{ daily_score|default:0 }}/{{ quiz_size }}</span>
         </div>
         <ul id="quiz-data" hidden>
             {% for question in questions %}<li data-id="{{ question.id }}">{{ question.item.name }}</li>{% endfor %}
@@ -38,9 +37,9 @@
         <form id="quiz-csrf-form" hidden>{% csrf_token %}</form>
         <div id="quiz-play" data-submit-url="{% url 'submit_quiz_api' %}"
             data-answer-url="{% url 'answer_question_api' %}"
-            data-can-play="{% if user.is_authenticated and not already_played and questions %}true{% else %}false{% endif %}">
+            data-can-play="{% if user.is_authenticated and not already_played and questions %}true{% else %}false{% endif %}"{% if already_played %} hidden{% endif %}>
             <p class="mt-3 text-[13px] text-[#6C7D75]" id="quiz-progress">{% if questions %}Soal 1 dari {{ questions|length }}{% endif %}</p>
-            <p class="my-1 mb-4 text-[16px] font-bold" id="quiz-item">{% if not user.is_authenticated %}Masuk untuk mengikuti kuis{% elif already_played %}Kuis hari ini sudah selesai{% elif not questions %}Belum ada kuis yang tersedia{% endif %}</p>
+            <p class="my-1 mb-4 text-[16px] font-bold" id="quiz-item">{% if not user.is_authenticated %}Masuk untuk mengikuti kuis{% elif not already_played and not questions %}Belum ada kuis yang tersedia{% endif %}</p>
             <div class="flex flex-wrap gap-3">
                 <button class="bin bin-organik text-[17px] font-bold" type="button" data-bin="organik">Organik</button>
                 <button class="bin bin-anorganik text-[17px] font-bold" type="button" data-bin="anorganik">Anorganik</button>
@@ -50,15 +49,19 @@
             </div>
             <br>
             {% if not user.is_authenticated %}<p class="text-[13px] text-[#6C7D75]">Kamu perlu <a class="font-semibold text-[#11734F]" href="{% url 'login_user' %}">log in</a> untuk mengikuti kuis.</p>
-            {% elif already_played %}<p class="my-3 text-[13px] font-bold">Kamu telah menyelesaikan kuis hari ini dengan skor: {{ daily_score|default:0 }}/3</p><p class="text-[13px] text-[#6C7D75]">Kembali besok untuk kuis selanjutnya.</p>
             {% endif %}
             <p class="my-4" id="quiz-feedback" aria-live="polite" hidden></p>
-            <button class="mt-1 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#11734F] px-5 text-[12px] font-semibold text-white hover:bg-[#0E5E40] disabled:cursor-not-allowed disabled:opacity-45" id="quiz-next" type="button" hidden>Item berikutnya</button>
+            <button class="mt-1 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#11734F] px-5 text-[12px] font-semibold text-white hover:bg-[#0E5E40] disabled:cursor-not-allowed disabled:opacity-45" id="quiz-next" type="button" hidden>Soal berikutnya</button>
         </div>
 
-        <div id="quiz-result" hidden>
-            <p class="my-3 text-[13px] font-bold">Kamu telah menyelesaikan kuis hari ini dengan skor: <span id="quiz-score"></span></p>
-            <p class="text-[13px] text-[#6C7D75]">Kembali besok untuk kuis selanjutnya.</p>
+        <div id="quiz-result" class="quiz-result" data-score="{{ daily_score|default:0 }}" data-total="{{ quiz_size }}"{% if not already_played %} hidden{% endif %}>
+            <div class="quiz-result__stars" id="quiz-result-stars" role="img" aria-label="Skor {{ daily_score|default:0 }} dari {{ quiz_size }}">
+                <svg class="quiz-result__star" data-score-star viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.1 6.6.9-4.8 4.7 1.1 6.6-5.8-3.1-5.8 3.1 1.1-6.6-4.8-4.7 6.6-.9L12 2Z"/></svg>
+                <svg class="quiz-result__star" data-score-star viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.1 6.6.9-4.8 4.7 1.1 6.6-5.8-3.1-5.8 3.1 1.1-6.6-4.8-4.7 6.6-.9L12 2Z"/></svg>
+                <svg class="quiz-result__star" data-score-star viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.1 6.6.9-4.8 4.7 1.1 6.6-5.8-3.1-5.8 3.1 1.1-6.6-4.8-4.7 6.6-.9L12 2Z"/></svg>
+            </div>
+            <p class="quiz-result__score">Skor: <span id="quiz-score">{{ daily_score|default:0 }}</span>/<span id="quiz-total">{{ quiz_size }}</span></p>
+            <p class="quiz-result__message">Kembali besok untuk kuis selanjutnya.</p>
         </div>
     </section>
 

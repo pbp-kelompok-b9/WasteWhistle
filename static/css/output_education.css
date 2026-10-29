@@ -252,9 +252,6 @@
   .my-1 {
     margin-block: var(--spacing);
   }
-  .my-3 {
-    margin-block: calc(var(--spacing) * 3);
-  }
   .my-4 {
     margin-block: calc(var(--spacing) * 4);
   }
@@ -317,6 +314,9 @@
   }
   .ml-1 {
     margin-left: var(--spacing);
+  }
+  .ml-2\.5 {
+    margin-left: calc(var(--spacing) * 2.5);
   }
   .ml-auto {
     margin-left: auto;
@@ -772,9 +772,6 @@
   .text-\[19px\] {
     font-size: 19px;
   }
-  .text-\[22px\] {
-    font-size: 22px;
-  }
   .text-\[25px\] {
     font-size: 25px;
   }
@@ -1176,6 +1173,14 @@
     }
   }
 }
+:root {
+  --education-ink: #10251D;
+  --education-muted: #6D8076;
+  --education-border: #DFECE3;
+  --education-green: #0C4A35;
+  --education-surface: #F8FBF9;
+  --education-danger: #B42318;
+}
 .education-page [hidden] {
   display: none !important;
 }
@@ -1222,23 +1227,6 @@
   z-index: 10;
   min-width: 0px;
 }
-.education-hero__eyebrow {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--spacing) * 2);
-  font-size: 10px;
-  --tw-font-weight: var(--font-weight-bold);
-  font-weight: var(--font-weight-bold);
-  --tw-tracking: 0.08em;
-  letter-spacing: 0.08em;
-  color: #b0dbc0;
-}
-.education-hero__eyebrow span {
-  height: calc(var(--spacing) * 1.5);
-  width: calc(var(--spacing) * 1.5);
-  border-radius: calc(infinity * 1px);
-  background-color: #60c58b;
-}
 .education-hero h1 {
   margin-top: calc(var(--spacing) * 3);
   font-size: clamp(28px, 3vw, 38px);
@@ -1261,11 +1249,46 @@
   line-height: var(--leading-relaxed);
   color: #c1e7d0;
 }
+.quiz-result {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+.quiz-result__stars {
+  display: flex;
+  gap: 12px;
+  color: #6C7D75;
+}
+.quiz-result__star {
+  width: 46px;
+  height: 46px;
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.quiz-result__star.is-filled {
+  color: #11734F;
+  fill: currentColor;
+}
+.quiz-result__score {
+  margin: 0;
+  color: #16241F;
+  font-size: 18px;
+  font-weight: 700;
+}
+.quiz-result__message {
+  color: #6C7D75;
+  font-size: 13px;
+}
 body:has(.education-page) > header:not(.topbar) {
   display: none;
 }
 .bin-organik, .category-organik {
-  --bin-color: #11734F;
+  --bin-color: var(--education-green);
   --bin-text: #fff;
 }
 .bin-anorganik, .category-anorganik {
@@ -1387,40 +1410,9 @@ body:has(.education-page) > header:not(.topbar) {
 .flip-toggle:focus-visible ~ .flip-front {
   outline: 3px solid #10B981;
 }
-.education-admin-card {
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid #E2EDE6;
-  border-radius: 18px;
-  background: #F8FBF9;
-}
-.education-admin-heading, .education-admin-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.education-admin-heading {
-  margin-bottom: 14px;
-}
-.education-admin-heading h3 {
-  font-size: 16px;
-  font-weight: 800;
-  color: #16241F;
-}
-.education-admin-heading span, .education-admin-copy small {
-  color: #6C7D75;
+.education-admin-copy small {
+  color: var(--education-muted);
   font-size: 12px;
-}
-.education-admin-add {
-  padding: 8px 13px;
-  border: 0;
-  border-radius: 999px;
-  background: #11734F;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
 }
 .education-admin-form {
   display: grid;
@@ -1433,21 +1425,21 @@ body:has(.education-page) > header:not(.topbar) {
   min-width: 0;
 }
 .education-admin-field label {
-  font-size: 11px;
-  font-weight: 800;
-  color: #10251D;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--education-ink);
 }
-.education-admin-field input:not([type="checkbox"]):not([type="radio"]), .education-admin-field textarea, .education-admin-field select, .education-admin-input {
+.education-admin-field :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
   width: 100%;
-  color: #10251D;
-  background-color: #F8FBF9;
-  border: 1px solid #DFECE3;
+  color: var(--education-ink);
+  background-color: var(--education-surface);
+  border: 1px solid var(--education-border);
   border-radius: 11px;
   outline: none;
   font-size: 12px;
   transition: background-color 200ms, border-color 200ms, box-shadow 200ms;
 }
-.education-admin-field input:not([type="checkbox"]):not([type="radio"]), .education-admin-field select, .education-admin-input:not(textarea) {
+.education-admin-field :is(input:not([type="checkbox"]):not([type="radio"]), select) {
   height: 44px;
   padding: 0 13px;
 }
@@ -1459,18 +1451,18 @@ body:has(.education-page) > header:not(.topbar) {
   background-position: right 12px center;
   background-size: 15px;
 }
-.education-admin-field textarea, textarea.education-admin-input {
+.education-admin-field textarea {
   min-height: 96px;
   padding: 12px 13px;
   resize: vertical;
   line-height: 1.5;
 }
-.education-admin-field input:focus, .education-admin-field textarea:focus, .education-admin-field select:focus, .education-admin-input:focus {
+.education-admin-field :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select):focus {
   background-color: #FFFFFF;
   border-color: #70BF8D;
   box-shadow: 0 0 0 3px rgba(112, 191, 141, 0.12);
 }
-.education-admin-field--invalid input, .education-admin-field--invalid textarea, .education-admin-field--invalid select, .education-admin-field:has(.education-admin-error) input, .education-admin-field:has(.education-admin-error) textarea, .education-admin-field:has(.education-admin-error) select {
+.education-admin-field--invalid :is(input, textarea, select) {
   border-color: #E49B8E;
   background-color: #FFFAF9;
 }
@@ -1482,7 +1474,7 @@ body:has(.education-page) > header:not(.topbar) {
   margin: 0;
 }
 .education-admin-help {
-  color: #6D8076;
+  color: var(--education-muted);
   font-size: 10px;
   line-height: 1.4;
   margin: 0;
@@ -1510,7 +1502,7 @@ body:has(.education-page) > header:not(.topbar) {
   padding: 10px 18px;
   border: 0;
   border-radius: 999px;
-  background: #0C4A35;
+  background: var(--education-green);
   color: #FFFFFF;
   font-size: 11.5px;
   font-weight: 800;
@@ -1522,12 +1514,12 @@ body:has(.education-page) > header:not(.topbar) {
 }
 .education-admin-actions button.education-admin-secondary {
   background: #EDF7F0;
-  color: #0C4A35;
+  color: var(--education-green);
   border: 0;
 }
 .education-admin-actions button.education-admin-secondary:hover {
   background: #E2F0E6;
-  color: #0C4A35;
+  color: var(--education-green);
 }
 .education-admin-actions button.education-admin-danger {
   background: #B53B3B;
@@ -1535,19 +1527,6 @@ body:has(.education-page) > header:not(.topbar) {
 }
 .education-admin-actions button.education-admin-danger:hover {
   background: #962D2D;
-}
-.education-admin-list {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 0;
-  list-style: none;
-}
-.education-admin-row {
-  padding: 10px;
-  border: 1px solid #E2EDE6;
-  border-radius: 10px;
-  background: white;
 }
 .education-admin-copy {
   display: grid;
@@ -1558,13 +1537,6 @@ body:has(.education-page) > header:not(.topbar) {
 .education-admin-copy strong {
   font-size: 13px;
   font-weight: 600;
-}
-.education-admin-empty {
-  color: #B42318;
-  font-size: 12px;
-}
-.education-admin-row form {
-  margin: 0;
 }
 .education-section-heading {
   display: flex;
@@ -1587,7 +1559,7 @@ body:has(.education-page) > header:not(.topbar) {
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: #11734F;
+  color: var(--education-green);
   cursor: pointer;
   transition: color 140ms;
 }
@@ -1595,7 +1567,7 @@ body:has(.education-page) > header:not(.topbar) {
   color: #34D399;
 }
 .education-crud-button--delete {
-  color: #B42318;
+  color: var(--education-danger);
 }
 .education-crud-button--delete:hover {
   color: #F87171;
@@ -1618,10 +1590,10 @@ body:has(.education-page) > header:not(.topbar) {
   margin: auto;
   padding: 0;
   overflow: auto;
-  border: 1px solid #DDE9E1;
+  border: 1px solid var(--education-border);
   border-radius: 20px;
   background: #fff;
-  color: #1A202C;
+  color: var(--education-ink);
   box-shadow: 0 24px 80px #102c1f40;
 }
 .education-modal::backdrop {
@@ -1639,16 +1611,9 @@ body:has(.education-page) > header:not(.topbar) {
   margin-bottom: 20px;
 }
 .education-modal-header h2 {
-  color: #16241F;
+  color: var(--education-ink);
   font-size: 22px;
   font-weight: 700;
-}
-.education-modal-eyebrow {
-  margin-bottom: 4px;
-  color: #11734F;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .12em;
 }
 .education-modal-close {
   display: grid;
@@ -1682,7 +1647,7 @@ body:has(.education-page) > header:not(.topbar) {
 }
 .education-modal-description {
   margin-top: 4px;
-  color: #6C7D75;
+  color: var(--education-muted);
   font-size: 13px;
 }
 .education-picker-list {
@@ -1698,12 +1663,12 @@ body:has(.education-page) > header:not(.topbar) {
   justify-content: space-between;
   gap: 14px;
   padding: 12px;
-  border: 1px solid #E2EDE6;
+  border: 1px solid var(--education-border);
   border-radius: 12px;
-  background: #F8FBF9;
+  background: var(--education-surface);
 }
 .education-picker-empty {
-  color: #6C7D75;
+  color: var(--education-muted);
   font-size: 13px;
 }
 .education-picker-icon {
@@ -1716,7 +1681,7 @@ body:has(.education-page) > header:not(.topbar) {
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: #11734F;
+  color: var(--education-green);
   cursor: pointer;
   transition: color 140ms;
 }
@@ -1724,7 +1689,7 @@ body:has(.education-page) > header:not(.topbar) {
   color: #34D399;
 }
 .education-picker-icon--delete {
-  color: #B42318;
+  color: var(--education-danger);
 }
 .education-picker-icon--delete:hover {
   color: #F87171;
@@ -1766,21 +1731,6 @@ body:has(.education-page) > header:not(.topbar) {
 .education-crud-status:empty {
   display: none;
 }
-@media (max-width: 540px) {
-  .education-modal-shell {
-    padding: 18px;
-  }
-  .education-admin-row {
-    align-items: flex-start;
-  }
-  .education-section-heading {
-    align-items: flex-start;
-  }
-  .education-crud-button {
-    width: 32px;
-    height: 32px;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .flip-front, .flip-back {
     transition: none;
@@ -1792,6 +1742,16 @@ body:has(.education-page) > header:not(.topbar) {
   }
 }
 @media (max-width: 540px) {
+  .education-modal-shell {
+    padding: 18px;
+  }
+  .education-section-heading {
+    align-items: flex-start;
+  }
+  .education-crud-button {
+    width: 32px;
+    height: 32px;
+  }
   .quiz-heading {
     align-items: flex-start;
     flex-direction: column;
