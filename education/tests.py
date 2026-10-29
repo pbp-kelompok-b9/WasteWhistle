@@ -1,12 +1,15 @@
-import json, uuid
+import json
+import uuid
 from datetime import date
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.db import IntegrityError
 from .models import DecompositionInfo, MythOrFact, QuizAttempt, QuizQuestion, WasteGuide
 from .views import SESSION_KEY, QUIZ_SIZE
+from .forms import DecompositionInfoForm, MythOrFactForm, WasteGuideForm
 
 class EducationModelTests(TestCase):
     def test_waste_guide_string_and_category_choices(self):
@@ -246,6 +249,163 @@ class EducationPageTests(TestCase):
                 handling_instruction="Instruksi",
             )
             QuizQuestion.objects.create(item=guide)
+
+
+class EducationFormTests(TestCase):
+    def test_waste_guide_form_strips_html_from_plain_text_fields(self):
+        form = WasteGuideForm(data={
+            "name": "<b>Botol</b>",
+            "category": "anorganik",
+            "description": "<p>Kemasan plastik.</p>",
+            "handling_instruction": "<em>Bersihkan dahulu.</em>",
+        })
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["name"], "Botol")
+        self.assertEqual(form.cleaned_data["description"], "Kemasan plastik.")
+        self.assertEqual(
+            form.cleaned_data["handling_instruction"], "Bersihkan dahulu."
+        )
+
+    def test_plain_text_fields_reject_values_containing_only_html(self):
+        cases = [
+            (WasteGuideForm, {
+                "name": "<b></b>", "category": "organik",
+                "description": "<p>Deskripsi</p>",
+                "handling_instruction": "Instruksi",
+            }, "name"),
+            (DecompositionInfoForm, {
+                "material_name": "<b></b>", "estimated_days": "12",
+            }, "material_name"),
+            (MythOrFactForm, {
+                "statement": "Pernyataan", "is_myth": "False",
+                "explanation": "<p></p>", "source_url": "",
+            }, "explanation"),
+        ]
+
+        for form_class, data, field in cases:
+            with self.subTest(form=form_class.__name__, field=field):
+                form = form_class(data=data)
+                self.assertFalse(form.is_valid())
+                self.assertIn(field, form.errors)
+
+    def test_myth_or_fact_form_coerces_classification_to_boolean(self):
+        data = {
+            "statement": "Sampah harus dipilah.",
+            "is_myth": "False",
+            "explanation": "Pernyataan benar.",
+            "source_url": "",
+        }
+        form = MythOrFactForm(data=data)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertIs(form.cleaned_data["is_myth"], False)
+
+
+class EducationCrudViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="education-admin", password="test-password"
+        )
+        self.manage_permission = Permission.objects.get(
+            content_type__app_label="education",
+            codename="manage_education_content",
+        )
+
+    def grant_manage_permission(self):
+        self.user.user_permissions.add(self.manage_permission)
+        self.client.force_login(self.user)
+
+    def make_guide(self, name="Botol", description="Kemasan plastik."):
+        return WasteGuide.objects.create(
+            name=name,
+            category="anorganik",
+            description=description,
+            handling_instruction="Bersihkan sebelum disetor.",
+        )
+
+    def test_crud_management_requires_login_and_permission(self):
+        create_url = reverse("education_create", args=["guide"])
+        anonymous_response = self.client.post(create_url, data={})
+        self.assertEqual(anonymous_response.status_code, 302)
+
+        self.client.force_login(self.user)
+        forbidden_response = self.client.post(create_url, data={})
+        self.assertEqual(forbidden_response.status_code, 403)
+
+    def test_create_form_and_picker_render_for_permitted_user(self):
+        guide = self.make_guide()
+        self.grant_manage_permission()
+
+        form_response = self.client.get(
+            reverse("education_create_form", args=["guide"])
+        )
+        picker_response = self.client.get(
+            reverse("education_item_picker", args=["guide"]),
+            {"action": "edit"},
+        )
+
+        self.assertEqual(form_response.status_code, 200)
+        self.assertContains(form_response, "Tambah Panduan Sampah")
+        self.assertEqual(picker_response.status_code, 200)
+        self.assertContains(picker_response, guide.name)
+
+    def test_create_update_and_delete_guide(self):
+        self.grant_manage_permission()
+        create_url = reverse("education_create", args=["guide"])
+        data = {
+            "name": "<b>Kaleng</b>",
+            "category": "anorganik",
+            "description": "<p>Kemasan logam.</p>",
+            "handling_instruction": "Pisahkan.",
+        }
+
+        create_response = self.client.post(create_url, data=data)
+
+        self.assertEqual(create_response.status_code, 200)
+        self.assertEqual(
+            create_response.headers["HX-Trigger"], "educationContentChanged"
+        )
+        guide = WasteGuide.objects.get(name="Kaleng")
+        update_response = self.client.post(
+            reverse("education_update", args=["guide", guide.pk]),
+            {**data, "name": "<b>Kaleng bekas</b>"},
+        )
+        guide.refresh_from_db()
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(guide.name, "Kaleng bekas")
+
+        delete_response = self.client.post(
+            reverse("education_delete", args=["guide", guide.pk])
+        )
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertFalse(WasteGuide.objects.filter(pk=guide.pk).exists())
+
+    def test_invalid_create_and_update_render_form_errors_without_saving(self):
+        self.grant_manage_permission()
+        create_response = self.client.post(
+            reverse("education_create", args=["guide"]),
+            {
+                "name": "<b></b>", "category": "anorganik",
+                "description": "Deskripsi", "handling_instruction": "Instruksi",
+            },
+        )
+        self.assertEqual(create_response.status_code, 200)
+        self.assertContains(create_response, "tidak boleh kosong", status_code=200)
+        self.assertEqual(WasteGuide.objects.count(), 0)
+
+        guide = self.make_guide()
+        update_response = self.client.post(
+            reverse("education_update", args=["guide", guide.pk]),
+            {
+                "name": "Nama baru", "category": "anorganik",
+                "description": "<p></p>", "handling_instruction": "Instruksi",
+            },
+        )
+        guide.refresh_from_db()
+        self.assertEqual(update_response.status_code, 200)
+        self.assertContains(update_response, "tidak boleh kosong", status_code=200)
+        self.assertEqual(guide.name, "Botol")
 
 
 class WasteGuideApiTests(TestCase):
