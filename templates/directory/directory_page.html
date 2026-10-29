@@ -9,6 +9,13 @@
 {% block body %}
     {%include 'topbar.html'%}
     <main class="directory-page">
+        {% if messages %}
+            <div class="directory-panel mb-4" aria-live="polite">
+                {% for message in messages %}
+                    <p role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         <section class="directory-hero">
             <div class="directory-hero__copy max-w-[580px]">
                 <div class="flex items-center gap-2 text-[10px] font-bold"><span class="directory-dot directory-dot--light"></span>JARINGAN KOMUNITAS</div>
@@ -80,6 +87,10 @@
                     <h2>Tahu lokasi bank sampah?</h2>
                     <p>Bantu mengembangkan direktori ini dengan membagikan informasi bank sampah lokal yang tepercaya.</p>
                         <a class="directory-secondary-button" href="{% url 'directory:create_waste_bank' %}">Tambahkan lokasi baru <span aria-hidden="true">→</span></a>
+                    <form method="post" action="{% url 'directory:sync_osm_waste_banks' %}">
+                        {% csrf_token %}
+                        <button class="directory-secondary-button" type="submit">Perbarui data dari OpenStreetMap</button>
+                    </form>
                 </div>
             </aside>
             {% endif %}
@@ -169,6 +180,7 @@
             const fields = bank.fields || {};
             const card = document.createElement("article");
             card.className = "directory-bank-card directory-row";
+            card.dataset.source = bank.source || "manual";
             card.dataset.search = [fields.name, fields.address, fields.contact_number, fields.email].join(" ");
 
             const number = document.createElement("span");
@@ -184,7 +196,9 @@
             heading.textContent = fields.name || "Unnamed waste bank";
             const verified = document.createElement("span");
             verified.className = "directory-open-label";
-            verified.innerHTML = '<span class="directory-dot directory-dot--green"></span>Verified';
+            verified.innerHTML = bank.source === "osm"
+                ? '<span class="directory-dot directory-dot--green"></span>OpenStreetMap'
+                : '<span class="directory-dot directory-dot--green"></span>Komunitas';
             title.append(heading, verified);
 
             const address = document.createElement("p");
@@ -216,7 +230,7 @@
             body.append(title, address, contacts);
             card.append(number, body);
 
-            if (directoryResults.dataset.canEdit === "true") {
+            if (bank.is_manual && directoryResults.dataset.canEdit === "true") {
                 const editLink = document.createElement("a");
                 editLink.className = "directory-bank-card__action directory-secondary-button p-2";
                 editLink.href = directoryResults.dataset.editUrlTemplate.replace(
@@ -227,7 +241,7 @@
                 editLink.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>';
                 card.appendChild(editLink);
             }
-            if (directoryResults.dataset.canDelete === "true") {
+            if (bank.is_manual && directoryResults.dataset.canDelete === "true") {
                 card.appendChild(createDeleteControls(bank));
             }
 

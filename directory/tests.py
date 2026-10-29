@@ -1,4 +1,8 @@
 from decimal import Decimal
+import json
+from unittest.mock import MagicMock, patch
+from urllib.error import URLError
+from urllib.parse import parse_qs
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -73,6 +77,7 @@ class MainTest(DirectoryTestMixin, TestCase):
         self.assertContains(response, 'data-can-edit="false"')
         self.assertContains(response, 'data-can-delete="false"')
         self.assertNotContains(response, "Tambahkan lokasi baru")
+        self.assertNotContains(response, "Perbarui data dari OpenStreetMap")
 
     def test_directory_shows_edit_controls_for_staff(self):
         staff = get_user_model().objects.create_user(username="directory-staff")
@@ -85,6 +90,7 @@ class MainTest(DirectoryTestMixin, TestCase):
         self.assertContains(response, 'data-can-edit="true"')
         self.assertContains(response, 'data-can-delete="false"')
         self.assertContains(response, "Tambahkan lokasi baru")
+        self.assertContains(response, "Perbarui data dari OpenStreetMap")
 
     def test_directory_shows_all_controls_for_a_superuser(self):
         self.create_superuser()
@@ -93,6 +99,7 @@ class MainTest(DirectoryTestMixin, TestCase):
 
         self.assertContains(response, 'data-can-edit="true"')
         self.assertContains(response, 'data-can-delete="true"')
+        self.assertContains(response, "Perbarui data dari OpenStreetMap")
 
     def test_undefined_link_returns_404(self):
         response = self.client.get("/hide_directory/")
@@ -137,6 +144,8 @@ class WasteBankApiTests(TestCase):
             response.json(),
             [{
                 "pk": str(self.wastebank.pk),
+                "source": "manual",
+                "is_manual": True,
                 "fields": {
                     "name": "TPA UI",
                     "address": "Depok",
@@ -174,6 +183,222 @@ class WasteBankApiTests(TestCase):
 
         self.assertIsNone(result["fields"]["contact_number"])
         self.assertIsNone(result["fields"]["email"])
+
+    def test_json_endpoint_includes_persisted_osm_locations_without_fetching(self):
+        osm_bank = WasteBank.objects.create(
+            name="Bank Sampah OSM",
+            address="Jakarta",
+            latitude=Decimal("-6.200000"),
+            longitude=Decimal("106.816666"),
+            is_osm=True,
+        )
+        with patch("directory.views.fetch_osm_waste_banks") as mock_fetch:
+            response = self.client.get(reverse("directory:get_waste_bank_json"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()[0]["pk"], str(self.wastebank.pk))
+        self.assertEqual(response.json()[1]["pk"], str(osm_bank.pk))
+        self.assertEqual(response.json()[1]["source"], "osm")
+        self.assertFalse(response.json()[1]["is_manual"])
+        mock_fetch.assert_not_called()
+
+
+class OsmWasteBankSyncTests(DirectoryTestMixin, TestCase):
+    def setUp(self):
+        self.sleep = patch("directory.views.time.sleep")
+        self.sleep_mock = self.sleep.start()
+        self.addCleanup(self.sleep.stop)
+
+    @patch("directory.views.urlopen")
+    def test_fetches_bank_sampah_from_nominatim_for_each_province(self, mock_urlopen):
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps([
+            {
+                "name": "Bank Sampah Melati",
+                "display_name": "Bank Sampah Melati, Depok, Jawa Barat, Indonesia",
+                "lat": "-6.370246",
+                "lon": "106.827516",
+                "extratags": {"phone": "08123456789"},
+            }
+        ]).encode("utf-8")
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+
+        self.create_superuser()
+        response = self.client.post(reverse("directory:sync_osm_waste_banks"))
+
+        self.assertRedirects(response, reverse("directory:show_directory"))
+        bank = WasteBank.objects.get(
+            is_osm=True,
+            latitude=Decimal("-6.370246"),
+            longitude=Decimal("106.827516"),
+        )
+        self.assertEqual(bank.name, "Bank Sampah Melati")
+        self.assertEqual(
+            bank.address,
+            "Bank Sampah Melati, Depok, Jawa Barat, Indonesia",
+        )
+        self.assertEqual(bank.contact_number, "08123456789")
+        self.assertIsNone(bank.email)
+        self.assertEqual(bank.latitude, Decimal("-6.370246"))
+        self.assertEqual(bank.longitude, Decimal("106.827516"))
+        requests = [call.args[0] for call in mock_urlopen.call_args_list]
+        self.assertEqual(len(requests), 5)
+        self.assertTrue(all(
+            request.full_url.startswith(
+                "https://nominatim.openstreetmap.org/search?"
+            )
+            for request in requests
+        ))
+        queries = [
+            parse_qs(request.full_url.split("?", 1)[1])
+            for request in requests
+        ]
+        self.assertEqual(
+            [query["q"][0] for query in queries],
+            [
+                "bank sampah, Jawa Barat, Indonesia",
+                "bank sampah, Jawa Tengah, Indonesia",
+                "bank sampah, Jawa Timur, Indonesia",
+                "bank sampah, Daerah Istimewa Yogyakarta, Indonesia",
+                "bank sampah, Banten, Indonesia",
+            ],
+        )
+        self.assertTrue(all(query["countrycodes"] == ["id"] for query in queries))
+        self.assertTrue(all(query["limit"] == ["40"] for query in queries))
+        self.assertEqual(mock_urlopen.call_args.kwargs["timeout"], 5)
+        self.assertEqual(self.sleep_mock.call_count, 4)
+
+    @patch("directory.views.urlopen")
+    def test_sync_updates_existing_osm_records_without_duplicates(self, mock_urlopen):
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps([
+                {
+                    "name": "Updated Bank Sampah",
+                    "display_name": "Updated Bank Sampah, Depok",
+                    "lat": "-6.370246",
+                    "lon": "106.827516",
+                }
+            ]).encode("utf-8")
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+        existing_bank = WasteBank.objects.create(
+            name="Old Name",
+            address="Old address",
+            latitude=Decimal("-6.370246"),
+            longitude=Decimal("106.827516"),
+            is_osm=True,
+        )
+        stale_osm_bank = WasteBank.objects.create(
+            name="No Longer In OSM",
+            address="Old location",
+            latitude=Decimal("-6.500000"),
+            longitude=Decimal("107.000000"),
+            is_osm=True,
+        )
+        manual_bank = WasteBank.objects.create(
+            name="Manually Added",
+            address="Keep this location",
+        )
+        self.create_staff_user()
+
+        response = self.client.post(reverse("directory:sync_osm_waste_banks"))
+
+        self.assertRedirects(response, reverse("directory:show_directory"))
+        self.assertFalse(WasteBank.objects.filter(pk=existing_bank.pk).exists())
+        self.assertFalse(WasteBank.objects.filter(pk=stale_osm_bank.pk).exists())
+        self.assertTrue(WasteBank.objects.filter(pk=manual_bank.pk, is_osm=False).exists())
+        self.assertTrue(
+            WasteBank.objects.filter(
+                name="Updated Bank Sampah",
+                is_osm=True,
+                latitude=Decimal("-6.370246"),
+                longitude=Decimal("106.827516"),
+            ).exists()
+        )
+        self.assertEqual(
+            WasteBank.objects.filter(is_osm=True).count(),
+            1,
+        )
+
+    @patch("directory.views.urlopen")
+    def test_successful_empty_sync_clears_only_osm_records(self, mock_urlopen):
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps([]).encode("utf-8")
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+        osm_bank = WasteBank.objects.create(
+            name="Old OSM Location",
+            address="Old location",
+            is_osm=True,
+        )
+        manual_bank = WasteBank.objects.create(
+            name="Manual Location",
+            address="Keep this location",
+        )
+        self.create_superuser()
+
+        response = self.client.post(reverse("directory:sync_osm_waste_banks"))
+
+        self.assertRedirects(response, reverse("directory:show_directory"))
+        self.assertFalse(WasteBank.objects.filter(pk=osm_bank.pk).exists())
+        self.assertTrue(WasteBank.objects.filter(pk=manual_bank.pk).exists())
+        self.assertFalse(WasteBank.objects.filter(is_osm=True).exists())
+
+    @patch("directory.views.urlopen", side_effect=URLError("OSM unavailable"))
+    def test_osm_failure_reports_an_error_without_changing_database(self, mock_urlopen):
+        self.create_superuser()
+        bank = WasteBank.objects.create(name="Bank Lokal", address="Jakarta")
+        osm_bank = WasteBank.objects.create(
+            name="Existing OSM Location",
+            address="Keep until successful sync",
+            is_osm=True,
+        )
+
+        response = self.client.post(
+            reverse("directory:sync_osm_waste_banks"), follow=True
+        )
+
+        self.assertEqual(WasteBank.objects.count(), 2)
+        self.assertTrue(WasteBank.objects.filter(pk=bank.pk).exists())
+        self.assertTrue(WasteBank.objects.filter(pk=osm_bank.pk).exists())
+        self.assertContains(response, "Gagal mengambil data bank sampah")
+        mock_urlopen.assert_called_once()
+
+    @patch("directory.views.urlopen")
+    def test_unexpected_nominatim_response_does_not_clear_existing_osm_data(
+        self, mock_urlopen
+    ):
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps({
+            "error": "Search failed",
+        }).encode("utf-8")
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+        self.create_superuser()
+        osm_bank = WasteBank.objects.create(
+            name="Existing OSM Location",
+            address="Keep until successful sync",
+            is_osm=True,
+        )
+
+        response = self.client.post(
+            reverse("directory:sync_osm_waste_banks"), follow=True
+        )
+
+        self.assertTrue(WasteBank.objects.filter(pk=osm_bank.pk).exists())
+        self.assertContains(response, "Gagal mengambil data bank sampah")
+
+    def test_sync_requires_staff_or_superuser(self):
+        user = get_user_model().objects.create_user(username="regular-sync")
+        self.client.force_login(user)
+
+        response = self.client.post(reverse("directory:sync_osm_waste_banks"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_sync_requires_post(self):
+        self.create_superuser()
+
+        response = self.client.get(reverse("directory:sync_osm_waste_banks"))
+
+        self.assertEqual(response.status_code, 405)
 
 
 class WasteBankManagementTests(DirectoryTestMixin, TestCase):
