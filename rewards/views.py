@@ -49,7 +49,7 @@ def reward_list(request):
         maks_poin = ""
  
     petugas = is_petugas(request.user)
-    return render(request, "rewards/reward_list.html", {
+    return render(request, "reward_list.html", {
         "active_page": "reward",
         "is_petugas": petugas,
         "form": RewardForm() if petugas else None,
