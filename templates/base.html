@@ -23,11 +23,7 @@
 
         {% block content %}{% endblock %}
 
-        <footer class="footer">
-            <div class="footer-inner text-center justify-center">
-                <p>&copy; 2026 Waste Whistle</p>
-            </div>
-        </footer>
+        {% include 'footer.html' %}
         {% block extra_js %}{% endblock %}
     {% endblock body %}
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

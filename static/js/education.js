@@ -304,11 +304,15 @@ function setupGuideSearch() {
             ["decomposition", "myths-facts"].forEach(function (id) {
                 const current = document.getElementById(id);
                 const fresh = page.getElementById(id);
-                if (current && fresh) current.replaceChildren(...fresh.childNodes);
+                if (current && fresh) {
+                    current.replaceChildren(...fresh.childNodes);
+                    htmx.process(current);
+                }
             });
             const freshGuides = page.getElementById("guide-results");
             if (freshGuides) {
                 resultsBox.replaceChildren(...freshGuides.childNodes);
+                htmx.process(resultsBox);
                 await loadGuides(searchInput.value.trim());
             }
         } catch (error) {

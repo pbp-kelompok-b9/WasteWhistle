@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Learn{% endblock %}
+{% block title %}Edukasi Sampah{% endblock %}
 
 {% block meta %}
     <link rel="stylesheet" href="{% static 'css/output_education.css' %}">
@@ -16,10 +16,13 @@
 
 <main class="education-page mx-auto flex w-full max-w-[1240px] flex-1 flex-col gap-[18px] px-6 pt-[22px] pb-[42px] text-[14px] leading-[1.55] text-[#1A202C] max-sm:px-4 max-sm:pt-4 max-sm:pb-8">
 
-    <!-- JUDUL HALAMAN -->
-    <section class="card flex flex-col gap-2">
-        <h1 class="text-[25px] font-extrabold leading-tight tracking-[-0.4px] text-[#16241F]">Waste Education</h1>
-        <p class="text-[14px] text-[#6C7D75]">Belajar terkait sampah dan pemilahannya</p>
+    <!-- HERO EDUKASI -->
+    <section class="education-hero">
+        <div class="education-hero__copy">
+            <div class="education-hero__eyebrow"><span aria-hidden="true"></span>WASTE WHISTLE</div>
+            <h1>Edukasi Sampah</h1>
+            <p>Belajar tentang sampah, pemilahan, dan cara penanganannya.</p>
+        </div>
     </section>
 
 

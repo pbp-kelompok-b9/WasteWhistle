@@ -8,6 +8,42 @@
     display: none !important;
 }
 
+.education-hero {
+    @apply relative flex min-h-[210px] items-center overflow-hidden rounded-[22px] bg-gradient-to-br from-[#092f24] via-[#0d6144] via-75% to-[#157e51] p-8 text-white shadow-[0_16px_32px_rgba(7,63,42,0.15)] max-sm:min-h-0 max-sm:p-6;
+}
+
+.education-hero::after {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    right: 92px;
+    top: -180px;
+    border: 1px solid rgba(184, 242, 205, .13);
+    border-radius: 50%;
+    box-shadow: 0 0 0 28px rgba(184, 242, 205, .04), 0 0 0 56px rgba(184, 242, 205, .035);
+}
+
+.education-hero__copy {
+    @apply relative z-10 min-w-0;
+}
+
+.education-hero__eyebrow {
+    @apply flex items-center gap-2 text-[10px] font-bold tracking-[0.08em] text-[#b0dbc0];
+}
+
+.education-hero__eyebrow span {
+    @apply h-1.5 w-1.5 rounded-full bg-[#60c58b];
+}
+
+.education-hero h1 {
+    @apply mt-3 text-[clamp(28px,3vw,38px)] font-extrabold leading-tight tracking-[-1px] text-white max-sm:text-[29px];
+}
+
+.education-hero p {
+    @apply mt-[11px] max-w-[490px] text-[13px] leading-relaxed text-[#c1e7d0];
+}
+
 body:has(.education-page) > header:not(.topbar) { display: none; }
 
 .bin-organik,
