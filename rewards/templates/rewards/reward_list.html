@@ -121,7 +121,6 @@
   const pointsDots = document.getElementById('points-dots');
   const redeemedCount = document.getElementById('redeemed-count');
   const redeemedList = document.getElementById('redeemed-list');
-  const historySection = document.getElementById('history-section');
   const historyList = document.getElementById('history-list');
 
   // state
@@ -280,7 +279,6 @@
 
     if (!me.authenticated) {
       redeemedCount.hidden = true;
-      historySection.hidden = true;
       redeemedList.innerHTML =
         `<li class="redeemed-empty"><a href="${LOGIN_URL}">Sign in</a> untuk melihat voucher yang sudah kamu tukar.</li>`;
       return;
@@ -305,8 +303,6 @@
             </li>`;
         }).join('')
       : `<li class="redeemed-empty">Belum ada voucher. Tukar poinmu dengan hadiah di sebelah kiri.</li>`;
-
-    historySection.hidden = false;
   }
 
   async function fetchMe() {
