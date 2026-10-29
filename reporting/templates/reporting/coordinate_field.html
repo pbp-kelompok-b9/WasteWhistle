@@ -1,0 +1,8 @@
+<div class="reporting-field">
+    <label class="reporting-label" for="{{ field.id_for_label }}">
+        {{ field.label }} {% if field.field.required %}<span class="reporting-label-tag">(wajib)</span>{% endif %}
+    </label>
+    {{ field }}
+    <small class="reporting-help" id="{{ field.name }}-help">{{ field.help_text }}</small>
+    <div class="reporting-error" id="{{ field.name }}-errors">{{ field.errors }}</div>
+</div>

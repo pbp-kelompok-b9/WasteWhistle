@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
+from django.db.models import Q
 
 # Create your views here.
 def show_directory(request):
@@ -17,6 +18,7 @@ def show_directory(request):
         "is_staff": request.user.groups.filter(name='Staff').exists(),
         "form": WasteBankForm(),
         "waste_banks": waste_banks,
+        "active_page": "directory"
     }
     return render(request, "directory/directory_page.html", context)
 
@@ -42,7 +44,12 @@ def get_waste_bank_json(request):
     waste_bank_list = WasteBank.objects.all()
 
     if name_query:
-        waste_bank_list = waste_bank_list.filter(name__icontains=name_query)
+        waste_bank_list = waste_bank_list.filter(
+            Q(name__icontains=name_query)
+            | Q(address__icontains=name_query)
+            | Q(contact_number__icontains=name_query)
+            | Q(email__icontains=name_query)
+        )
 
     data = []
     for waste_bank in waste_bank_list:
@@ -53,6 +60,8 @@ def get_waste_bank_json(request):
                 "address": waste_bank.address,
                 "contact_number": waste_bank.contact_number,
                 "email": waste_bank.email,
+                "latitude": waste_bank.latitude,
+                "longitude": waste_bank.longitude,
             }
         })
     return JsonResponse(data, safe=False)

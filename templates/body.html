@@ -1,10 +1,12 @@
+{% load l10n %}
+
 <main class="page-container">
 
     {# ---------- Header hub ---------- #}
     <section class="card flex max-sm:flex-col items-center max-sm:items-start justify-between gap-[18px]">
         <div>
             <div class="flex items-center gap-3 flex-wrap">
-                <h1 class="text-[25px] font-extrabold tracking-[-0.4px] text-[#101F19]">Selamat Datang, {{username}}!</h1>
+                <h1 id="user-greeting" class="text-[25px] font-extrabold tracking-[-0.4px] text-[#101F19]">Selamat Datang, {{ username }}!</h1>
             </div>
         </div>
     </section>
@@ -13,14 +15,8 @@
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
         <article class="stat-card">
             <div class="flex flex-col min-w-0">
-                <span class="stat-label">Sampah Dikendalikan</span>
-                <span class="stat-value">{{ stat_waste_kg|default:"0" }}<small>kg</small></span>
-                {% if stat_waste_delta %}
-                <span class="flex items-center gap-[5px] text-[11.5px] font-semibold mt-2 text-[#0E8A47]">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
-                    {{ stat_waste_delta }}
-                </span>
-                {% endif %}
+                <span class="stat-label">Total Bank Sampah</span>
+                <span class="stat-value">{{ stat_waste_banks|default:"0" }}</span>
             </div>
             <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="M9.344 5.811 10.437 3.92a1.83 1.83 0 0 1 1.548-.888 1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="M13.378 9.633 14.475 13.73l4.096-1.098"/></svg>
@@ -29,13 +25,8 @@
 
         <article class="stat-card">
             <div class="flex flex-col min-w-0">
-                <span class="stat-label">Lokasi Aktif</span>
-                <span class="stat-value">{{ stat_open_spots|default:"0" }}</span>
-                {% if stat_urgent_spots %}
-                <span class="flex items-center gap-[5px] text-[11.5px] font-semibold mt-2 text-[#E5484D]">
-                    <span class="dot dot-red"></span>{{ stat_urgent_spots }} prioritas urgent
-                </span>
-                {% endif %}
+                <span class="stat-label">Total Titik Sampah</span>
+                <span class="stat-value">{{ stat_total_reports|default:"0" }}</span>
             </div>
             <span class="stat-icon stat-icon-warn">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
@@ -44,9 +35,8 @@
 
         <article class="stat-card">
             <div class="flex flex-col min-w-0">
-                <span class="stat-label">Pembersihan Terverifikasi</span>
-                <span class="stat-value">{{ stat_verified|default:"0" }}</span>
-                {% if stat_verified_detail %}<span class="text-[11.5px] font-semibold mt-2 text-[#64766D]">{{ stat_verified_detail }}</span>{% endif %}
+                <span class="stat-label">Laporan Saya</span>
+                <span class="stat-value">{{ stat_user_reports|default:"0" }}</span>
             </div>
             <span class="stat-icon">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
@@ -76,76 +66,62 @@
         <section class="flex flex-col gap-3 min-w-0">
             <div class="searchbar">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" placeholder="Search ward streets, canals, trash spots…">
+                <!-- Search input wired up for live filtering -->
+                <input id="dashboard-search" type="text" placeholder="Cari laporan berdasarkan judul atau patokan lokasi…">
                 <div class="flex gap-1 bg-[#F0F6F2] rounded-full p-1 shrink-0">
-                    <a class="chip is-active" href="#">1 km</a>
-                    <a class="chip" href="#">5 km</a>
-                    <a class="chip" href="#">Semua Wilayah</a>
                 </div>
             </div>
 
             <div class="flex items-center gap-[10px] flex-wrap">
-                <span class="text-[10px] font-extrabold tracking-[0.14em] text-[#8CA096] mr-[2px]">LAYERS</span>
-                <a class="chip chip-white hover:chip-tinted" href="#"><span class="dot dot-red"></span>Sampah Mendesak</a>
-                <a class="chip chip-white hover:chip-tinted" href="#"><span class="dot dot-blue"></span>Kelompok Ditugaskan</a>
-                <a class="chip chip-white hover:chip-tinted" href="#"><span class="dot dot-green"></span>Bersih &amp; Terverifikasi</a>
+                <span class="text-[10px] font-extrabold tracking-[0.14em] text-[#8CA096] mr-[2px]">FILTER</span>
+                <a id="layer-reports" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-red"></span>Sampah</a>
+                <a id="layer-banks" class="chip chip-white hover:chip-tinted is-active select-none cursor-pointer" href="#"><span class="dot dot-green"></span>Bank Sampah</a>
             </div>
 
             <div class="map-box relative overflow-hidden rounded-[20px] h-[450px]">
-                
-                <!-- THE MAP RENDERS INSIDE THIS DIV -->
-                <div id="map" class="absolute inset-0 w-full h-full z-0"></div>
+                <div id="map" class="absolute inset-0 w-full h-full z-0" data-api-url="{% url 'reporting:show_json' %}" data-waste-bank-url="{% url 'directory:get_waste_bank_json' %}"></div>
 
-                <!-- Floating map control buttons sit on top of the map (z-10) -->
                 <div class="map-zoom z-10">
                     <button type="button" id="btn-zoom-in">+</button>
                     <button type="button" id="btn-zoom-out">&minus;</button>
                     <button type="button" id="btn-locate">...</button>
                 </div>
-                
                 <div class="map-fabs z-10">
-                    <a class="btn-dark" href="#">Laporkan Titik Sampah</a>
-                    <a class="btn-accent" href="#">Ambil Tugas Pembersihan</a>
+                    <a class="btn-dark" href="{% url 'reporting:create' %}">Laporkan Titik Sampah</a>
                 </div>
             </div>
         </section>
 
+        <!-- Dynamic Activity Log Card with max height scrollbar -->
         <aside class="card flex flex-col gap-[14px] min-w-0">
-            <div class="flex items-center gap-2">
-                <h2 class="text-[16.5px] font-extrabold text-[#101F19] tracking-[-0.2px]">Pengiriman Tugas</h2>
+            <div class="flex items-center justify-between gap-2">
+                <h2 class="text-[16.5px] font-extrabold text-[#101F19] tracking-[-0.2px]">Laporan Terbaru</h2>
+                <span class="text-[11px] font-semibold text-[#8CA096]">{{ dispatch_logs|length }} laporan</span>
             </div>
 
-            <div class="flex gap-[6px] flex-wrap">
-                <a class="chip hover:chip-tinted" href="#">Semua Catatan</a>
-                <a class="chip hover:chip-tinted" href="#">Mendesak</a>
-                <a class="chip hover:chip-tinted" href="#">Aktif</a>
-                <a class="chip hover:chip-tinted" href="#">Bersih</a>
-            </div>
-
-            <div class="flex flex-col gap-[14px] flex-1">
+            <!-- Scrollable feed container -->
+            <div class="feed-list">
                 {% for r in dispatch_logs %}
-                <article class="feed-item">
-                    <span class="thumb thumb-{{ r.thumb_class|default:'1' }}">
+                <article class="feed-item cursor-pointer hover:bg-[#F0F6F2] p-2 rounded-lg transition-colors select-none"
+                         data-id="{{ r.id }}"
+                         data-title="{{ r.title|lower }}"
+                         data-note="{{ r.location_note|lower }}"
+                         data-lat="{{ r.latitude|unlocalize }}"
+                         data-lng="{{ r.longitude|unlocalize }}">
+                    <span class="thumb thumb-1">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                     </span>
-                    <div class="feed-body">
+                    <div class="feed-body min-w-0">
                         <div class="flex items-center gap-[6px] flex-wrap">
-                            <span class="avatar avatar-sm">{{ r.avatar_initials }}</span>
-                            <strong class="text-[12.5px] text-[#12241D] font-bold whitespace-nowrap">{{ r.reporter }}</strong>
-                            {% if r.time_ago %}<span class="text-[11px] text-[#8CA096] font-semibold whitespace-nowrap">· {{ r.time_ago }}</span>{% endif %}
-                            {% if r.status_label %}<span class="ml-auto badge-status badge-status-{{ r.status_class|default:'pending' }}">{{ r.status_label }}</span>{% endif %}
+                            <span class="avatar avatar-sm">{{ r.reporter.username|first|upper }}</span>
+                            <strong class="text-[12.5px] text-[#12241D] font-bold whitespace-nowrap">{{ r.reporter.username }}</strong>
+                            <span class="text-[11px] text-[#8CA096] font-semibold whitespace-nowrap">· {{ r.created_at|timesince }} lalu</span>
                         </div>
-                        <h4 class="text-[13.5px] font-bold text-[#16241F] tracking-[-0.1px]">{{ r.title }}</h4>
-                        {% if r.location %}
-                        <span class="flex items-center gap-[5px] text-[11.5px] text-[#64766D]">
+                        <h4 class="text-[13.5px] font-bold text-[#16241F] tracking-[-0.1px] mt-1">{{ r.title }}</h4>
+                        {% if r.location_note %}
+                        <span class="flex items-center gap-[5px] text-[11.5px] text-[#64766D] mt-1">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                            {{ r.location }}
-                        </span>
-                        {% endif %}
-                        {% if r.meta_left or r.meta_right %}
-                        <span class="flex items-center gap-2 text-[11.5px] text-[#64766D] font-semibold mt-[2px]">
-                            {% if r.meta_left %}<span>{{ r.meta_left }}</span>{% endif %}
-                            {% if r.meta_right %}<b class="text-[#0E8A47] font-bold">{{ r.meta_right }}</b>{% endif %}
+                            {{ r.location_note }}
                         </span>
                         {% endif %}
                     </div>
@@ -156,43 +132,256 @@
                 </div>
                 {% endfor %}
             </div>
-
-            <button class="btn-action" type="button">
-                Muat Catatan Lama
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
         </aside>
     </div>
 </main>
-{%include 'footer.html'%}
+{% include 'footer.html' %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 1. Initialize map (disable default zoom control to use your custom UI)
-        const map = L.map('map', { 
-            zoomControl: false 
-        }).setView([-6.2088, 106.8456], 13); // Set default [lat, lng] & zoom
 
-        // 2. Load OpenStreetMap Tile Layer
-        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/">HOT</a>'
-        }).addTo(map);
+// greet pengguna berdasarkan waktu
+document.addEventListener('DOMContentLoaded', function() {
+    const username = "{{ username }}";
+    const hour = new Date().getHours();
+    let greeting = 'Selamat Datang';
 
-        // 3. Bind custom map controls
-        document.getElementById('btn-zoom-in')?.addEventListener('click', () => map.zoomIn());
-        document.getElementById('btn-zoom-out')?.addEventListener('click', () => map.zoomOut());
-        document.getElementById('btn-locate')?.addEventListener('click', () => {
-            map.locate({ setView: true, maxZoom: 16 });
-        });
+    if (hour >= 4 && hour < 11) {
+        greeting = 'Selamat Pagi';
+    } else if (hour >= 11 && hour < 15) {
+        greeting = 'Selamat Siang';
+    } else if (hour >= 15 && hour < 18) {
+        greeting = 'Selamat Sore';
+    } else {
+        greeting = 'Selamat Malam';
+    }
 
-        // 4. Handle Geolocation Success
-        map.on('locationfound', (e) => {
-            L.marker(e.latlng).addTo(map)
-                .bindPopup('Lokasi Anda Sekarang')
-                .openPopup();
+    const greetingElement = document.getElementById('user-greeting');
+    if (greetingElement) {
+        greetingElement.textContent = `${greeting}, ${username}!`;
+    }
+});
+
+const reportMarkersMap = {};
+const reportMarkersList = []; // Track markers for search filtering
+let reportLayerGroup, bankLayerGroup;
+let reportsVisible = true;
+let banksVisible = true;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
+    const map = L.map(mapElement, { zoomControl: false, minZoom: 5, maxZoom: 20 }).setView([-6.2088, 106.8456], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/">HOT</a>'
+    }).addTo(map);
+
+    document.getElementById('btn-zoom-in')?.addEventListener('click', () => map.zoomIn());
+    document.getElementById('btn-zoom-out')?.addEventListener('click', () => map.zoomOut());
+    document.getElementById('btn-locate')?.addEventListener('click', () => {
+        map.locate({ setView: true, maxZoom: 16 });
+    });
+
+    map.on('locationfound', (e) => {
+        L.marker(e.latlng).addTo(map).bindPopup('<b>Lokasi Anda Sekarang</b>').openPopup();
+    });
+
+    // Initialize Layer Groups globally
+    reportLayerGroup = L.layerGroup().addTo(map);
+    bankLayerGroup = L.layerGroup().addTo(map);
+
+    const reportApiUrl = mapElement.dataset.apiUrl;
+    const wasteBankApiUrl = mapElement.dataset.wasteBankUrl;
+
+    if (reportApiUrl) fetchReportMarkers(reportLayerGroup, reportApiUrl, map);
+    if (wasteBankApiUrl) fetchWasteBankMarkers(bankLayerGroup, wasteBankApiUrl);
+
+    // Layer Toggle Click Handlers
+    const layerReportsBtn = document.getElementById('layer-reports');
+    const layerBanksBtn = document.getElementById('layer-banks');
+
+    layerReportsBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        reportsVisible = !reportsVisible;
+        if (reportsVisible) {
+            map.addLayer(reportLayerGroup);
+            layerReportsBtn.classList.add('is-active');
+        } else {
+            map.removeLayer(reportLayerGroup);
+            layerReportsBtn.classList.remove('is-active');
+        }
+    });
+
+    layerBanksBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        banksVisible = !banksVisible;
+        if (banksVisible) {
+            map.addLayer(bankLayerGroup);
+            layerBanksBtn.classList.add('is-active');
+        } else {
+            map.removeLayer(bankLayerGroup);
+            layerBanksBtn.classList.remove('is-active');
+        }
+    });
+
+    // Interactive Dispatch Logs (Click feed item to fly to map pin)
+    document.querySelectorAll('.feed-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const id = item.dataset.id;
+            const lat = parseFloat(item.dataset.lat);
+            const lng = parseFloat(item.dataset.lng);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                if (!reportsVisible) {
+                    reportsVisible = true;
+                    map.addLayer(reportLayerGroup);
+                    layerReportsBtn?.classList.add('is-active');
+                }
+                map.flyTo([lat, lng], 17, { duration: 1.2 });
+                if (id && reportMarkersMap[id]) {
+                    setTimeout(() => reportMarkersMap[id].openPopup(), 1200);
+                }
+            }
         });
     });
+
+    // Real-Time Search Filtering for Feed & Map Markers
+    const searchInput = document.getElementById('dashboard-search');
+    searchInput?.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+
+        // 1. Filter Feed Items
+        document.querySelectorAll('.feed-item').forEach(item => {
+            const title = item.dataset.title || '';
+            const note = item.dataset.note || '';
+            if (title.includes(query) || note.includes(query)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // 2. Filter Map Report Markers
+        reportMarkersList.forEach(({ id, marker, title, note }) => {
+            const matches = title.includes(query) || note.includes(query);
+            if (query === '' || matches) {
+                if (reportsVisible && !reportLayerGroup.hasLayer(marker)) {
+                    marker.addTo(reportLayerGroup);
+                }
+            } else {
+                if (reportLayerGroup.hasLayer(marker)) {
+                    reportLayerGroup.removeLayer(marker);
+                }
+            }
+        });
+    });
+});
+
+async function fetchReportMarkers(layerGroup, apiUrl, map) {
+    try {
+        const response = await fetch(apiUrl, { headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" } });
+        if (!response.ok) return;
+        const data = await response.json();
+        const reports = data.reports || (Array.isArray(data) ? data : []);
+
+        const redIcon = L.divIcon({
+            className: 'custom-red-marker',
+            html: `<svg width="25" height="41" viewBox="0 0 24 36" fill="none"><path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#DC2626"/><circle cx="12" cy="11" r="4.5" fill="#FFFFFF"/></svg>`,
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+        });
+
+        reports.forEach(report => {
+            const lat = parseFloat(report.latitude);
+            const lng = parseFloat(report.longitude);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.marker([lat, lng], { icon: redIcon }).addTo(layerGroup);
+                
+                let dateStr = report.created_at ? new Date(report.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
+                const popupContent = `
+                    <div style="min-width: 200px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                        <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #11352B;">${escapeHtml(report.title || 'Laporan Sampah')}</h4>
+                        <p style="margin: 0 0 6px 0; font-size: 12px; color: #1A202C; line-height: 1.4;">${escapeHtml(report.description || 'Tidak ada deskripsi.')}</p>
+                        ${report.location_note ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #64766D; font-style: italic;">📍 <strong>Patokan:</strong> ${escapeHtml(report.location_note)}</p>` : ''}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px solid #E2EDE6; font-size: 10px; color: #64766D;">
+                            <span>${dateStr ? '📅 ' + dateStr : ''}</span>
+                            <span style="font-weight: 600; color: #115D3F;">${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
+                        </div>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+
+                if (report.id) {
+                    reportMarkersMap[report.id] = marker;
+                }
+                reportMarkersList.push({
+                    id: report.id,
+                    marker: marker,
+                    title: (report.title || '').toLowerCase(),
+                    note: (report.location_note || '').toLowerCase()
+                });
+            }
+        });
+
+        if (layerGroup.getLayers().length > 0 && map) {
+            map.fitBounds(L.featureGroup(layerGroup.getLayers()).getBounds(), { padding: [40, 40] });
+        }
+    } catch (err) {
+        console.error("Error loading report markers:", err);
+    }
+}
+
+async function fetchWasteBankMarkers(layerGroup, apiUrl) {
+    try {
+        const response = await fetch(apiUrl, { headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" } });
+        if (!response.ok) return;
+        const data = await response.json();
+        const banks = Array.isArray(data) ? data : [];
+
+        const greenIcon = L.divIcon({
+            className: 'custom-green-marker',
+            html: `
+                <svg width="28" height="42" viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z" fill="#0C4A35"/>
+                    <circle cx="12" cy="11" r="7.5" fill="#FFFFFF"/>
+                    <path d="M12 6.5L6.5 9.5V10.5H17.5V9.5L12 6.5ZM8 11.5H9.5V14.5H8V11.5ZM11.25 11.5H12.75V14.5H11.25V11.5ZM14.5 11.5H16V14.5H14.5V11.5ZM6 15.5V16.5H18V15.5H6Z" fill="#0C4A35"/>
+                </svg>
+            `,
+            iconSize: [28, 42], 
+            iconAnchor: [14, 42], 
+            popupAnchor: [0, -38]
+        });
+
+        banks.forEach(item => {
+            const fields = item.fields || item;
+            const lat = parseFloat(fields.latitude);
+            const lng = parseFloat(fields.longitude);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.marker([lat, lng], { icon: greenIcon }).addTo(layerGroup);
+                const popupContent = `
+                    <div style="min-width: 190px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                        <span style="font-size: 9px; font-weight: 800; color: #0C4A35; background: #E5F7EA; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">BANK SAMPAH</span>
+                        <h4 style="margin: 6px 0 3px 0; font-size: 14px; font-weight: 700; color: #10251D;">${escapeHtml(fields.name || 'Bank Sampah')}</h4>
+                        <p style="margin: 0 0 4px 0; font-size: 11px; color: #6D8076;">📍 ${escapeHtml(fields.address || '-')}</p>
+                        ${fields.contact_number ? `<p style="margin: 0 0 2px 0; font-size: 11px; color: #6D8076;">📞 ${escapeHtml(fields.contact_number)}</p>` : ''}
+                        ${fields.email ? `<p style="margin: 0; font-size: 11px; color: #6D8076;">✉️ ${escapeHtml(fields.email)}</p>` : ''}
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+            }
+        });
+    } catch (err) {
+        console.error("Error loading Waste Bank markers:", err);
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 </script>
 {% endblock scripts %}
