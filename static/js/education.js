@@ -14,7 +14,9 @@ function setupQuiz() {
     const nextButton = document.getElementById("quiz-next");
     const resultBox = document.getElementById("quiz-result");
     const scoreText = document.getElementById("quiz-score");
-    const scoreIndicator = document.getElementById("quiz-score-indicator");
+    const totalText = document.getElementById("quiz-total");
+    const resultStars = document.querySelectorAll("[data-score-star]");
+    const resultStarsLabel = document.getElementById("quiz-result-stars");
     const binButtons = document.querySelectorAll(".bin");
 
     /* Ubah daftar <li> di #quiz-data menjadi daftar soal. */
@@ -29,6 +31,20 @@ function setupQuiz() {
     if (playArea.dataset.canPlay !== "true") {
         binButtons.forEach(function (button) { button.disabled = true; });
     }
+
+    function renderResultScore(value, total) {
+        scoreText.textContent = value;
+        totalText.textContent = total;
+        resultStars.forEach(function (star, index) {
+            star.classList.toggle("is-filled", index < value);
+        });
+        resultStarsLabel.setAttribute("aria-label", "Skor " + value + " dari " + total);
+    }
+
+    renderResultScore(
+        Number(resultBox.dataset.score || 0),
+        Number(resultBox.dataset.total || questions.length)
+    );
 
     if (questions.length === 0) {
         return;
@@ -58,9 +74,6 @@ function setupQuiz() {
         return { ok: response.ok, data: data };
     }
 
-    function renderScore(value) {
-        scoreIndicator.textContent = "Skor: " + value + "/" + questions.length;
-    }
     /* Tampilkan soal yang sedang aktif */
     function showQuestion() {
         const question = questions[currentQuestion];
@@ -112,8 +125,6 @@ function setupQuiz() {
             if (data.correct) {
                 score = score + 1;
             }
-            renderScore(score);
-
             // Cari tulisan tong yang benar + tandai tombolnya
             let correctLabel = data.correct_bin;
             binButtons.forEach(function (button) {
@@ -132,9 +143,12 @@ function setupQuiz() {
             feedbackText.textContent = message;
             feedbackText.hidden = false;
 
-            const isLastQuestion = (currentQuestion === questions.length - 1);
-            nextButton.textContent = isLastQuestion ? "Lihat skor" : "Soal berikutnya";
-            nextButton.hidden = false;
+            if (currentQuestion === questions.length - 1) {
+                showResult();
+            } else {
+                nextButton.textContent = "Soal berikutnya";
+                nextButton.hidden = false;
+            }
 
         } catch (error) {
             console.error(error);
@@ -147,18 +161,19 @@ function setupQuiz() {
 
     /* Pindah ke soal berikutnya, atau tampilkan skor kalau soal sudah habis */
     function goToNext() {
-        currentQuestion = currentQuestion + 1;
-
-        if (currentQuestion < questions.length) {
-            showQuestion();
-        } else {
+        if (currentQuestion === questions.length - 1) {
             showResult();
+            return;
         }
+
+        currentQuestion = currentQuestion + 1;
+        showQuestion();
     }
 
     /* Tampilkan skor akhir */        
     async function showResult() {
         nextButton.disabled = true;
+        nextButton.hidden = true;
         scoreText.textContent = "Menyimpan hasil kuis...";
 
         try {
@@ -169,11 +184,12 @@ function setupQuiz() {
                     "Hasil kuis tidak dapat disimpan. Muat ulang halaman dan coba lagi.";
                 feedbackText.hidden = false;
                 nextButton.disabled = false;
+                nextButton.textContent = "Coba lagi";
+                nextButton.hidden = false;
                 return;
             }
 
-            scoreText.textContent = result.data.score + "/" + result.data.total;
-            renderScore(result.data.score);
+            renderResultScore(result.data.score, result.data.total);
 
             playArea.hidden = true;
             resultBox.hidden = false;
@@ -183,6 +199,8 @@ function setupQuiz() {
             feedbackText.textContent = "Tidak dapat terhubung ke server. Silakan coba lagi.";
             feedbackText.hidden = false;
             nextButton.disabled = false;
+            nextButton.textContent = "Coba lagi";
+            nextButton.hidden = false;
         }
     }
 
