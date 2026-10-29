@@ -66,10 +66,8 @@
         <section class="flex flex-col gap-3 min-w-0">
             <div class="searchbar">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <!-- Search input wired up for live filtering -->
                 <input id="dashboard-search" type="text" placeholder="Cari laporan berdasarkan judul atau patokan lokasi…">
-                <div class="flex gap-1 bg-[#F0F6F2] rounded-full p-1 shrink-0">
-                </div>
+                <div class="flex gap-1 bg-[#F0F6F2] rounded-full p-1 shrink-0"></div>
             </div>
 
             <div class="flex items-center gap-[10px] flex-wrap">
@@ -134,12 +132,93 @@
             </div>
         </aside>
     </div>
+
+    {# ---------- Bottom Component: Komunitas & Diskusi Komentar ---------- #}
+    <section class="card flex flex-col gap-5 mt-2" aria-labelledby="comments-section-title">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E2EDE6]">
+            <div class="flex items-center gap-2.5">
+                <span class="stat-icon bg-[#DCF3E4] text-[#0C4A35]">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </span>
+                <div>
+                    <h2 id="comments-section-title" class="text-[18px] sm:text-[20px] font-extrabold text-[#101F19] tracking-[-0.3px]">Diskusi Komunitas</h2>
+                    <p class="text-[12px] text-[#64766D]">Suarakan pendapat, saran, atau informasi seputar kebersihan lingkungan.</p>
+                </div>
+            </div>
+            <span id="comment-count-badge" class="badge badge-success shrink-0">
+                {{ comments|length|default:"0" }} Komentar
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {# Left Column: Form to post comment #}
+            <div class="lg:col-span-4 flex flex-col gap-3.5 bg-[#F8FBF9] p-4 sm:p-5 rounded-[16px] border border-[#E2EDE6]">
+                <h3 class="text-[14px] font-extrabold text-[#101F19]">Tulis Komentar Baru</h3>
+                <form id="add-comment-form" method="post" action="{% url 'comment:add' %}" class="flex flex-col gap-3">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <textarea id="comment-content" name="content" rows="3" class="report-input text-xs" placeholder="Tulis tanggapan atau catatan lokasi kamu di sini…" required></textarea>
+                    </div>
+                    <button type="submit" id="submit-comment-btn" class="btn-primary text-xs font-bold gap-2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        Kirim Komentar
+                    </button>
+                </form>
+            </div>
+
+            {# Right Column: Scrollable comments list #}
+            <div class="lg:col-span-8 flex flex-col gap-3 min-w-0">
+                <div id="comment-list-container" class="flex flex-col gap-3 max-h-[360px] sm:max-h-[440px] overflow-y-auto pr-1.5" role="feed" aria-label="Daftar Komentar">
+                    {% for comment in comments %}
+                    <article class="relative flex gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-[16px] bg-[#F8FBF9] border border-[#E2EDE6] transition-colors duration-150 hover:bg-[#F0F6F2]" id="comment-{{ comment.id }}">
+                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full grid place-items-center text-white text-[11px] font-extrabold bg-gradient-to-br from-[#34C486] to-[#0E7A52] shrink-0">
+                            {{ comment.user.username|default:"U"|first|upper }}
+                        </div>
+                        <div class="flex-1 min-w-0 flex flex-col gap-1">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2 flex-wrap text-xs">
+                                    <span class="font-bold text-[#101F19] text-[13px]">{{ comment.user.username|default:"Pengguna" }}</span>
+                                    {% if comment.user.is_staff %}
+                                    <span class="text-[9px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-full bg-[#E7F0FE] text-[#1D4ED8]">Staff</span>
+                                    {% endif %}
+                                    <span class="text-[11px] font-semibold text-[#8CA096]">· {{ comment.created_at|timesince }} lalu</span>
+                                </div>
+
+                                {% if comment.user == request.user or comment.user.username == username or request.user.is_staff or is_staff or request.user.is_superuser %}
+                                <div class="relative shrink-0 ml-auto dropdown-wrapper">
+                                    <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-[#8CA096] hover:text-[#101F19] hover:bg-[#E2EDE6] transition-colors duration-150 cursor-pointer border-none bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#11734F]" onclick="toggleCommentDropdown(event, 'comment-menu-{{ comment.id }}')" aria-label="Opsi komentar">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                                    </button>
+                                    <div id="comment-menu-{{ comment.id }}" class="hidden comment-dropdown-menu absolute right-0 top-8 z-30 min-w-[150px] p-1.5 bg-white border border-[#E2EDE6] rounded-[12px] shadow-[0_8px_24px_rgba(16,31,25,0.12)] origin-top-right">
+                                        <form class="delete-comment-form" method="post" action="{% url 'comment:delete' comment.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold rounded-[8px] transition-colors duration-150 text-left border-none bg-transparent cursor-pointer text-[#E5484D] hover:bg-[#FDECEC] hover:text-[#DC2626]">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                                Hapus Komentar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-[#2A3B33] leading-relaxed break-words mt-0.5">{{ comment.content }}</p>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <div id="empty-comments-notice" class="border-[1.5px] border-dashed border-[#C4E8D3] rounded-[16px] p-8 text-center text-xs font-semibold text-[#8CA096] bg-[#F8FBF9]">
+                        Belum ada komentar. Jadi yang pertama berdiskusi!
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
 </main>
 {% include 'footer.html' %}
 
 {% block scripts %}
 <script>
-
 // greet pengguna berdasarkan waktu
 document.addEventListener('DOMContentLoaded', function() {
     const username = "{{ username }}";
@@ -377,6 +456,140 @@ async function fetchWasteBankMarkers(layerGroup, apiUrl) {
     } catch (err) {
         console.error("Error loading Waste Bank markers:", err);
     }
+}
+
+// --- DROPDOWN CONTROLLER ---
+function toggleCommentDropdown(event, menuId) {
+    event.stopPropagation();
+    const targetMenu = document.getElementById(menuId);
+    if (!targetMenu) return;
+
+    // Close all other open dropdowns
+    document.querySelectorAll('.comment-dropdown-menu').forEach(menu => {
+        if (menu.id !== menuId) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    targetMenu.classList.toggle('hidden');
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown-wrapper')) {
+        document.querySelectorAll('.comment-dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+    }
+});
+
+// --- AJAX COMMENT HANDLERS ---
+document.addEventListener('DOMContentLoaded', function() {
+    const addCommentForm = document.getElementById('add-comment-form');
+    const commentContainer = document.getElementById('comment-list-container');
+    const badgeCount = document.getElementById('comment-count-badge');
+
+    // Add Comment AJAX
+    addCommentForm?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const textarea = document.getElementById('comment-content');
+        const content = textarea.value.trim();
+        if (!content) return;
+
+        const formData = new FormData(addCommentForm);
+
+        try {
+            const response = await fetch(addCommentForm.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                textarea.value = '';
+                document.getElementById('empty-comments-notice')?.remove();
+
+                const deleteUrl = `/comment/delete/${data.id}/`;
+                const newCommentHtml = `
+                <article class="relative flex gap-3 sm:gap-3.5 p-3.5 sm:p-4 rounded-[16px] bg-[#F8FBF9] border border-[#E2EDE6] transition-colors duration-150 hover:bg-[#F0F6F2]" id="comment-${data.id}">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full grid place-items-center text-white text-[11px] font-extrabold bg-gradient-to-br from-[#34C486] to-[#0E7A52] shrink-0">
+                        ${escapeHtml(data.username[0].toUpperCase())}
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col gap-1">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <div class="flex items-center gap-2 flex-wrap text-xs">
+                                <span class="font-bold text-[#101F19] text-[13px]">${escapeHtml(data.username)}</span>
+                                <span class="text-[11px] font-semibold text-[#8CA096]">· baru saja</span>
+                            </div>
+                            <div class="relative shrink-0 ml-auto dropdown-wrapper">
+                                <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-[#8CA096] hover:text-[#101F19] hover:bg-[#E2EDE6] transition-colors duration-150 cursor-pointer border-none bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#11734F]" onclick="toggleCommentDropdown(event, 'comment-menu-${data.id}')" aria-label="Opsi komentar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                                </button>
+                                <div id="comment-menu-${data.id}" class="hidden comment-dropdown-menu absolute right-0 top-8 z-30 min-w-[150px] p-1.5 bg-white border border-[#E2EDE6] rounded-[12px] shadow-[0_8px_24px_rgba(16,31,25,0.12)] origin-top-right">
+                                    <form class="delete-comment-form" method="post" action="${deleteUrl}">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+                                        <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold rounded-[8px] transition-colors duration-150 text-left border-none bg-transparent cursor-pointer text-[#E5484D] hover:bg-[#FDECEC] hover:text-[#DC2626]">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                            Hapus Komentar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-[#2A3B33] leading-relaxed break-words mt-0.5">${escapeHtml(data.content)}</p>
+                    </div>
+                </article>`;
+
+                commentContainer.insertAdjacentHTML('afterbegin', newCommentHtml);
+                updateBadgeCount(1);
+            } else {
+                alert(data.message || 'Gagal menambahkan komentar.');
+            }
+        } catch (err) {
+            console.error('Error adding comment:', err);
+        }
+    });
+
+    // Delete Comment AJAX
+    commentContainer?.addEventListener('submit', async function(e) {
+        if (!e.target.classList.contains('delete-comment-form')) return;
+        e.preventDefault();
+
+        const form = e.target;
+        const commentArticle = form.closest('article');
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new FormData(form)
+            });
+
+            if (response.ok) {
+                commentArticle?.remove();
+                updateBadgeCount(-1);
+
+                if (commentContainer.children.length === 0) {
+                    commentContainer.innerHTML = `
+                        <div id="empty-comments-notice" class="border-[1.5px] border-dashed border-[#C4E8D3] rounded-[16px] p-8 text-center text-xs font-semibold text-[#8CA096] bg-[#F8FBF9]">
+                            Belum ada komentar. Jadi yang pertama berdiskusi!
+                        </div>`;
+                }
+            }
+        } catch (err) {
+            console.error('Error deleting comment:', err);
+        }
+    });
+
+    function updateBadgeCount(change) {
+        if (!badgeCount) return;
+        const currentText = badgeCount.textContent.trim();
+        const count = parseInt(currentText) || 0;
+        const newCount = Math.max(0, count + change);
+        badgeCount.textContent = `${newCount} Komentar`;
+    }
+});
+
+function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
 }
 
 function escapeHtml(str) {
