@@ -10,4 +10,5 @@ urlpatterns = [
     path("create/", views.create_report, name="create"),
     path("<int:pk>/edit/", views.edit_report, name="edit"),
     path("<int:pk>/delete/", views.delete_report, name="delete"),
+    path('mark-done/<int:pk>/', views.mark_done_ajax, name='mark_done'),
 ]
