@@ -26,6 +26,7 @@ urlpatterns = [
     path('logout/', logout_user, name='logout_user'),
     path('dashboard/', dashboard, name='dashboard'),
     path('directory/', include('directory.urls')),
+    path('education/', include("education.urls")),
     path('reporting/', include('reporting.urls')),
     path('comment/', include('comment.urls'))
 ]

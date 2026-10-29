@@ -8,6 +8,7 @@
         <nav class="nav-group" aria-label="Navigasi utama">
             <a class="nav-link {% if active_page == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
             <a class="nav-link {% if active_page == 'directory' %}is-active{% endif %}" href="{% url 'directory:show_directory'%}">Direktori Bank Sampah</a>
+            <a class="nav-link {% if active_page == 'education' %}is-active{% endif %}" href="{% url 'education' %}">Edukasi Sampah</a>
             <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="#">Hadiah &amp; FAQ</a>
         </nav>
 
@@ -16,7 +17,7 @@
                 Lapor Sampah
             </a>
             <a class="flex items-center gap-[9px] no-underline" href="#">
-                <span class="avatar" title="{{ request.user.username }}">{{ request.user.username|first|upper }}</span>
+                <span class="avatar">{% if user.is_authenticated %}{{ user.get_username|first|upper }}{% endif %}</span>
             </a>
             <a class="btn-primary h-[38px] text-[12.5px] px-4 font-bold hidden lg:inline-flex" href="{% url 'logout_user' %}">Keluar</a>
 
@@ -33,6 +34,7 @@
     <div id="mobile-menu" class="hidden lg:hidden border-t border-[#E2EDE6] bg-white px-6 py-4 flex flex-col gap-3 shadow-lg">
         <a class="nav-link {% if active_page == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
         <a class="nav-link {% if active_page == 'directory' %}is-active{% endif %}" href="{% url 'directory:show_directory'%}">Direktori Bank Sampah</a>
+        <a class="nav-link {% if active_page == 'education' %}is-active{% endif %}" href="{% url 'education' %}">Edukasi Sampah</a>
         <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="#">Hadiah &amp; FAQ</a>
         <hr class="border-[#E2EDE6] my-1" />
         <a class="btn-primary h-[40px] text-[13px]" href="{% url 'logout_user' %}">Keluar</a>
