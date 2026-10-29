@@ -10,14 +10,12 @@ from django.db.models import Q
 
 # Create your views here.
 def show_directory(request):
-    name_query = request.GET.get("title", "").strip()
-    waste_banks = WasteBank.objects.all()
+    name_query = request.GET.get("name", "").strip()
 
     context = {
         "name_query": name_query,
         "is_staff": request.user.groups.filter(name='Staff').exists(),
         "form": WasteBankForm(),
-        "waste_banks": waste_banks,
         "active_page": "directory"
     }
     return render(request, "directory/directory_page.html", context)
