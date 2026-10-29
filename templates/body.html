@@ -6,7 +6,7 @@
     <section class="card flex max-sm:flex-col items-center max-sm:items-start justify-between gap-[18px]">
         <div>
             <div class="flex items-center gap-3 flex-wrap">
-                <h1 class="text-[25px] font-extrabold tracking-[-0.4px] text-[#101F19]">Selamat Datang, {{ username }}!</h1>
+                <h1 id="user-greeting" class="text-[25px] font-extrabold tracking-[-0.4px] text-[#101F19]">Selamat Datang, {{ username }}!</h1>
             </div>
         </div>
     </section>
@@ -139,6 +139,29 @@
 
 {% block scripts %}
 <script>
+
+// greet pengguna berdasarkan waktu
+document.addEventListener('DOMContentLoaded', function() {
+    const username = "{{ username }}";
+    const hour = new Date().getHours();
+    let greeting = 'Selamat Datang';
+
+    if (hour >= 4 && hour < 11) {
+        greeting = 'Selamat Pagi';
+    } else if (hour >= 11 && hour < 15) {
+        greeting = 'Selamat Siang';
+    } else if (hour >= 15 && hour < 18) {
+        greeting = 'Selamat Sore';
+    } else {
+        greeting = 'Selamat Malam';
+    }
+
+    const greetingElement = document.getElementById('user-greeting');
+    if (greetingElement) {
+        greetingElement.textContent = `${greeting}, ${username}!`;
+    }
+});
+
 const reportMarkersMap = {};
 const reportMarkersList = []; // Track markers for search filtering
 let reportLayerGroup, bankLayerGroup;
