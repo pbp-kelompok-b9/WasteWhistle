@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.views.decorators.cache import never_cache
 
 from .forms import ReportForm
@@ -28,11 +28,30 @@ def show_json(request):
             "latitude": float(report.latitude),
             "longitude": float(report.longitude),
             "created_at": report.created_at.isoformat(),
+            "is_resolved": report.is_resolved
         }
         for report in Report.objects.all()
     ]
     return JsonResponse({"reports": reports})
 
+# 1. Add view to mark report as done
+@login_required
+@require_POST
+def mark_done_ajax(request, pk):
+    report = get_object_or_404(Report, pk=pk)
+    
+    # Allow staff, superusers, or the report creator to mark as resolved
+    if not (request.user.is_staff or request.user.is_superuser or report.reporter == request.user):
+        return JsonResponse({'message': 'Kamu tidak memiliki izin untuk mengubah status laporan ini.'}, status=403)
+
+    report.is_resolved = True
+    report.save()
+
+    return JsonResponse({
+        'message': 'Laporan berhasil ditandai selesai.',
+        'id': report.id,
+        'is_resolved': True
+    }, status=200)
 
 @login_required(login_url="login_user")
 @require_GET
@@ -115,12 +134,25 @@ def edit_report(request, pk):
 @login_required(login_url="login_user")
 @require_http_methods(["GET", "POST"])
 def delete_report(request, pk):
-    report = get_object_or_404(Report, pk=pk, reporter=request.user)
+    # Allow staff/superuser to delete any report, regular users can only delete their own
+    if request.user.is_staff or request.user.is_superuser:
+        report = get_object_or_404(Report, pk=pk)
+    else:
+        report = get_object_or_404(Report, pk=pk, reporter=request.user)
+
     if request.method == "POST":
         report_id = report.pk
         report.delete()
+
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({
+                "message": f"Laporan #{report_id} berhasil dihapus.",
+                "id": report_id
+            }, status=200)
+
         messages.success(request, f"Laporan #{report_id} berhasil dihapus.")
         return redirect("reporting:list")
+
     return render(request, "reporting/confirm_delete.html", {
         "report": report, "active_page": "reporting",
     })

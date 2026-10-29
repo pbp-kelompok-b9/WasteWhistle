@@ -9,21 +9,27 @@
 {% block body %}
     {%include 'topbar.html'%}
     <main class="directory-page">
-        {% with total=waste_banks|length %}
+        {% if messages %}
+            <div class="directory-panel mb-4" aria-live="polite">
+                {% for message in messages %}
+                    <p role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         <section class="directory-hero">
             <div class="directory-hero__copy max-w-[580px]">
                 <div class="flex items-center gap-2 text-[10px] font-bold"><span class="directory-dot directory-dot--light"></span>JARINGAN KOMUNITAS</div>
-                <h1>Directory Bank Sampah</h1>
+                <h1>Direktori Bank Sampah</h1>
                 <p>Temukan lokasi bank sampah di dekat Anda.</p>
                 <div class="directory-hero__meta">
-                    <span><strong>{{ total }}</strong> lokasi terdaftar</span>
+                    <span><strong id="directory-total-meta">Memuat…</strong> lokasi terdaftar</span>
                     <span class="directory-hero__divider"></span>
                     <span>Diperbarui untuk komunitas</span>
                 </div>
             </div>
             <div class="directory-hero__stat" aria-label="Total waste banks">
                 <span class="directory-hero__stat-label">Total ada</span>
-                <strong>{{ total }}</strong>
+                <strong id="directory-total-stat">Memuat…</strong>
                 <span>bank sampah aktif</span>
                 <svg class="directory-hero__shape" viewBox="0 0 180 180" aria-hidden="true">
                     <circle cx="90" cy="90" r="72"/><circle cx="90" cy="90" r="48"/><circle cx="90" cy="90" r="23"/>
@@ -40,7 +46,7 @@
                         </div>
                         <p>Telusuri lokasinya dan hubungi pihak terkait sebelum Anda berkunjung.</p>
                     </div>
-                    <span class="directory-count">{{ total }} lokasi</span>
+                    <span class="directory-count" id="directory-total-count">Memuat… lokasi</span>
                 </div>
 
                 <label class="directory-search" for="directory-search">
@@ -63,60 +69,6 @@
                     data-edit-url-template="{% url 'directory:edit_waste_bank' '00000000-0000-0000-0000-000000000000' %}"
                     data-delete-url-template="{% url 'directory:delete_waste_bank' '00000000-0000-0000-0000-000000000000' %}"
                 >
-                    {% for bank in waste_banks %}
-                    <article class="directory-bank-card directory-row" data-search="{{ bank.name }} {{ bank.address }} {{ bank.contact_number }} {{ bank.email }}">
-                        <span class="directory-bank-card__number">{{ forloop.counter|stringformat:'02d' }}</span>
-                        <div class="directory-bank-card__body min-w-0 flex-1">
-                            <div class="directory-bank-card__title flex flex-wrap items-center gap-2">
-                                <h3>{{ bank.name }}</h3>
-                                <span class="directory-open-label"><span class="directory-dot directory-dot--green"></span>Terverifikasi</span>
-                            </div>
-                            <p class="directory-bank-card__address directory-count flex items-center gap-1">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
-                                </svg>
-                                {{ bank.address }}
-                            </p>
-                            <div class="directory-bank-card__contacts flex flex-wrap items-center gap-2">
-                                {% if bank.contact_number %}
-                                    <span class="directory-contact-chip directory-count flex items-center gap-1">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"/>
-                                        </svg>
-                                        {{ bank.contact_number }}
-                                    </span>
-                                {% endif %}
-                                {% if bank.email %}
-                                    <span class="directory-contact-chip directory-count flex items-center gap-1">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                            <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"/>
-                                        </svg>
-                                        {{ bank.email }}
-                                    </span>
-                                {% endif %}
-                                {% if not bank.contact_number and not bank.email %}<span class="directory-contact-chip directory-count">Kontak tidak disediakan</span>{% endif %}
-                            </div>
-                        </div>
-                        {% if user.is_superuser or is_staff %}
-                            <a class="directory-bank-card__action directory-secondary-button p-2" href="{% url 'directory:edit_waste_bank' bank.id %}" aria-label="Edit {{ bank.name }}">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/>
-                                </svg>
-                            </a>
-                            {% include 'directory/waste_bank_delete.html' %}
-                        {% endif %}
-                    </article>
-                    {% empty %}
-                    <div class="directory-empty" id="directory-empty">
-                        <span class="directory-empty__icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="m7 7 3-3 3 3"/><path d="M10 4v8a4 4 0 0 0 4 4h3"/><path d="m17 13 3 3-3 3"/><path d="M20 16h-8a4 4 0 0 1-4-4V9"/>
-                            </svg>
-                        </span>
-                        <strong>Belum ada bank sampah yang terdaftar</strong>
-                        <p>Setelah lokasi ditambahkan, lokasi tersebut akan muncul di sini.</p>
-                    </div>
-                    {% endfor %}
                     <div class="directory-empty directory-empty--search" id="directory-no-results" hidden>
                         <strong>Tidak ada lokasi yang cocok dengan pencarian Anda</strong>
                         <p>Coba nama atau alamat yang berbeda.</p>
@@ -126,8 +78,6 @@
 
             {% if user.is_superuser or is_staff %}
             <aside>
-                </div>
-
                 <div class="directory-panel" id="directory-help">
                     <span class="directory-empty__icon">
                         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -137,11 +87,14 @@
                     <h2>Tahu lokasi bank sampah?</h2>
                     <p>Bantu mengembangkan direktori ini dengan membagikan informasi bank sampah lokal yang tepercaya.</p>
                         <a class="directory-secondary-button" href="{% url 'directory:create_waste_bank' %}">Tambahkan lokasi baru <span aria-hidden="true">→</span></a>
+                    <form method="post" action="{% url 'directory:sync_osm_waste_banks' %}">
+                        {% csrf_token %}
+                        <button class="directory-secondary-button" type="submit">Perbarui data dari OpenStreetMap</button>
+                    </form>
                 </div>
             </aside>
             {% endif %}
         </section>
-        {% endwith %}
     </main>
 
     {% include 'footer.html'%}
@@ -151,6 +104,9 @@
         const directorySearch = document.getElementById("directory-search");
         const directoryResults = document.getElementById("directory-results");
         const resultCount = document.getElementById("directory-result-count");
+        const directoryTotalMeta = document.getElementById("directory-total-meta");
+        const directoryTotalStat = document.getElementById("directory-total-stat");
+        const directoryTotalCount = document.getElementById("directory-total-count");
         let searchRequest;
         let searchTimer;
 
@@ -224,6 +180,7 @@
             const fields = bank.fields || {};
             const card = document.createElement("article");
             card.className = "directory-bank-card directory-row";
+            card.dataset.source = bank.source || "manual";
             card.dataset.search = [fields.name, fields.address, fields.contact_number, fields.email].join(" ");
 
             const number = document.createElement("span");
@@ -239,7 +196,9 @@
             heading.textContent = fields.name || "Unnamed waste bank";
             const verified = document.createElement("span");
             verified.className = "directory-open-label";
-            verified.innerHTML = '<span class="directory-dot directory-dot--green"></span>Verified';
+            verified.innerHTML = bank.source === "osm"
+                ? '<span class="directory-dot directory-dot--green"></span>OpenStreetMap'
+                : '<span class="directory-dot directory-dot--green"></span>Komunitas';
             title.append(heading, verified);
 
             const address = document.createElement("p");
@@ -271,7 +230,7 @@
             body.append(title, address, contacts);
             card.append(number, body);
 
-            if (directoryResults.dataset.canEdit === "true") {
+            if (bank.is_manual && directoryResults.dataset.canEdit === "true") {
                 const editLink = document.createElement("a");
                 editLink.className = "directory-bank-card__action directory-secondary-button p-2";
                 editLink.href = directoryResults.dataset.editUrlTemplate.replace(
@@ -282,7 +241,7 @@
                 editLink.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>';
                 card.appendChild(editLink);
             }
-            if (directoryResults.dataset.canDelete === "true") {
+            if (bank.is_manual && directoryResults.dataset.canDelete === "true") {
                 card.appendChild(createDeleteControls(bank));
             }
 
@@ -292,6 +251,12 @@
         function renderResults(banks, query) {
             directoryResults.replaceChildren();
             banks.forEach((bank, index) => directoryResults.appendChild(createDirectoryCard(bank, index)));
+
+            if (!query) {
+                directoryTotalMeta.textContent = banks.length;
+                directoryTotalStat.textContent = banks.length;
+                directoryTotalCount.textContent = `${banks.length} lokasi`;
+            }
 
             if (banks.length === 0) {
                 const empty = document.createElement("div");
@@ -340,6 +305,7 @@
                 directorySearch?.focus();
             }
         });
+        searchDirectory();
     </script>
 
 

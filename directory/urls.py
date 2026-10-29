@@ -7,6 +7,7 @@ from directory.views import (
     delete_waste_bank,
     get_waste_bank_json,
     create_waste_bank_ajax,
+    sync_osm_waste_banks,
 )
 
 app_name = "directory"
@@ -18,4 +19,5 @@ urlpatterns = [
     path("<uuid:waste_bank_id>/delete", delete_waste_bank, name="delete_waste_bank"),
     path("api/", get_waste_bank_json, name="get_waste_bank_json"),
     path("api/create_waste_bank", create_waste_bank_ajax, name="create_waste_bank_ajax"),
+    path("sync-osm/", sync_osm_waste_banks, name="sync_osm_waste_banks"),
 ]

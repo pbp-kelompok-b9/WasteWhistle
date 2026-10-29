@@ -20,6 +20,7 @@ class Report(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     submission_id = models.UUIDField(null=True, blank=True, unique=True, editable=False)
+    is_resolved = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at", "-pk"]

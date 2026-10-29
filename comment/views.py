@@ -21,8 +21,41 @@ def add_comment_ajax(request):
                 "id": comment.id,
                 "username": comment.user.username,
                 "content": comment.content,
+                "is_staff": request.user.is_staff,
             },
             status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+
+
+@login_required
+@require_POST
+def edit_comment_ajax(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+
+    if comment.user != request.user:
+        return JsonResponse(
+            {"message": "Anda tidak memiliki izin untuk mengedit komentar ini."},
+            status=403,
+        )
+
+    form = CommentForm(request.POST, instance=comment)
+    if form.is_valid():
+        updated_comment = form.save(commit=False)
+        # If your Comment model has an is_edited field:
+        if hasattr(updated_comment, "is_edited"):
+            updated_comment.is_edited = True
+        updated_comment.save()
+
+        return JsonResponse(
+            {
+                "message": "Komentar berhasil diperbarui.",
+                "id": updated_comment.id,
+                "content": updated_comment.content,
+                "is_edited": True,  # <-- Passed to JS to render badge dynamically
+            },
+            status=200,
         )
 
     return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
