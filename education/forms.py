@@ -22,10 +22,16 @@ class WasteGuideForm(ModelForm):
             "handling_instruction": "Instruksi penanganan sampah",
         }
         widgets = {
-            "name": TextInput(attrs={"maxlength": 100}),
-            "category": Select(),
-            "description": Textarea(attrs={"rows": 3}),
-            "handling_instruction": Textarea(attrs={"rows": 3}),
+            "name": TextInput(
+                attrs={"maxlength": 100, "class": "education-admin-input"}
+            ),
+            "category": Select(attrs={"class": "education-admin-input"}),
+            "description": Textarea(
+                attrs={"rows": 3, "class": "education-admin-input"}
+            ),
+            "handling_instruction": Textarea(
+                attrs={"rows": 3, "class": "education-admin-input"}
+            ),
         }
 
     def clean_name(self):
@@ -49,8 +55,12 @@ class DecompositionInfoForm(ModelForm):
             "estimated_days": "Perkiraan waktu penguraian (hari)",
         }
         widgets = {
-            "material_name": TextInput(attrs={"maxlength": 100}),
-            "estimated_days": NumberInput(attrs={"min": 0}),
+            "material_name": TextInput(
+                attrs={"maxlength": 100, "class": "education-admin-input"}
+            ),
+            "estimated_days": NumberInput(
+                attrs={"min": 0, "class": "education-admin-input"}
+            ),
         }
 
     def clean_material_name(self):
@@ -65,7 +75,7 @@ class MythOrFactForm(ModelForm):
         choices=MythOrFact.CLASSIFICATION_CHOICES,
         coerce=lambda value: value == "True",
         label="Klasifikasi (mitos/fakta)",
-        widget=Select(),
+        widget=Select(attrs={"class": "education-admin-input"}),
     )
 
     class Meta:
@@ -77,9 +87,15 @@ class MythOrFactForm(ModelForm):
             "source_url": "Sumber pernyataan (opsional)",
         }
         widgets = {
-            "statement": TextInput(attrs={"maxlength": 255}),
-            "explanation": Textarea(attrs={"rows": 3}),
-            "source_url": URLInput(attrs={"placeholder": "https://..."}),
+            "statement": TextInput(
+                attrs={"maxlength": 255, "class": "education-admin-input"}
+            ),
+            "explanation": Textarea(
+                attrs={"rows": 3, "class": "education-admin-input"}
+            ),
+            "source_url": URLInput(
+                attrs={"placeholder": "https://...", "class": "education-admin-input"}
+            ),
         }
 
     def clean_statement(self):

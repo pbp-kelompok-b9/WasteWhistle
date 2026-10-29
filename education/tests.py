@@ -124,7 +124,7 @@ class EducationPageTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "education.html")
         self.assertEqual(response.context["active_page"], "education")
-        self.assertContains(response, "Waste Education")
+        self.assertContains(response, "Edukasi Sampah")
         self.assertContains(response, "Lama Penguraian")
         self.assertContains(response, "Penanganan Sampah")
         self.assertContains(response, "Flip Card: Mitos atau Fakta?")
@@ -252,6 +252,17 @@ class EducationPageTests(TestCase):
 
 
 class EducationFormTests(TestCase):
+    def test_all_content_fields_have_modal_input_style_class(self):
+        forms = [WasteGuideForm(), DecompositionInfoForm(), MythOrFactForm()]
+
+        for form in forms:
+            with self.subTest(form=form.__class__.__name__):
+                for field in form.fields.values():
+                    self.assertIn(
+                        "education-admin-input",
+                        field.widget.attrs.get("class", "").split(),
+                    )
+
     def test_waste_guide_form_strips_html_from_plain_text_fields(self):
         form = WasteGuideForm(data={
             "name": "<b>Botol</b>",
