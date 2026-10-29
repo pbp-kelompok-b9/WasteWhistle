@@ -141,7 +141,7 @@
                         </div>
                     </div>
 
-                    <!-- Right Action Container: Checkmark Icon & Delete Trash Icon side-by-side -->
+                    <!-- Right Action Container -->
                     {% if request.user.is_staff or request.user.is_superuser or is_staff or r.reporter == request.user %}
                     <div class="flex items-center gap-1 shrink-0 self-start mt-0.5">
                         {% if not r.is_resolved %}
@@ -291,8 +291,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-const canDeleteReports = {% if request.user.is_staff or request.user.is_superuser or is_staff %}true{% else %}false{% endif %};
-const currentUsername = "{{ request.user.username }}";
+const currentUsername = "{{ request.user.username|escapejs }}";
+const currentUserId = {{ request.user.id|default:"null" }};
+const isStaffUser = {% if request.user.is_staff or request.user.is_superuser or is_staff %}true{% else %}false{% endif %};
 const deleteReportUrlTemplate = "{% url 'reporting:delete' 0 %}";
 const markDoneUrlTemplate = "{% url 'reporting:mark_done' 0 %}";
 
@@ -489,22 +490,24 @@ async function fetchReportMarkers(map) {
         const reports = data.reports || (Array.isArray(data) ? data : []);
 
         reports.forEach(report => {
-            const lat = parseFloat(report.latitude);
-            const lng = parseFloat(report.longitude);
+            const fields = report.fields || report;
+            const lat = parseFloat(fields.latitude || report.latitude);
+            const lng = parseFloat(fields.longitude || report.longitude);
+            const reportId = report.id || report.pk;
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const isResolved = Boolean(report.is_resolved);
+                const isResolved = Boolean(fields.is_resolved ?? report.is_resolved);
                 const markerIcon = isResolved ? greenIcon : redIcon;
                 const targetLayer = isResolved ? resolvedReportLayerGroup : unresolvedReportLayerGroup;
 
                 const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(targetLayer);
                 
-                reportMarkersMap[report.id] = { marker, report };
+                reportMarkersMap[reportId] = { marker, report };
                 reportMarkersList.push({
-                    id: report.id,
+                    id: reportId,
                     marker: marker,
-                    title: (report.title || '').toLowerCase(),
-                    note: (report.location_note || '').toLowerCase(),
+                    title: (fields.title || report.title || '').toLowerCase(),
+                    note: (fields.location_note || report.location_note || '').toLowerCase(),
                     is_resolved: isResolved
                 });
 
@@ -522,9 +525,12 @@ async function fetchReportMarkers(map) {
 }
 
 function bindReportPopup(marker, report) {
-    let dateStr = report.created_at ? new Date(report.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
+    const reportId = report.id || report.pk;
+    const fields = report.fields || report;
+
+    let dateStr = (fields.created_at || report.created_at) ? new Date(fields.created_at || report.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
     
-    const isResolved = Boolean(report.is_resolved);
+    const isResolved = Boolean(fields.is_resolved ?? report.is_resolved);
     const statusBadgeHtml = isResolved 
         ? `<span style="font-size: 9px; font-weight: 800; color: #0E8A47; background: #DCF3E4; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">SELESAI</span>`
         : `<span style="font-size: 9px; font-weight: 800; color: #DC3D43; background: #FDE8E8; padding: 2px 7px; border-radius: 99px; text-transform: uppercase;">BELUM SELESAI</span>`;
@@ -535,7 +541,32 @@ function bindReportPopup(marker, report) {
             Tandai Selesai
         </button>` : '';
 
-    const deleteBtnHtml = (canDeleteReports && report.id) ? `
+    // Check 1: Did the server-side Django template render a delete button in the sidebar feed item?
+    const hasSidebarDeleteBtn = Boolean(
+        reportId && document.querySelector(`.feed-item[data-id="${reportId}"] .delete-report-btn`)
+    );
+
+    // Check 2: Extract reporter values from JSON object
+    const reporterVal = fields.reporter ?? fields.reporter_id ?? fields.user ?? fields.user_id ?? report.reporter ?? report.reporter_id;
+    const reporterUsername = fields.reporter_username || fields.username || (typeof reporterVal === 'object' ? reporterVal?.username : null) || (typeof report.reporter === 'object' ? report.reporter?.username : null);
+
+    const matchesUserId = Boolean(currentUserId && reporterVal !== undefined && (reporterVal === currentUserId || String(reporterVal) === String(currentUserId)));
+    const matchesUsername = Boolean(currentUsername && (
+        reporterVal === currentUsername ||
+        reporterUsername === currentUsername ||
+        String(reporterVal).toLowerCase() === currentUsername.toLowerCase()
+    ));
+
+    const isReporter = hasSidebarDeleteBtn || matchesUserId || matchesUsername;
+    const canDelete = isStaffUser || isReporter;
+
+    const title = fields.title || report.title || 'Laporan Sampah';
+    const description = fields.description || report.description || 'Tidak ada deskripsi.';
+    const locationNote = fields.location_note || report.location_note || '';
+    const latitude = parseFloat(fields.latitude || report.latitude).toFixed(5);
+    const longitude = parseFloat(fields.longitude || report.longitude).toFixed(5);
+
+    const deleteBtnHtml = (canDelete && reportId) ? `
         <button type="button" class="popup-delete-btn flex items-center justify-center gap-1.5 w-full mt-1.5 py-1.5 px-3 rounded-full border-none cursor-pointer text-[11.5px] font-bold bg-[#FDECEC] text-[#DC2626] hover:bg-[#E5484D] hover:text-white transition-colors duration-150">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
             Hapus Laporan
@@ -546,12 +577,12 @@ function bindReportPopup(marker, report) {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 ${statusBadgeHtml}
             </div>
-            <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #11352B;">${escapeHtml(report.title || 'Laporan Sampah')}</h4>
-            <p style="margin: 0 0 6px 0; font-size: 12px; color: #1A202C; line-height: 1.4;">${escapeHtml(report.description || 'Tidak ada deskripsi.')}</p>
-            ${report.location_note ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #64766D; font-style: italic;">📍 <strong>Patokan:</strong> ${escapeHtml(report.location_note)}</p>` : ''}
+            <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #11352B;">${escapeHtml(title)}</h4>
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: #1A202C; line-height: 1.4;">${escapeHtml(description)}</p>
+            ${locationNote ? `<p style="margin: 0 0 6px 0; font-size: 11px; color: #64766D; font-style: italic;">📍 <strong>Patokan:</strong> ${escapeHtml(locationNote)}</p>` : ''}
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px solid #E2EDE6; font-size: 10px; color: #64766D;">
                 <span>${dateStr ? '📅 ' + dateStr : ''}</span>
-                <span style="font-weight: 600; color: #115D3F;">${parseFloat(report.latitude).toFixed(5)}, ${parseFloat(report.longitude).toFixed(5)}</span>
+                <span style="font-weight: 600; color: #115D3F;">${latitude}, ${longitude}</span>
             </div>
             ${resolveBtnHtml}
             ${deleteBtnHtml}
@@ -562,11 +593,11 @@ function bindReportPopup(marker, report) {
     popupEl.innerHTML = popupContent;
 
     popupEl.querySelector('.popup-resolve-btn')?.addEventListener('click', (e) => {
-        markReportAsResolved(report.id, e.currentTarget);
+        markReportAsResolved(reportId, e.currentTarget);
     });
 
     popupEl.querySelector('.popup-delete-btn')?.addEventListener('click', (e) => {
-        deleteReport(report.id, report.title, e.currentTarget);
+        deleteReport(reportId, title, e.currentTarget);
     });
 
     marker.bindPopup(popupEl);
@@ -669,7 +700,7 @@ function updateReportToResolvedUI(id) {
 
 // --- DELETE REPORT ---
 async function deleteReport(id, title, triggerBtn) {
-    if (!canDeleteReports || !id) return;
+    if (!id) return;
 
     const label = title ? `"${title}"` : `#${id}`;
     if (!confirm(`Hapus laporan ${label}? Tindakan ini tidak dapat dibatalkan.`)) return;
