@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 /* Sesuaikan path relatif ini dengan lokasi file di proyekmu */
 @source "../../../templates/rewards/reward_list.html";
 @source "../../../templates/rewards/components/**/*.html";
@@ -32,6 +33,10 @@
 @keyframes rw-toast-bar {
     from { transform: scaleX(1); }
     to   { transform: scaleX(0); }
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 /* atribut hidden tetap menang atas class display (grid/flex) */
