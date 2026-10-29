@@ -35,7 +35,7 @@
         <li>
             <div class="education-admin-copy">
                 {% if key == 'guide' %}<strong>{{ item.name }}</strong><small>{{ item.get_category_display }}</small>
-                {% elif key == 'decomposition' %}<strong>{{ item.material_name }}</strong><small>{{ item.estimated_days }} hari</small>
+                {% elif key == 'decomposition' %}<strong>{{ item.material_name }}</strong><small>{{ item.formatted_duration }}</small>
                 {% else %}<strong>{{ item.statement }}</strong><small>{{ item.get_is_myth_display }}</small>{% endif %}
             </div>
             {% if action == 'edit' %}

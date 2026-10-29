@@ -21,9 +21,9 @@ QUIZ_SIZE = 3
 SESSION_KEY = "daily_quiz"      
 
 EDUCATION_TYPES = {
-    "guide": (WasteGuide, WasteGuideForm, "Panduan sampah"),
-    "decomposition": (DecompositionInfo, DecompositionInfoForm, "Lama penguraian"),
-    "myth": (MythOrFact, MythOrFactForm, "Mitos atau fakta"),
+    "guide": (WasteGuide, WasteGuideForm, "Panduan Sampah"),
+    "decomposition": (DecompositionInfo, DecompositionInfoForm, "Informasi Penguraian Sampah"),
+    "myth": (MythOrFact, MythOrFactForm, "Mitos atau Fakta"),
 }
 
 def get_saved_question_ids(request):

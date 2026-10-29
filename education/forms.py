@@ -1,7 +1,6 @@
-from django import forms
+from django.forms import ModelForm, TextInput, Textarea, Select, NumberInput, TypedChoiceField, URLInput
 from django.core.exceptions import ValidationError
 from django.utils.html import strip_tags
-
 from .models import DecompositionInfo, MythOrFact, WasteGuide
 
 def clean_plain_text(value, label):
@@ -12,17 +11,7 @@ def clean_plain_text(value, label):
         )
     return cleaned
 
-class EducationModelForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            current_class = field.widget.attrs.get("class", "")
-            classes = current_class.split()
-            if "education-admin-input" not in classes:
-                classes.append("education-admin-input")
-            field.widget.attrs["class"] = " ".join(classes)
-
-class WasteGuideForm(EducationModelForm):
+class WasteGuideForm(ModelForm):
     class Meta:
         model = WasteGuide
         fields = ("name", "category", "description", "handling_instruction")
@@ -33,10 +22,10 @@ class WasteGuideForm(EducationModelForm):
             "handling_instruction": "Instruksi penanganan sampah",
         }
         widgets = {
-            "name": forms.TextInput(attrs={"maxlength": 100}),
-            "category": forms.Select(),
-            "description": forms.Textarea(attrs={"rows": 3}),
-            "handling_instruction": forms.Textarea(attrs={"rows": 3}),
+            "name": TextInput(attrs={"maxlength": 100}),
+            "category": Select(),
+            "description": Textarea(attrs={"rows": 3}),
+            "handling_instruction": Textarea(attrs={"rows": 3}),
         }
 
     def clean_name(self):
@@ -51,7 +40,7 @@ class WasteGuideForm(EducationModelForm):
         )
 
 
-class DecompositionInfoForm(EducationModelForm):
+class DecompositionInfoForm(ModelForm):
     class Meta:
         model = DecompositionInfo
         fields = ("material_name", "estimated_days")
@@ -60,8 +49,8 @@ class DecompositionInfoForm(EducationModelForm):
             "estimated_days": "Perkiraan waktu penguraian (hari)",
         }
         widgets = {
-            "material_name": forms.TextInput(attrs={"maxlength": 100}),
-            "estimated_days": forms.NumberInput(attrs={"min": 0}),
+            "material_name": TextInput(attrs={"maxlength": 100}),
+            "estimated_days": NumberInput(attrs={"min": 0}),
         }
 
     def clean_material_name(self):
@@ -70,13 +59,13 @@ class DecompositionInfoForm(EducationModelForm):
         )
 
 
-class MythOrFactForm(EducationModelForm):
+class MythOrFactForm(ModelForm):
 
-    is_myth = forms.TypedChoiceField(
+    is_myth = TypedChoiceField(
         choices=MythOrFact.CLASSIFICATION_CHOICES,
         coerce=lambda value: value == "True",
         label="Klasifikasi (mitos/fakta)",
-        widget=forms.Select(),
+        widget=Select(),
     )
 
     class Meta:
@@ -88,9 +77,9 @@ class MythOrFactForm(EducationModelForm):
             "source_url": "Sumber pernyataan (opsional)",
         }
         widgets = {
-            "statement": forms.TextInput(attrs={"maxlength": 255}),
-            "explanation": forms.Textarea(attrs={"rows": 3}),
-            "source_url": forms.URLInput(attrs={"placeholder": "https://..."}),
+            "statement": TextInput(attrs={"maxlength": 255}),
+            "explanation": Textarea(attrs={"rows": 3}),
+            "source_url": URLInput(attrs={"placeholder": "https://..."}),
         }
 
     def clean_statement(self):
