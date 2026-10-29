@@ -99,7 +99,7 @@
   const ME_ENDPOINT = "{% url 'rewards:get_my_rewards_json' %}";
   const URL_TUKAR = "{% url 'rewards:redeem_reward_ajax' 0 %}";
   const URL_HAPUS = "{% url 'rewards:delete_reward_ajax' 0 %}";
-  const LOGIN_URL = "{% url 'login' %}";
+  const LOGIN_URL = "{% url 'login_user' %}";
   const IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
   const IS_PETUGAS = {{ is_petugas|yesno:"true,false" }};
   const SEARCH_DEBOUNCE_DELAY = 300;

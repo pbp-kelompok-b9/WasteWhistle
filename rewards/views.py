@@ -50,6 +50,7 @@ def reward_list(request):
  
     petugas = is_petugas(request.user)
     return render(request, "rewards/reward_list.html", {
+        "active_page": "reward",
         "is_petugas": petugas,
         "form": RewardForm() if petugas else None,
         "kategori_list": Reward.KATEGORI_CHOICES,
