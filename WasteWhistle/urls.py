@@ -27,4 +27,5 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('directory/', include('directory.urls')),
     path('reporting/', include('reporting.urls')),
+    path('comment/', include('comment.urls'))
 ]

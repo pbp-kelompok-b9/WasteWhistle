@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from reporting.models import Report
 from directory.models import WasteBank
+from comment.models import Comment
 
 def register_user(request):
 
@@ -52,7 +53,9 @@ def login_user(request):
 
 @login_required(login_url="/login/")
 def dashboard(request):
-# Calculate real statistics from Report model
+    comments = Comment.objects.select_related("user").all()
+
+    # Calculate real statistics from Report model
     total_reports = Report.objects.count()
     user_reports_count = Report.objects.filter(reporter=request.user).count()
     total_waste_banks = WasteBank.objects.count()
@@ -69,6 +72,7 @@ def dashboard(request):
         'stat_points': user_points,
         'stat_points_detail': f"{user_reports_count} laporan dikirim",
         'dispatch_logs': Report.objects.select_related('reporter').order_by('-created_at')[:10],
+        'comments': comments
     }
     return render(request, 'dashboard.html', context)
 
