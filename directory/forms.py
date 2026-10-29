@@ -1,4 +1,5 @@
-from django.forms import ModelForm, TextInput, Textarea, EmailInput
+from django.forms import ModelForm, TextInput, Textarea, EmailInput, DecimalField, NumberInput
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from directory.models import WasteBank
 
@@ -10,6 +11,8 @@ class WasteBankForm(ModelForm):
             "address",
             "contact_number",
             "email",
+            "latitude",
+            "longitude",
         ]
 
         labels = {
@@ -17,6 +20,8 @@ class WasteBankForm(ModelForm):
             "address": "Alamat",
             "contact_number": "Nomor Kontak",
             "email": "Email",
+            "latitude": "Latitude",
+            "longitude": "Longitude",
         }
 
         widgets = {
@@ -40,7 +45,19 @@ class WasteBankForm(ModelForm):
             ),
             "email": EmailInput(
                 attrs={
-                    "placeholder": "example@gmail.com",
+                    "placeholder": "contoh@gmail.com",
+                }
+            ),
+            "latitude": NumberInput(
+                attrs={
+                    "step": "0.000001",
+                    "placeholder": "Contoh: 87.362",
+                }
+            ),
+            "longitude": NumberInput(
+                attrs={
+                    "step": "0.000001",
+                    "placeholder": "Contoh: 87.362",
                 }
             ),
         }

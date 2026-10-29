@@ -12,6 +12,7 @@
 
         <form method="post" action="{% url 'login_user' %}" class="auth-form">
             {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>

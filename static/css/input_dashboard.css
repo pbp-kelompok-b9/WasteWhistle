@@ -18,6 +18,18 @@
    ========================================== */
 @layer components {
 
+  .report-input {
+    @apply w-full px-4 py-3 border border-[#B4CEBE] rounded-[10px] bg-white text-sm text-[#16241F] outline-none focus:border-[#115D3F] focus:ring-2 focus:ring-[#115D3F] focus:ring-offset-2;
+  }
+
+  textarea.report-input {
+    @apply resize-y min-h-[140px];
+  }
+
+  .report-input[aria-invalid="true"] {
+    @apply border-red-700;
+  }
+
   /* --- CARDS --- */
   .card,
   .card-lg,
@@ -275,6 +287,33 @@
 
   .feed-body {
     @apply flex-1 min-w-0 flex flex-col gap-[3px];
+  }
+
+  /* Scrollable list of feed items (sidebar "Laporan Terbaru") */
+  .feed-list {
+    @apply flex flex-col gap-[10px] flex-1 min-h-0 max-h-[460px] overflow-y-auto overscroll-contain pr-1;
+    scrollbar-width: thin;
+    scrollbar-color: #C4E8D3 transparent;
+  }
+
+  .feed-list > * {
+    @apply shrink-0;
+  }
+
+  .feed-list::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  .feed-list::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .feed-list::-webkit-scrollbar-thumb {
+    @apply bg-[#C4E8D3] rounded-full;
+  }
+
+  .feed-list::-webkit-scrollbar-thumb:hover {
+    @apply bg-[#8CA096];
   }
 
   .icon-btn-bell {
