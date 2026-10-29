@@ -29,6 +29,6 @@ urlpatterns = [
     path('directory/', include('directory.urls')),
     path('education/', include("education.urls")),
     path('reporting/', include('reporting.urls')),
-    path('comment/', include('comment.urls'))
+    path('comment/', include('comment.urls')),
     path('rewards/', include('rewards.urls')),
 ]
