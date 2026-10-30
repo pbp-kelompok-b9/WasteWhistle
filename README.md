@@ -57,7 +57,7 @@ Jika mengakses form saat belum login, setelah login pengguna kembali ke form.
 
 #### Tujuan dan fitur
 
-Halaman ringkasan di `/dashboard/` menampilkan statistik total laporan, laporan milik pengguna, jumlah bank sampah, poin ringkasan, 10 laporan terbaru, dan komentar. Dashboard memakai data dari modul Reporting, Directory, dan Comment. Nilai poin di dashboard saat ini dihitung sederhana sebagai jumlah laporan pengguna dikali 10.
+Halaman ringkasan di `/dashboard/` menampilkan statistik total laporan, laporan milik pengguna, jumlah bank sampah, poin ringkasan, 10 laporan terbaru, dan komentar. Dashboard memakai data dari modul Reporting, Directory, dan Comment. Nilai poin di dashboard saat ini dihitung sederhana sebagai jumlah laporan pengguna dikali 10, Halaman Dashboard juga berisikan laman komentar yang dapat digunakan user untuk mengkomunikasikan perkara sampah yang ada saat ini.
 
 #### Halaman dan akses
 
@@ -69,7 +69,14 @@ Dashboard memakai Leaflet/OpenStreetMap. Endpoint komentar adalah `POST /comment
 
 #### AI disclosure
 
-[ai disclosure]
+**Tools AI** Gemini Flash 3.5 Pro dan Claude Sonnet 5.5
+
+**Tujuan** LLM digunakan untuk generate halaman html serta style css yang menggunakan Tailwind untuk mempercepat proses styling dan terjun ke back-end, LLM juga digunakan dalam pembuatan logika back-end yang nantinya disesuaikan dengan kebutuhan.
+
+**Strategi Penggunaan LLM** LLM digunakan untuk mengenerate fitur yang dibutuhkan, kemudian secara manual menyesuaikan halaman dengan logika back-end yang telah ditetapkan, LLM juga digunakan dalam konteks pembuatan styling yang disesuikan dengan desain awal sehingga desain dapat langsung digunakan dengan perubahan yang minimal dan dapat langsung fokus pada penerapan logika-logikan back-end.
+
+**Link Prompt**
+https://share.gemini.google/WYd8TSRmNMIe
 
 ### 2. Directory
 
