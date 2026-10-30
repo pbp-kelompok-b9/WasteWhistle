@@ -10,6 +10,8 @@ from reporting.models import Report
 from directory.models import WasteBank
 from comment.models import Comment
 
+from rewards.services import hitung_poin, info_poin
+
 def register_user(request):
 
     if request.user.is_authenticated:
@@ -55,13 +57,13 @@ def login_user(request):
 def dashboard(request):
     comments = Comment.objects.select_related("user").all()
 
-    # Calculate real statistics from Report model
+    # Hitung statistik dasar
     total_reports = Report.objects.count()
     user_reports_count = Report.objects.filter(reporter=request.user).count()
     total_waste_banks = WasteBank.objects.count()
     
-    # 10 points per report submitted by the current user
-    user_points = user_reports_count * 10
+    # Ambil total poin aktual dari PointTransaction rewards 
+    user_points = hitung_poin(request.user)
 
     context = {
         'active_page': 'dashboard',
