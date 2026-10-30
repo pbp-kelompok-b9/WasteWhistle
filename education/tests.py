@@ -2,7 +2,6 @@ import json
 import uuid
 from datetime import date
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -327,13 +326,10 @@ class EducationCrudViewTests(TestCase):
         self.user = get_user_model().objects.create_user(
             username="education-admin", password="test-password"
         )
-        self.manage_permission = Permission.objects.get(
-            content_type__app_label="education",
-            codename="manage_education_content",
-        )
 
-    def grant_manage_permission(self):
-        self.user.user_permissions.add(self.manage_permission)
+    def grant_staff_access(self):
+        self.user.is_staff = True
+        self.user.save(update_fields=["is_staff"])
         self.client.force_login(self.user)
 
     def make_guide(self, name="Botol", description="Kemasan plastik."):
@@ -344,7 +340,7 @@ class EducationCrudViewTests(TestCase):
             handling_instruction="Bersihkan sebelum disetor.",
         )
 
-    def test_crud_management_requires_login_and_permission(self):
+    def test_crud_management_requires_login_and_staff_status(self):
         create_url = reverse("education_create", args=["guide"])
         anonymous_response = self.client.post(create_url, data={})
         self.assertEqual(anonymous_response.status_code, 302)
@@ -353,9 +349,9 @@ class EducationCrudViewTests(TestCase):
         forbidden_response = self.client.post(create_url, data={})
         self.assertEqual(forbidden_response.status_code, 403)
 
-    def test_create_form_and_picker_render_for_permitted_user(self):
+    def test_create_form_and_picker_render_for_staff_user(self):
         guide = self.make_guide()
-        self.grant_manage_permission()
+        self.grant_staff_access()
 
         form_response = self.client.get(
             reverse("education_create_form", args=["guide"])
@@ -371,7 +367,7 @@ class EducationCrudViewTests(TestCase):
         self.assertContains(picker_response, guide.name)
 
     def test_create_update_and_delete_guide(self):
-        self.grant_manage_permission()
+        self.grant_staff_access()
         create_url = reverse("education_create", args=["guide"])
         data = {
             "name": "<b>Kaleng</b>",
@@ -402,7 +398,7 @@ class EducationCrudViewTests(TestCase):
         self.assertFalse(WasteGuide.objects.filter(pk=guide.pk).exists())
 
     def test_invalid_create_and_update_render_form_errors_without_saving(self):
-        self.grant_manage_permission()
+        self.grant_staff_access()
         create_response = self.client.post(
             reverse("education_create", args=["guide"]),
             {

@@ -21,11 +21,6 @@ class WasteGuide(models.Model):
     description = models.TextField()
     handling_instruction = models.TextField()
 
-    class Meta:
-        permissions = [
-            ("manage_education_content", "Can manage education content"),
-        ]
-
     def __str__(self):
         return self.name
 
