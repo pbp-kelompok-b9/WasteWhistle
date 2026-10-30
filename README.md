@@ -87,7 +87,21 @@ Daftar dapat dilihat tanpa login. Superuser dapat menambah lokasi lewat formulir
 
 #### AI disclosure
 
-[ai disclosure]
+**Tools AI:** ChatGPT dan Gemini
+
+**Tujuan pemakaian:** AI membantu mengevaluasi hasil kode yang sudah dibuat terlebih dahulu, serta membantu menjelaskan bagaimana untuk melakukan fetch API pada OpenStreetMap. Setelah mendapatkan hasil prompt AI, kode tersebut dicek kembali untuk memastikan berjalan sesuai yang diinginkan.
+
+**Strategi prompt:**
+
+- Meminta AI untuk mengubah CSS traditional yang sudah terlebih dahulu digunakan menjadi Tailwind CSS.
+- Meminta penjelasan mengenai bagaimana untuk melakukan fetch API pada OpenStreetMap, serta menganalisis strukturnya untuk menemukan dan menjelaskan apabila ada kesalahan.
+- Meminta bantuan AI untuk memeriksa kekurangan dari views dan models yang sudah dibuat secara manual dan apa yang dapat diubah agar alur program website dapat lebih efisien.
+- Meminta penjelasan mengenai bagaimana untuk melakukan fetch API
+
+**Link Prompt AI:**
+
+- https://chatgpt.com/share/6ae491f6-3644-83ec-b4c5-1a784e59be2a
+- https://share.gemini.google/hP3VBEchY8pW
 
 ### 3. Reporting
 
