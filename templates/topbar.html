@@ -37,7 +37,7 @@
         <a class="nav-link {% if active_page == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">Telusuri &amp; Dashboard</a>
         <a class="nav-link {% if active_page == 'directory' %}is-active{% endif %}" href="{% url 'directory:show_directory'%}">Direktori Bank Sampah</a>
         <a class="nav-link {% if active_page == 'education' %}is-active{% endif %}" href="{% url 'education' %}">Edukasi Sampah</a>
-        <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="#">Hadiah &amp; FAQ</a>
+        <a class="nav-link {% if active_page == 'reward' %}is-active{% endif %}" href="{% url 'rewards:reward_list' %}">Hadiah &amp; FAQ</a>
         <hr class="border-[#E2EDE6] my-1" />
         <a class="btn-primary h-[40px] text-[13px]" href="{% url 'logout_user' %}">Keluar</a>
     </div>
