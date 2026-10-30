@@ -30,7 +30,7 @@ Melalui aplikasi ini, pengguna dapat melacak kondisi dari laporan yang sudah dib
 
 ## Tautan *deployment* PWS
 
-> *template url*
+> https://ahmad-rafa-wastewhistle9b.pws.cs.ui.ac.id/
 
 ## Tautan desain Figma
 
