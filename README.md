@@ -1,5 +1,46 @@
-# WasteWhistle
-PBP Group B9 - Ganjil 26/27
+# WasteWhistle 
+**PBP Group B9 - Ganjil 26/27**
+
+## Anggota
+- Ahmad Rafa Robyan 2506620721
+- Justin Lie 2506591961
+- Priskila Abigail Magaini 2506590252
+- Syakira Aqilah Amru 2506541622
+- Adriel Raynard Davis Sihotang 2506587150
+
+## Deskripsi Aplikasi
+Tumpukan sampah yang tidak kunjung hilang? Sudah melaporkannya ke pihak berwajib tetapi seringkali terlupakan? WasteWhistle adalah solusinya.
+Aplikasi WasteWhistle adalah aplikasi melacak dan menetapkan keberadaan sampah yang dilaporkan oleh pengguna aplikasi. Pada aplikasi ini, para pengguna dapat melaporkan titik sampah yang belum dibersihkan dan menghasilkan poin yang dapat ditukarkan dengan hadiah. Laporan yang sudah dibuat akan diterima oleh para staf dan akan diatasi segera. 
+
+Melalui aplikasi ini, pengguna dapat melacak kondisi dari laporan yang sudah dibuat. Selain itu, pengguna dapat mencari info mengenai loksasi bank sampah terdekat, serta mendapatkan edukasi tambahan mengenai pemilahan sampah. 
+
+## Daftar Modul
+1. Dashboard - Menampilkan lokasi laporan dan bank sampah serta memiliki fitur komentar untuk para user (Rafa)
+2. Directory - Menampilkan daftar lokasi bank sampah yang dapat diisi manual oleh staf atau diambil dari OpenStreetMap API (Justin)
+3. Reporting - Membuat tiket report dari user agar titik lokasi sampah dapat diatasi oleh staf (Adriel)
+4. Education - Membuat halaman edukasi bagi user, serta memperbolehkan staf untuk menambahkan informasi-informasi penting mengenai pengelolaan sampah (Syakira)
+5. Rewards - Menghitung jumlah poin yang diperoleh oleh user dan menampilkan data hadiah yang dapat ditukarkan (Priskila)
+
+## Dokumentasi API
+Aplikasi ini akan menggunakan API dari OpenStreetMap untuk mengambil data lokasi bank sampah di Pulau Jawa. API tersebut juga digunakan untuk menampilkan lokasi bank sampah serta menentukan lokasi sampah yang dilaporkan oleh users. Data tersebut ditambilkan menggunakan Leaflet.js bawaan dari OpenStreetMap.
+
+Sumber:
+> https://nominatim.openstreetmap.org/ui/search.html
+> https://www.openstreetmap.org/
+
+## Peran Pengguna
+
+- Pengguna Terdaftar: Dapat melaporkan adanya sampah yang terlihat di sekeliling mereka dan memberikan peringatan di aplikasi dengan keberadaan sampah lainnya, serta mengakses informasi mengenai lokasi bank sampah, edukasi, dan hadiah.
+
+- Staf & Superuser: Dapat menambahkan lokasi bank sampah, informasi edukasi, serta data hadiah. Dapat menetapkan kondisi laporan yang diterima menjadi 'selesai' atau 'belum selesai'.
+
+## Tautan *deployment* PWS
+
+> *template url*
+
+## Tautan desain Figma
+
+> https://www.figma.com/design/QfKI77MxBIhJvfUgibyrIF/WasteWhistle?node-id=65-2771&t=1MM78gijhXiaqsN4-1
 
 ## Menjalankan project lokal
 
@@ -181,29 +222,3 @@ Konfigurasi memindai template project, template app, dan widget Reporting.
 python manage.py check
 python manage.py test reporting
 ```
-
-## Anggota
-- Ahmad Rafa Robyan 2506620721
-- Justin Lie 2506591961
-- Priskila Abigail Magaini 2506590252
-- Syakira Aqilah Amru 2506541622
-- Adriel Raynard Davis Sihotang 2506587150
-
-## Deskripsi Aplikasi
-Aplikasi WasteWhistle adalah aplikasi melacak dan menetapkan keberadaan sampah yang dilaporkan oleh pengguna aplikasi.
-
-## Daftar Modul
-
-- (Justin) Membuat Directory Bank Sampah
-- (Syakira) Landing Page, menggunakan OAuth.
-- (Adriel) Reporting and Timer, modul ini akan menggunakan API OpenStreetMap
-- (Rafa) Display Report, modul ini juga akan menggunakan API OpenStreetMap
-- (Priskila) Customer Service, menggunakan OAuth, sebagai sarana untuk melaporkan bug atau error pada aplikasi.
-
-## Dokumentasi
-Aplikasi ini akan menggunakan API dari OpenStreetMap untuk memberikan feedback pada user terkait dengan laporan sampah yang telah di laporkan.
-
-Untuk sistem authentication akan menggunakan API OAuth dari google.
-
-## Peran Pengguna
-Siapapun yang menggunakan aplikasi ini dapat melaporkan adanya sampah yang terlihat di sekeliling mereka dan memberikan peringatan di aplikasi dengan keberadaan sampah lainnya.
