@@ -199,7 +199,56 @@
   }
 
   .page-container {
-    @apply flex-1 w-full max-w-[1240px] mx-auto pt-[22px] px-6 pb-[30px] flex flex-col gap-[18px];
+    @apply flex-1 w-full max-w-[1240px] mx-auto pt-[22px] px-6 pb-[30px] flex flex-col gap-[18px] max-sm:px-4 max-sm:pt-4 max-sm:pb-8;
+  }
+
+  /* Shared page frame and hero used by Dashboard, Education, Directory, and Rewards. */
+  .content-page {
+    width: 100%;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding: 22px 24px 30px;
+    box-sizing: border-box;
+  }
+
+  .app-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 210px;
+    padding: 32px;
+    overflow: hidden;
+    border-radius: 22px;
+    background: linear-gradient(120deg, #092f24, #0d6144 75%, #157e51);
+    color: #fff;
+    box-shadow: 0 16px 32px rgba(7, 63, 42, .15);
+  }
+
+  .app-hero::after {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    right: 92px;
+    top: -180px;
+    border: 1px solid rgba(184, 242, 205, .13);
+    border-radius: 50%;
+    box-shadow: 0 0 0 28px rgba(184, 242, 205, .04), 0 0 0 56px rgba(184, 242, 205, .035);
+    pointer-events: none;
+  }
+
+  .app-hero__copy { position: relative; z-index: 1; min-width: 0; }
+  .app-hero__eyebrow { display: flex; align-items: center; gap: 8px; color: #b0dbc0; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+  .app-hero__eyebrow span { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 999px; background: #60c58b; }
+  .app-hero h1 { margin-top: 12px; color: #fff; font-size: clamp(28px, 3vw, 38px); font-weight: 800; line-height: 1.15; letter-spacing: -1px; }
+  .app-hero p { max-width: 490px; margin-top: 11px; color: #c1e7d0; font-size: 13px; line-height: 1.6; }
+
+  @media (max-width: 639px) {
+    .content-page { padding: 16px 16px 32px; }
+    .app-hero { min-height: 0; padding: 24px; }
+    .app-hero h1 { font-size: 29px; }
   }
 
   .auth-container {

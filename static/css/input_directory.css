@@ -22,14 +22,13 @@
   /* ==========================================
      LAYOUT STRUCTURES
      ========================================== */
-  .directory-page, 
   .directory-footer, 
   .directory-form-page {
     @apply w-[min(1240px,calc(100%-48px))] mx-auto;
   }
   
   .directory-page {
-    @apply pt-[28px] pb-[42px] max-sm:pt-4;
+    @apply pt-[22px] pb-[30px] max-sm:pt-4 max-sm:pb-8;
   }
 
   .directory-form-page {

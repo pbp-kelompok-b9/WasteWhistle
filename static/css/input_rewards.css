@@ -59,7 +59,7 @@ body:has(.rewards-page) > header:not(.topbar) {
 }
 
 .rewards-hero {
-    @apply relative flex min-h-[190px] items-center overflow-hidden rounded-[22px] bg-gradient-to-br from-[#092f24] via-[#0d6144] via-75% to-[#157e51] p-8 text-white shadow-[0_16px_32px_rgba(7,63,42,0.15)] mb-6 max-sm:min-h-0 max-sm:p-6;
+    @apply relative flex min-h-[210px] items-center overflow-hidden rounded-[22px] bg-gradient-to-br from-[#092f24] via-[#0d6144] via-75% to-[#157e51] p-8 text-white shadow-[0_16px_32px_rgba(7,63,42,0.15)] mb-6 max-sm:min-h-0 max-sm:p-6;
 }
 
 .rewards-hero::after {

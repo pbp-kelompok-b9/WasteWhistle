@@ -303,9 +303,6 @@
   .my-1 {
     margin-block: var(--spacing);
   }
-  .my-3 {
-    margin-block: calc(var(--spacing) * 3);
-  }
   .my-4 {
     margin-block: calc(var(--spacing) * 4);
   }
@@ -537,9 +534,6 @@
   .max-w-\[940px\] {
     max-width: 940px;
   }
-  .max-w-\[1200px\] {
-    max-width: 1200px;
-  }
   .max-w-\[1240px\] {
     max-width: 1240px;
   }
@@ -573,6 +567,9 @@
   .translate-x-6 {
     --tw-translate-x: calc(var(--spacing) * 6);
     translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .transform {
+    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
   }
   .\[animation\:rw-toast-bar_var\(--rw-toast-ms\,4500ms\)_linear_forwards\] {
     animation: rw-toast-bar var(--rw-toast-ms,4500ms) linear forwards;
@@ -999,14 +996,8 @@
   .pb-6 {
     padding-bottom: calc(var(--spacing) * 6);
   }
-  .pb-12 {
-    padding-bottom: calc(var(--spacing) * 12);
-  }
   .pb-28 {
     padding-bottom: calc(var(--spacing) * 28);
-  }
-  .pb-\[42px\] {
-    padding-bottom: 42px;
   }
   .pl-3\.5 {
     padding-left: calc(var(--spacing) * 3.5);
@@ -1665,15 +1656,6 @@
     .max-sm\:items-start {
       align-items: flex-start;
     }
-    .max-sm\:px-4 {
-      padding-inline: calc(var(--spacing) * 4);
-    }
-    .max-sm\:pt-4 {
-      padding-top: calc(var(--spacing) * 4);
-    }
-    .max-sm\:pb-8 {
-      padding-bottom: calc(var(--spacing) * 8);
-    }
   }
   @media (width >= 561px) {
     .min-\[561px\]\:inset-x-auto {
@@ -1879,7 +1861,7 @@ body:has(.rewards-page) > header:not(.topbar) {
   position: relative;
   margin-bottom: calc(var(--spacing) * 6);
   display: flex;
-  min-height: 190px;
+  min-height: 210px;
   align-items: center;
   overflow: hidden;
   border-radius: 22px;
@@ -1973,6 +1955,26 @@ body:has(.rewards-page) > header:not(.topbar) {
   syntax: "*";
   inherits: false;
   initial-value: 0;
+}
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false;
 }
 @property --tw-border-style {
   syntax: "*";
@@ -2166,6 +2168,11 @@ body:has(.rewards-page) > header:not(.topbar) {
       --tw-translate-x: 0;
       --tw-translate-y: 0;
       --tw-translate-z: 0;
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
       --tw-border-style: solid;
       --tw-gradient-position: initial;
       --tw-gradient-from: #0000;
