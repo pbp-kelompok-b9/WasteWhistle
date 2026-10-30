@@ -6,7 +6,7 @@
   --education-border: #DFECE3;
   --education-green: #0C4A35;
   --education-green-bright: #10B981;
-  --education-organic: #157e51;
+  --education-organic: #34D399;
   --education-yellow: #FACC15;
   --education-red: #B91C1C;
   --education-blue: #1D4ED8;
@@ -113,14 +113,14 @@
 }
 .quiz-result__message {
   color: #6C7D75;
-  font-size: 14px;
+  font-size: 13px;
 }
 body:has(.education-page) > header:not(.topbar) {
   display: none;
 }
 .bin-organik, .category-organik {
   --bin-color: var(--education-organic);
-  --bin-text: #fff;
+  --bin-text: var(--education-ink);
 }
 .bin-anorganik, .category-anorganik {
   --bin-color: var(--education-yellow);
@@ -341,7 +341,8 @@ body:has(.education-page) > header:not(.topbar) {
   transition: all 200ms ease;
 }
 .education-admin-actions button:hover {
-  background: var(--education-green-bright);
+  background: var(--education-organic);
+  color: var(--education-ink);
 }
 .education-admin-actions button.education-admin-secondary {
   background: #EDF7F0;
@@ -349,7 +350,8 @@ body:has(.education-page) > header:not(.topbar) {
   border: 0;
 }
 .education-admin-actions button.education-admin-secondary:hover {
-  background: var(--education-border);
+  background: var(--education-organic);
+  color: var(--education-ink);
 }
 .education-admin-actions button.education-admin-danger {
   background: var(--education-red);
@@ -357,6 +359,7 @@ body:has(.education-page) > header:not(.topbar) {
 }
 .education-admin-actions button.education-admin-danger:hover {
   background: #F87171;
+  color: var(--education-ink);
 }
 .education-admin-copy {
   display: grid;

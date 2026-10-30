@@ -8,7 +8,7 @@
 
 {% block body %}
     {%include 'topbar.html'%}
-    <main class="directory-page">
+    <main class="directory-page content-page">
         {% if messages %}
             <div class="directory-panel mb-4" aria-live="polite">
                 {% for message in messages %}
@@ -16,9 +16,9 @@
                 {% endfor %}
             </div>
         {% endif %}
-        <section class="directory-hero">
-            <div class="directory-hero__copy max-w-[580px]">
-                <div class="flex items-center gap-2 text-[10px] font-bold"><span class="directory-dot directory-dot--light"></span>JARINGAN KOMUNITAS</div>
+        <section class="directory-hero app-hero">
+            <div class="directory-hero__copy app-hero__copy max-w-[580px]">
+                <div class="app-hero__eyebrow"><span></span>JARINGAN BANK SAMPAH</div>
                 <h1>Direktori Bank Sampah</h1>
                 <p>Temukan lokasi bank sampah di dekat Anda.</p>
                 <div class="directory-hero__meta">
