@@ -1,9 +1,10 @@
 import json
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
@@ -25,6 +26,7 @@ EDUCATION_TYPES = {
     "decomposition": (DecompositionInfo, DecompositionInfoForm, "Informasi Penguraian Sampah"),
     "myth": (MythOrFact, MythOrFactForm, "Mitos atau Fakta"),
 }
+
 
 def get_saved_question_ids(request):
     saved = request.session.get(SESSION_KEY)
@@ -112,9 +114,10 @@ def _mutation_response():
 
 
 @login_required
-@permission_required("education.manage_education_content", raise_exception=True)
 @require_GET
 def education_item_picker(request, kind):
+    if not request.user.is_staff:
+        raise PermissionDenied
     model, _, label = _education_type(kind)
     action = request.GET.get("action")
     if action not in {"edit", "delete"}:
@@ -126,19 +129,23 @@ def education_item_picker(request, kind):
         "items": model.objects.order_by("pk"),
     })
 
+
 @login_required
-@permission_required("education.manage_education_content", raise_exception=True)
 @require_GET
 def education_create_form(request, kind):
+    if not request.user.is_staff:
+        raise PermissionDenied
     _, form_class, label = _education_type(kind)
     return render(request, "education/content_form_modal.html", {
         "key": kind, "label": label, "form": form_class(),
     })
 
+
 @login_required
-@permission_required("education.manage_education_content", raise_exception=True)
 @require_POST
 def education_create(request, kind):
+    if not request.user.is_staff:
+        raise PermissionDenied
     _, form_class, _ = _education_type(kind)
     form = form_class(request.POST)
     if form.is_valid():
@@ -148,10 +155,12 @@ def education_create(request, kind):
         "key": kind, "label": EDUCATION_TYPES[kind][2], "form": form,
     })
 
+
 @login_required
-@permission_required("education.manage_education_content", raise_exception=True)
 @require_GET
 def education_edit_form(request, kind, pk):
+    if not request.user.is_staff:
+        raise PermissionDenied
     model, form_class, _ = _education_type(kind)
     item = get_object_or_404(model, pk=pk)
     return render(request, "education/content_form_modal.html", {
@@ -161,9 +170,10 @@ def education_edit_form(request, kind, pk):
 
 
 @login_required
-@permission_required("education.manage_education_content", raise_exception=True)
 @require_GET
 def education_delete_confirm(request, kind, pk):
+    if not request.user.is_staff:
+        raise PermissionDenied
     model, _, label = _education_type(kind)
     return render(request, "education/item_action_modal.html", {
         "key": kind,
@@ -174,9 +184,10 @@ def education_delete_confirm(request, kind, pk):
 
 
 @login_required
-@permission_required("education.manage_education_content", raise_exception=True)
 @require_POST
 def education_update(request, kind, pk):
+    if not request.user.is_staff:
+        raise PermissionDenied
     model, form_class, _ = _education_type(kind)
     item = get_object_or_404(model, pk=pk)
     form = form_class(request.POST, instance=item)
@@ -190,13 +201,15 @@ def education_update(request, kind, pk):
 
 
 @login_required
-@permission_required("education.manage_education_content", raise_exception=True)
 @require_POST
 def education_delete(request, kind, pk):
+    if not request.user.is_staff:
+        raise PermissionDenied
     model, _, _ = _education_type(kind)
     item = get_object_or_404(model, pk=pk)
     item.delete()
     return _mutation_response()
+
 
 @require_GET
 def waste_guide_api(request):

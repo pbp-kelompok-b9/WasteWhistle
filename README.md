@@ -282,22 +282,16 @@ Kuis memerlukan minimal tiga `QuizQuestion` yang terkait ke panduan. Set soal di
 
 #### Halaman dan akses
 
-Tambah, edit, dan hapus panduan, informasi penguraian, serta mitos/fakta tersedia pada halaman Education. Aksi ini memerlukan login dan permission Django **`education.manage_education_content`**; berikan permission hanya kepada staf yang berwenang. Form memeriksa kolom wajib dan menolak teks kosong atau yang hanya berisi tag HTML. Sumber mitos/fakta opsional. Menghapus panduan juga menghapus soal kuis terkait.
+Tambah, edit, dan hapus panduan, informasi penguraian, serta mitos/fakta tersedia pada halaman Education. Aksi ini memerlukan login dan flag akun Django **`is_staff=True`**. Pemeriksaan dilakukan pada server untuk setiap aksi; tombol pengelolaan juga hanya ditampilkan kepada staf. Form memeriksa kolom wajib dan menolak teks kosong atau yang hanya berisi tag HTML. Sumber mitos/fakta opsional. Menghapus panduan juga menghapus soal kuis terkait.
 
-Untuk memberi permission kepada akun staf lokal, jalankan `python manage.py shell`:
+`is_staff` adalah flag global pada akun Django, bukan keanggotaan grup bernama `Staff` atau permission khusus Education. Comment dan Rewards juga membaca flag akun ini. Django Admin memakai `is_staff` bersama status aktif sebagai syarat masuk, sedangkan izin mengelola model di Admin tetap mengikuti permission model masing-masing. Flag biasanya diaktifkan saat membuat akun superuser atau dari pengelolaan akun oleh admin.
 
 ```python
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-from education.models import WasteGuide
 
 user = get_user_model().objects.get(username="nama-akun")
-content_type = ContentType.objects.get_for_model(WasteGuide)
-permission = Permission.objects.get(
-    content_type=content_type, codename="manage_education_content"
-)
-user.user_permissions.add(permission)
+user.is_staff = True
+user.save(update_fields=["is_staff"])
 ```
 
 Buat soal kuis melalui Django Admin di **`/admin/`**, setelah membuat panduan. Login sebagai superuser dan tambahkan `QuizQuestion` dengan panduan yang sesuai. Untuk mencoba modul, buka `/education/`, tambahkan konten, lalu jawab tiga soal kuis sebagai pengguna yang sudah login.

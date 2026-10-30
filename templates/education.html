@@ -73,7 +73,7 @@
         <div class="card" id="decomposition">
             <div class="education-section-heading">
                 <h2 class="text-[19px] font-bold leading-tight tracking-[-0.3px] text-[#16241F]">Lama Penguraian</h2>
-                {% if perms.education.manage_education_content %}{% include "education/crud_buttons.html" with kind="decomposition" %}{% endif %}
+                {% if user.is_staff %}{% include "education/crud_buttons.html" with kind="decomposition" %}{% endif %}
             </div>
 
             {% for info in decomposition_infos %}
@@ -97,7 +97,7 @@
         <div class="card" id="waste-guide">
             <div class="education-section-heading">
                 <h2 class="text-[19px] font-bold leading-tight tracking-[-0.3px] text-[#16241F]">Penanganan Sampah</h2>
-                {% if perms.education.manage_education_content %}{% include "education/crud_buttons.html" with kind="guide" %}{% endif %}
+                {% if user.is_staff %}{% include "education/crud_buttons.html" with kind="guide" %}{% endif %}
             </div>
 
             <div class="searchbar">
@@ -127,7 +127,7 @@
     <section id="myths-facts">
         <div class="education-section-heading mb-3 ml-2.5">
             <h2 class="text-[19px] font-bold leading-tight tracking-[-0.3px] text-[#16241F]">Flip Card: Mitos atau Fakta?</h2>
-            {% if perms.education.manage_education_content %}{% include "education/crud_buttons.html" with kind="myth" %}{% endif %}
+            {% if user.is_staff %}{% include "education/crud_buttons.html" with kind="myth" %}{% endif %}
         </div>
 
         {% if myths_facts %}
@@ -161,7 +161,7 @@
     </section>
 
 </main>
-{% if perms.education.manage_education_content %}
+{% if user.is_staff %}
 <p class="education-crud-status" id="education-crud-status" role="status" aria-live="polite"></p>
 <dialog class="education-modal" id="educationModal" aria-labelledby="education-modal-title">
     <div class="education-modal-shell">
