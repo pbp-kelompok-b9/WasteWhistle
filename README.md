@@ -265,7 +265,24 @@ endpoint. Preview saja tidak muncul, dan pengiriman ulang tidak menambah objek g
 
 #### AI disclosure
 
-[ai disclosure]
+**Tools AI:** OpenAI Codex melalui ChatGPT 
+
+**Tujuan pemakaian:** Dalam pengerjaan modul reporting, saya menggunakan OpenAI Codex melalui ChatGPT sebagai alat bantu untuk implementasi kode, memahami alur dari Django, melakukan debugging, dan menyusun pengujian dan dokumentasi. Penggunaan AI nya berfokus pada pengolahan laporan, integrasi peta melalui OpenStreetMap, dan penyesuaian modul dengan bagian aplikasi yang dikerjakan oleh anggota kelompok lain.
+
+**Strategi prompt:**
+Saya memberikan instruksi kepada AI secara bertahap berdasarkan fitur yang sedang saya butuhkan. Hal tersebut meliputi alur user yang diinginkan, struktur proyek nya, screenshot tampilan/pesan error, dan contoh tampilan dan kebutuhan integrasi antar modul.
+
+Ketika hasilnya belum sesuai dengan yang saya harapkan, saya memberikan instruksi lanjutan yang lebih spesifik, seperti penyesuaian navigasi, tampilan form, dan pembatasan akses user yang belum login. Pendekatan bertahap seperti ini digunakan agar setiap tahap pengerjaan dapat diperiksa sebelum melanjutkan pengembangan berikutnya.
+
+**Keterbatasan AI dan penyesuaian manual:**
+Solusi yang dihasilkan oleh AI tidak selalu mencakup selalu fitur modul saat digunakan langsung. Pada tahap penyimpanan form misalnya, pencegahan untuk pengiriman berulang/ganda harus diperbaiki kembali setelah pengujian melalui tombol Back di browser. Pemeriksaan tidak cukup jika hanya mengandalkan tes otomatis karena pemulihan isian dan identitas form di browsernya juga memengaruhi hasil.
+
+Penyesuaian manual mencakup perubahan alur agar user membuka Laporan Saya terlebih dahulu sebelum menambah laporan (tidak langsung dikasih template form saat klik fitur report), serta penggunaan tanggal dan jam dibuat sesuai kesepakatan kelompok saya. Saya juga memeriksa tampilan dan memberikan arahan revisi (kepada AI nya), sementara perbaikan kode dan pengujiannya dilakukan dengan bantuan AI. Perbaikan tersebut mencakup pemeliharaan identitas pengiriman form dan penyelarasan kembali pin peta ketika user menekan back.
+
+**Pemeriksaan hasil:**
+Hasil bantuan dari AI saya periksa melalui tampilan aplikasi dan uji manual. Pemeriksaannya meliputi validasi input, penyimpanan data, kesesuaian koordinat map, dan akses user terhadap laporan milik dirinya (edit/delete). AI juga membantu saya mengidentifikasi penyebab error dan menyiapkan perbaikan berdasarkan pengujian.
+
+Kebutuhan fitur dan arahan revisi saya dilakukan berdasarkan tugas modul serta arahan koordinasi dari teman-teman kelompok saya. Hasil bantuan dari AI digunakan sebagai bagian dari proses pengembangan modul reporting ini yang tetap menjadi tanggung jawab diri saya.
 
 ### 4. Education
 
