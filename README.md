@@ -342,7 +342,13 @@ Poin dicatat sebagai transaksi positif atau negatif. Fungsi ledger mendukung pem
 
 #### AI disclosure
 
-[ai disclosure]
+**Tools AI** Claude Sonnet 5.5
+
+**Tujuan** AI dimanfaatkan secara penuh dari awal hingga akhir. Tujuan penggunaannya mencakup perancangan dan pembuatan seluruh fungsionalitas *full-stack*—mulai dari struktur database Django, logika sistem penukaran poin, hingga tata letak antarmuka menggunakan Tailwind CSS v4.
+
+**Strategi Penggunaan AI** Strategi yang diterapkan adalah dengan memberikan instruksi secara bertahap dan spesifik menyesuaikan arsitektur proyek yang sedang dibangun. Seluruh kode yang dihasilkan tidak langsung disalin, tetapi dipelajari, dievaluasi, dan disesuaikan untuk memastikan fungsionalitasnya berjalan dengan semestinya.
+
+**Link Prompt** https://claude.ai/share/818ce06d-2e43-48f7-87fb-0d339e21613c
 
 ## Layanan eksternal
 
