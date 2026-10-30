@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+
+/* Sesuaikan path relatif ini dengan lokasi file di proyekmu */
+@source "../../../templates/rewards/reward_list.html";
+@source "../../../templates/rewards/components/**/*.html";
+
+/* ===== Warna Rewards =====
+   dipakai sebagai bg-rw-page, text-rw-green-900, border-rw-border, dst. */
+@theme {
+    --color-rw-green-900: #064e3b;
+    --color-rw-green-600: #047857;
+    --color-rw-green-300: #8fc4b3;
+    --color-rw-mint: #d1f7e3;
+    --color-rw-page: #eef6f1;
+    --color-rw-ink: #0f172a;
+    --color-rw-muted: #475569;
+    --color-rw-border: #d5e2da;
+    --color-rw-locked: #e2e8f0;
+}
+
+/* ===== Keyframes (dipanggil lewat animate-[...] di template) ===== */
+@keyframes rw-pop {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes rw-toast-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes rw-toast-bar {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* atribut hidden tetap menang atas class display (grid/flex) */
+.rewards-page [hidden] {
+    display: none !important;
+}
+
+body:has(.rewards-page) > header:not(.topbar) { 
+    display: none !important; 
+}
+
+/* ===== Field form modal =====
+   Field dirender Django lewat {{ field }}, jadi gayanya dipasang di sini. */
+@layer components {
+    .rw-field input,
+    .rw-field textarea,
+    .rw-field select {
+        @apply w-full box-border px-3.5 py-2.5 border border-[#b6cfc2] rounded-xl bg-white text-[0.92rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rw-green-600 focus:ring-[3px] focus:ring-[#bfe9d3];
+    }
+}
+
+.rewards-hero {
+    @apply relative flex min-h-[210px] items-center overflow-hidden rounded-[22px] bg-gradient-to-br from-[#092f24] via-[#0d6144] via-75% to-[#157e51] p-8 text-white shadow-[0_16px_32px_rgba(7,63,42,0.15)] mb-6 max-sm:min-h-0 max-sm:p-6;
+}
+
+.rewards-hero::after {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    right: 92px;
+    top: -180px;
+    border: 1px solid rgba(184, 242, 205, .13);
+    border-radius: 50%;
+    box-shadow: 0 0 0 28px rgba(184, 242, 205, .04), 0 0 0 56px rgba(184, 242, 205, .035);
+}
+
+.rewards-hero__copy {
+    @apply relative z-10 min-w-0 flex-1;
+}
+
+.rewards-hero__eyebrow {
+    @apply flex items-center gap-2 text-[10px] font-bold tracking-[0.08em] text-[#b0dbc0];
+}
+
+.rewards-hero__eyebrow span {
+    @apply h-1.5 w-1.5 rounded-full bg-[#60c58b];
+}
+
+.rewards-hero h1 {
+    @apply mt-3 text-[clamp(28px,3vw,38px)] font-extrabold leading-tight tracking-[-1px] text-white max-sm:text-[29px];
+}
+
+.rewards-hero p {
+    @apply mt-[11px] max-w-[490px] text-[13px] leading-relaxed text-[#c1e7d0];
+}

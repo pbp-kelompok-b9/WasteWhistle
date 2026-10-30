@@ -15,13 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from WasteWhistle.views import *
+from rewards.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', landing_page, name='landing_page'),
-    path('login/', login, name='login'),
+    path('', register_user, name='register_user'),
+    path('login/', login_user, name='login_user'),
+    path('logout/', logout_user, name='logout_user'),
     path('dashboard/', dashboard, name='dashboard'),
+    path('directory/', include('directory.urls')),
+    path('education/', include("education.urls")),
+    path('reporting/', include('reporting.urls')),
+    path('comment/', include('comment.urls')),
+    path('rewards/', include('rewards.urls')),
 ]

@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Rewards{% endblock %}
+
+{% block meta %}
+    <link rel="stylesheet" href="{% static 'css/output_rewards.css' %}">
+{% endblock %}
+
+{% block body %}
+    {% include 'topbar.html' %}
+    {{ block.super }}
+{% endblock body %}
+
+{% block content %}
+
+<main class="rewards-page min-h-screen bg-[#eef6f1] text-[#0f172a]">
+  <div class="content-page mx-auto max-w-[1240px]">
+
+    <!-- REWARDS HERO BANNER MEWAH -->
+    <section class="rewards-hero app-hero" aria-label="Rewards Header">
+      <div class="rewards-hero__copy app-hero__copy">
+        <div class="rewards-hero__eyebrow">
+          <span></span> ECO-POINTS REWARDS CATALOG
+        </div>
+        <h1>Rewards & Voucher</h1>
+        <p>Tukarkan Eco-Points kumpulmu dengan berbagai penawaran menarik, diskon merchant, hingga aksi nyata pelestarian lingkungan.</p>
+      </div>
+
+      {% if is_petugas %}
+        <div class="relative z-10 ml-auto hidden sm:flex items-center">
+          <button type="button" id="btn-add-reward" class="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-[0.9rem] font-bold text-[#092f24] shadow-md transition hover:bg-[#e2ede6] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#86d9b4] cursor-pointer">
+            + Tambah Hadiah
+          </button>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- Tombol Tambah khusus mobile jika petugas -->
+    {% if is_petugas %}
+      <div class="mb-5 sm:hidden flex">
+        <button type="button" id="btn-add-reward-mobile" class="w-full inline-flex items-center justify-center rounded-full bg-[#047857] px-5 py-2.5 text-[0.9rem] font-semibold text-white shadow-sm transition hover:bg-[#064e3b] cursor-pointer">
+          + Tambah Hadiah
+        </button>
+      </div>
+    {% endif %}
+
+    <!-- TOAST -->
+    <div id="rw-toast-stack" aria-live="polite"
+         class="fixed z-[1000] flex flex-col gap-2.5 pointer-events-none top-3 inset-x-3 min-[561px]:inset-x-auto min-[561px]:top-5 min-[561px]:right-5 min-[561px]:w-[min(360px,calc(100vw-24px))]"></div>
+
+    <div class="grid grid-cols-1 min-[861px]:grid-cols-[minmax(0,1fr)_280px] min-[1101px]:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start">
+
+      <!-- ===== poin + filter + katalog ===== -->
+      <div class="min-w-0">
+
+        <section aria-label="Poin kamu"
+                 class="bg-[#f4faf7] border-[1.5px] border-dashed border-[#b6cfc2] rounded-[18px] mb-6 px-5 pt-[22px] pb-6 min-[561px]:px-8 min-[561px]:pt-7 min-[561px]:pb-8">
+          <p id="points-total" class="m-0 mb-2 text-[1.6rem] min-[561px]:text-[2rem] font-bold tracking-[-0.02em]">Memuat...</p>
+          <p id="points-level" class="m-0 mb-5 text-[0.95rem] text-rw-muted">&nbsp;</p>
+          <ul id="points-dots" aria-hidden="true" class="flex flex-wrap gap-2.5 list-none m-0 p-0"></ul>
+        </section>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div id="filter-chips" class="flex flex-wrap gap-2">
+            <button type="button" data-kategori=""
+                    class="rw-chip px-3.5 py-[7px] border rounded-full text-[0.85rem] font-semibold cursor-pointer transition-colors bg-white border-[#b6cfc2] text-rw-green-900 hover:bg-rw-page">Semua</button>
+            {% for kode, nama in kategori_list %}
+              <button type="button" data-kategori="{{ kode }}"
+                      class="rw-chip px-3.5 py-[7px] border rounded-full text-[0.85rem] font-semibold cursor-pointer transition-colors bg-white border-[#b6cfc2] text-rw-green-900 hover:bg-rw-page">{{ nama }}</button>
+            {% endfor %}
+          </div>
+
+          <form id="price-filter" class="flex items-center gap-2">
+            <label for="maks_poin" class="text-[0.85rem] text-rw-muted">Maks. poin</label>
+            <input type="number" id="maks_poin" name="maks_poin" min="1"
+                   value="{{ maks_poin }}" placeholder="ex: 300"
+                   class="w-[110px] px-3 py-2 border border-[#b6cfc2] rounded-xl text-[0.88rem] focus:outline-none focus:border-rw-green-600 focus:ring-[3px] focus:ring-[#bfe9d3]">
+            <button type="submit"
+                    class="inline-block px-3.5 py-2 border border-[#b6cfc2] rounded-full bg-white text-rw-green-900 text-[0.85rem] font-semibold leading-tight cursor-pointer transition-colors hover:bg-rw-page focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#86d9b4]">Terapkan</button>
+          </form>
+        </div>
+
+        <!-- Loading / Error / Empty state -->
+        <div id="rw-loading" class="py-7 text-center text-rw-muted" hidden>Memuat hadiah...</div>
+        <div id="rw-error" class="py-7 text-center text-rw-muted" hidden>Gagal memuat hadiah. Silakan coba lagi.</div>
+        <div id="rw-empty" class="py-7 text-center text-rw-muted" hidden>Belum ada hadiah yang ditemukan.</div>
+
+        <section id="reward-grid" aria-label="Daftar hadiah" hidden
+                 class="grid grid-cols-1 min-[561px]:grid-cols-2 min-[1101px]:grid-cols-3 gap-6"></section>
+      </div>
+
+      <!-- ===== voucher dan riwayat poin ===== -->
+      <aside id="redeemed-panel" aria-label="Voucher yang sudah ditukar"
+             class="min-w-0 bg-white border border-rw-border rounded-[18px] px-[18px] py-5 min-[861px]:sticky min-[861px]:top-6">
+        <div class="flex items-center justify-between gap-2 mb-3.5">
+          <h2 class="m-0 text-[1.05rem] font-bold">Redeemed vouchers</h2>
+          <span id="redeemed-count" hidden
+                class="min-w-[26px] px-2 py-0.5 rounded-full bg-rw-mint text-rw-green-900 text-[0.8rem] font-bold text-center">0</span>
+        </div>
+
+        <ul id="redeemed-list"
+            class="list-none m-0 p-0 flex flex-col gap-2.5 overflow-y-auto min-[861px]:max-h-[calc(100vh-170px)]">
+          <li class="m-0 text-[0.9rem] leading-normal text-rw-muted">Memuat voucher...</li>
+        </ul>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<a href="#redeemed-panel" id="mobile-redeemed-btn" class="fixed bottom-6 right-6 z-40 lg:hidden flex items-center gap-2 rounded-full bg-[#047857] px-4 py-3 text-sm font-semibold text-white shadow-xl transition-all hover:bg-[#064e3b] focus:outline-none focus:ring-3 focus:ring-[#86d9b4] cursor-pointer">
+  <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+  </svg>
+  <span>Voucher Saya</span>
+  <span id="mobile-redeemed-badge" class="ml-1 rounded-full bg-white px-2 py-0.5 text-xs font-bold text-[#047857]" hidden>0</span>
+</a>
+
+{% if is_petugas %}
+  {% include 'rewards/reward_form_modal.html' %}
+{% endif %}
+
+<!-- Modal detail hadiah -->
+<dialog id="detail-modal" aria-labelledby="detail-title"
+        class="fixed inset-0 m-auto h-fit w-[min(520px,92vw)] max-h-[90vh] p-0 border-0 rounded-[18px] bg-white text-rw-ink shadow-[0_24px_60px_rgba(15,23,42,0.28)] overflow-hidden backdrop:bg-slate-900/50 open:animate-[rw-pop_0.18s_ease-out] motion-reduce:open:animate-none">
+  <div class="flex flex-col max-h-[90vh]">
+    <header class="flex items-center justify-between px-[22px] py-[18px] border-b border-rw-border">
+      <h2 id="detail-title" class="m-0 text-[1.15rem] font-bold"></h2>
+      <button type="button" data-detail-close aria-label="Tutup"
+              class="w-[34px] h-[34px] border-0 rounded-full bg-transparent text-[1.6rem] leading-none text-rw-muted cursor-pointer hover:bg-rw-page">&times;</button>
+    </header>
+
+    <div class="px-[22px] py-5 overflow-y-auto flex flex-col gap-4">
+      <p class="m-0 -mb-4 text-[0.88rem] font-semibold text-rw-green-600">
+        <span id="detail-kategori"></span> &middot; <span id="detail-harga"></span> Eco-Points
+      </p>
+      <p id="detail-deskripsi" class="m-0 text-[0.95rem] leading-relaxed whitespace-pre-line"></p>
+    </div>
+
+    <footer class="flex justify-end gap-2.5 px-[22px] py-3.5 border-t border-rw-border bg-[#f8fcfa]">
+      <button type="button" data-detail-close
+              class="flex-1 min-[561px]:flex-none inline-block px-[18px] py-2.5 border border-[#b6cfc2] rounded-full bg-white text-rw-green-900 text-[0.9rem] font-semibold leading-tight cursor-pointer transition-colors hover:bg-rw-page focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#86d9b4]">Tutup</button>
+    </footer>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  // konfigurasi
+  const REWARDS_ENDPOINT = "{% url 'rewards:get_rewards_json' %}";
+  const ME_ENDPOINT = "{% url 'rewards:get_my_rewards_json' %}";
+  const URL_TUKAR = "{% url 'rewards:redeem_reward_ajax' 0 %}";
+  const URL_HAPUS = "{% url 'rewards:delete_reward_ajax' 0 %}";
+  const LOGIN_URL = "{% url 'login_user' %}";
+  const IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
+  const IS_PETUGAS = {{ is_petugas|yesno:"true,false" }};
+  const SEARCH_DEBOUNCE_DELAY = 300;
+
+  // kelas Tailwind yang dipakai ulang di HTML buatan JS
+  const FOCUS_RING = 'focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#86d9b4]';
+  const REWARD_BTN = 'w-full mt-auto py-[11px] border-0 rounded-full bg-rw-green-600 text-white text-[0.9rem] font-semibold cursor-pointer transition-colors enabled:hover:bg-rw-green-900 disabled:bg-rw-green-300 disabled:cursor-not-allowed ' + FOCUS_RING;
+  const GHOST_BTN = 'flex-1 min-w-0 block px-0 py-2 border border-[#b6cfc2] rounded-full bg-white text-rw-green-900 text-[0.82rem] font-semibold leading-tight text-center cursor-pointer transition-colors hover:bg-rw-page ' + FOCUS_RING;
+  const DANGER_BTN = 'text-[#991b1b] border-[#f2b8b8]! hover:bg-[#fee2e2]!';
+  const CHIP_ON = 'bg-rw-green-600 border-rw-green-600 text-white';
+  const CHIP_OFF = 'bg-white border-[#b6cfc2] text-rw-green-900 hover:bg-rw-page';
+  const TOAST_COLORS = { success: '#047857', error: '#b91c1c', warning: '#b45309', info: '#0369a1' };
+  const TOAST_ICONS = { success: '\u2713', error: '!', warning: '!', info: 'i' };
+
+  // token CSRF
+  window.CSRF_TOKEN = "{{ csrf_token }}";
+
+  // elemen DOM
+  const gridEl = document.getElementById('reward-grid');
+  const loadingEl = document.getElementById('rw-loading');
+  const errorEl = document.getElementById('rw-error');
+  const emptyEl = document.getElementById('rw-empty');
+  const chipsEl = document.getElementById('filter-chips');
+  const priceForm = document.getElementById('price-filter');
+  const maksInput = document.getElementById('maks_poin');
+
+  const pointsTotal = document.getElementById('points-total');
+  const pointsLevel = document.getElementById('points-level');
+  const pointsDots = document.getElementById('points-dots');
+  const redeemedCount = document.getElementById('redeemed-count');
+  const redeemedList = document.getElementById('redeemed-list');
+
+  const mobileBtn = document.getElementById('mobile-redeemed-btn');
+  if (mobileBtn) {
+    mobileBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.getElementById('redeemed-panel');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+
+  // state
+  let kategoriAktif = "{{ kategori_aktif|escapejs }}";
+  let rewardsById = {};
+  let rewardsAbort;
+  let searchTimer;
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function urlFor(template, id) {
+    return template.replace('/0/', '/' + id + '/');
+  }
+
+  function showSection({ loading = false, error = false, empty = false, grid = false } = {}) {
+    loadingEl.hidden = !loading;
+    errorEl.hidden = !error;
+    emptyEl.hidden = !empty;
+    gridEl.hidden = !grid;
+  }
+
+  async function postAction(url, body = null) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': window.CSRF_TOKEN, 'Accept': 'application/json' },
+      body: body,
+    });
+    const result = await response.json().catch(() => ({}));
+    return { ok: response.ok, status: response.status, result: result };
+  }
+
+  // TOAST
+  function showToast(message, type = 'success') {
+    if (!TOAST_COLORS[type]) type = 'info';
+    const stack = document.getElementById('rw-toast-stack');
+    const toast = document.createElement('div');
+    toast.className =
+      'group relative flex items-start gap-3 py-3.5 pr-3 pb-4 pl-3.5 border border-rw-border border-l-[5px] border-l-[var(--rw-toast-color)] rounded-[14px] bg-white text-rw-ink shadow-[0_12px_32px_rgba(15,23,42,0.18)] overflow-hidden pointer-events-auto animate-[rw-toast-in_0.25s_ease-out] transition-[opacity,transform] duration-[250ms] motion-reduce:animate-none motion-reduce:transition-none';
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.style.setProperty('--rw-toast-color', TOAST_COLORS[type]);
+    toast.style.setProperty('--rw-toast-ms', (type === 'error' ? 7000 : 4500) + 'ms');
+    toast.innerHTML =
+      '<span class="shrink-0 w-[22px] h-[22px] rounded-full bg-[var(--rw-toast-color)] text-white text-[0.8rem] font-bold leading-[22px] text-center" aria-hidden="true"></span>' +
+      '<p class="flex-1 m-0 mt-px text-[0.9rem] leading-[1.45] [overflow-wrap:anywhere]"></p>' +
+      '<button type="button" aria-label="Tutup notifikasi" class="shrink-0 w-7 h-7 border-0 rounded-full bg-transparent text-rw-muted text-[1.3rem] leading-none cursor-pointer hover:bg-rw-page focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-1 focus-visible:outline-[#86d9b4]">&times;</button>' +
+      '<span aria-hidden="true" class="absolute left-0 bottom-0 h-1 w-full bg-[var(--rw-toast-color)] opacity-55 origin-left [animation:rw-toast-bar_var(--rw-toast-ms,4500ms)_linear_forwards] group-hover:[animation-play-state:paused] group-focus-within:[animation-play-state:paused] motion-reduce:opacity-0"></span>';
+    toast.firstElementChild.textContent = TOAST_ICONS[type];
+    toast.querySelector('p').textContent = message;
+
+    const bar = toast.lastElementChild;
+    function dismiss() {
+      if (toast.dataset.leaving) return;
+      toast.dataset.leaving = '1';
+      toast.classList.add('opacity-0', 'translate-x-6');
+      setTimeout(function () { toast.remove(); }, 250);
+    }
+    toast.querySelector('button').addEventListener('click', dismiss);
+    bar.addEventListener('animationend', dismiss);
+
+    stack.appendChild(toast);
+  }
+  window.showToast = showToast;
+
+  function buildRewardCard(item) {
+    const r = item.fields;
+    const article = document.createElement('article');
+    article.className = 'bg-white border border-rw-border rounded-[18px] overflow-hidden flex flex-col';
+
+    const imageHtml = r.gambar
+      ? `<img src="${escapeHtml(r.gambar)}" alt="${escapeHtml(r.nama)}" class="block w-full h-full object-cover">`
+      : '';
+
+    const lockText = r.terkunci ? `, unlocks at Level ${r.level_minimal}` : '';
+
+    let actionHtml;
+    if (r.terkunci) {
+      actionHtml = `<button type="button" class="${REWARD_BTN}" disabled>Locked</button>`;
+    } else if (r.stok <= 0) {
+      actionHtml = `<button type="button" class="${REWARD_BTN}" disabled>Habis</button>`;
+    } else if (IS_AUTHENTICATED) {
+      actionHtml = `<button type="button" class="${REWARD_BTN} js-redeem" data-id="${item.pk}">Redeem</button>`;
+    } else {
+      actionHtml = `<a href="${LOGIN_URL}" class="${REWARD_BTN} block text-center no-underline box-border">Sign in untuk menukar</a>`;
+    }
+
+    const adminHtml = IS_PETUGAS
+      ? `<div class="flex flex-nowrap gap-2 mt-2">
+           <button type="button" class="${GHOST_BTN} js-edit-reward" data-id="${item.pk}">Ubah</button>
+           <button type="button" class="${GHOST_BTN} ${DANGER_BTN} js-delete-reward" data-id="${item.pk}">Hapus</button>
+         </div>`
+      : '';
+
+    article.innerHTML = `
+      <div class="relative h-[120px] ${r.terkunci ? 'bg-rw-locked' : 'bg-rw-mint'}">${imageHtml}</div>
+      <div class="flex flex-col gap-1 flex-1 px-3.5 pt-3.5 pb-4">
+        <h2 class="m-0 text-base font-bold">${escapeHtml(r.nama)}</h2>
+        <p class="mt-0.5 mb-1.5 text-[0.82rem] leading-[1.45] text-rw-muted line-clamp-2" title="${escapeHtml(r.deskripsi)}">${escapeHtml(r.deskripsi || 'Belum ada deskripsi.')}</p>
+        <button type="button" class="js-detail-reward self-start mb-2.5 p-0 border-0 bg-transparent text-rw-green-600 text-[0.82rem] font-semibold underline cursor-pointer hover:text-rw-green-900" data-id="${item.pk}">Lihat detail</button>
+        <p class="m-0 mb-3 text-[0.85rem] text-rw-muted">${r.harga_poin} Eco-Points${lockText}</p>
+        ${actionHtml}
+        ${adminHtml}
+      </div>
+    `;
+    return article;
+  }
+
+  async function fetchRewards({ silent = false } = {}) {
+    if (rewardsAbort) rewardsAbort.abort();
+    rewardsAbort = new AbortController();
+
+    const params = new URLSearchParams();
+    if (kategoriAktif) params.set('kategori', kategoriAktif);
+    if (maksInput.value.trim()) params.set('maks_poin', maksInput.value.trim());
+    const query = params.toString();
+
+    try {
+      if (!silent) showSection({ loading: true });
+
+      const response = await fetch(query ? REWARDS_ENDPOINT + '?' + query : REWARDS_ENDPOINT, {
+        headers: { 'Accept': 'application/json' },
+        signal: rewardsAbort.signal,
+      });
+      if (!response.ok) throw new Error('Failed to fetch rewards');
+
+      const data = await response.json();
+      rewardsById = {};
+
+      if (data.length === 0) {
+        showSection({ empty: true });
+        return;
+      }
+
+      gridEl.innerHTML = '';
+      data.forEach(function (item) {
+        rewardsById[item.pk] = item.fields;
+        gridEl.appendChild(buildRewardCard(item));
+      });
+      showSection({ grid: true });
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      console.error('Error loading rewards:', error);
+      showSection({ error: true });
+    }
+  }
+
+  // Poin, voucher, riwayat
+  const EMPTY_LI = 'm-0 text-[0.9rem] leading-normal text-rw-muted';
+
+  function renderMe(me) {
+    pointsTotal.textContent = me.total_poin + ' Eco-Points';
+    pointsLevel.textContent = me.authenticated
+      ? `Level ${me.level}. ${me.poin_ke_level_berikutnya} more points to reach Level ${me.level + 1}.`
+      : 'Sign in untuk mulai mengumpulkan Eco-Points.';
+    pointsDots.innerHTML = me.dots
+      .map(function (aktif) {
+        return `<li class="w-6 h-6 rounded-full box-border ${aktif ? 'bg-rw-green-600' : 'border-[1.5px] border-dashed border-rw-green-600 bg-transparent'}"></li>`;
+      })
+      .join('');
+
+    if (!me.authenticated) {
+      redeemedCount.hidden = true;
+      redeemedList.innerHTML =
+        `<li class="${EMPTY_LI}"><a href="${LOGIN_URL}" class="text-rw-green-600 font-semibold underline">Sign in</a> untuk melihat voucher yang sudah kamu tukar.</li>`;
+      return;
+    }
+
+    redeemedCount.hidden = false;
+    redeemedCount.textContent = me.redemptions.length;
+
+    const mobileBadge = document.getElementById('mobile-redeemed-badge');
+    if (mobileBadge) {
+      if (me.redemptions.length > 0) {
+        mobileBadge.hidden = false;
+        mobileBadge.textContent = me.redemptions.length;
+      } else {
+        mobileBadge.hidden = true;
+      }
+    }
+    
+    redeemedList.innerHTML = me.redemptions.length
+      ? me.redemptions.map(function (v) {
+          const img = v.gambar
+            ? `<img src="${escapeHtml(v.gambar)}" alt="" width="40" height="40" loading="lazy" class="block w-10 h-10 max-w-none object-cover">`
+            : '';
+          const kode = v.kode ? `, kode ${escapeHtml(v.kode)}` : '';
+          return `
+            <li class="flex items-center gap-3 min-w-0 p-2.5 border border-dashed border-[#b6cfc2] rounded-[14px] bg-[#f8fcfa]">
+              <div class="shrink-0 w-10 h-10 min-w-10 max-w-10 rounded-[10px] bg-rw-mint overflow-hidden" aria-hidden="true">${img}</div>
+              <div class="flex-1 min-w-0">
+                <p class="m-0 mb-0.5 text-[0.9rem] font-semibold [overflow-wrap:anywhere]">${escapeHtml(v.nama)}</p>
+                <p class="m-0 text-[0.78rem] text-rw-muted">${escapeHtml(v.tanggal)}${kode}</p>
+              </div>
+              <span class="shrink-0 px-2.5 py-[3px] rounded-full text-xs font-semibold bg-rw-mint text-rw-green-900">-${v.poin_dipakai} poin</span>
+            </li>`;
+        }).join('')
+      : `<li class="${EMPTY_LI}">Belum ada voucher. Tukar poinmu dengan hadiah di sebelah kiri.</li>`;
+  }
+
+  async function fetchMe() {
+    try {
+      const response = await fetch(ME_ENDPOINT, {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store',
+      });
+      if (!response.ok) throw new Error('Failed to fetch user data');
+      renderMe(await response.json());
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      pointsTotal.textContent = 'Gagal memuat poin';
+    }
+  }
+
+  // tukar
+  async function redeemReward(id, button) {
+    button.disabled = true;
+    try {
+      const res = await postAction(urlFor(URL_TUKAR, id));
+      if (res.ok) {
+        showToast(res.result.message || 'Berhasil menukar hadiah.', 'success');
+      } else {
+        showToast(res.result.message || `Terjadi kesalahan (status ${res.status}).`, 'error');
+      }
+      // muat ulang katalog
+      await Promise.all([fetchRewards({ silent: true }), fetchMe()]);
+    } catch (error) {
+      console.error('Error redeeming reward:', error);
+      showToast('Tidak dapat terhubung ke server. Silakan coba lagi.', 'error');
+      button.disabled = false;
+    }
+  }
+
+  // delete
+  async function deleteReward(id, button) {
+    const reward = rewardsById[id];
+    if (!confirm(`Hapus hadiah "${reward ? reward.nama : ''}"?`)) return;
+
+    button.disabled = true;
+    try {
+      const res = await postAction(urlFor(URL_HAPUS, id));
+      showToast(
+        res.result.message || (res.ok ? 'Hadiah dihapus.' : `Terjadi kesalahan (status ${res.status}).`),
+        res.ok ? 'success' : 'error'
+      );
+      if (res.ok) {
+        fetchRewards({ silent: true });
+      } else {
+        button.disabled = false;
+      }
+    } catch (error) {
+      console.error('Error deleting reward:', error);
+      showToast('Tidak dapat terhubung ke server. Silakan coba lagi.', 'error');
+      button.disabled = false;
+    }
+  }
+
+  // detail modal
+  const detailModal = document.getElementById('detail-modal');
+
+  function openDetail(reward) {
+    if (!reward) return;
+    document.getElementById('detail-title').textContent = reward.nama;
+    document.getElementById('detail-kategori').textContent = reward.kategori_label;
+    document.getElementById('detail-harga').textContent = reward.harga_poin;
+    document.getElementById('detail-deskripsi').textContent = reward.deskripsi || 'Belum ada deskripsi.';
+    detailModal.showModal();
+  }
+
+  detailModal.querySelectorAll('[data-detail-close]')
+    .forEach(function (b) { b.addEventListener('click', function () { detailModal.close(); }); });
+  detailModal.addEventListener('click', function (e) { if (e.target === detailModal) detailModal.close(); });
+
+  // event: klik pada kartu (event delegation)
+  gridEl.addEventListener('click', function (event) {
+    const button = event.target.closest('button');
+    if (!button) return;
+    const id = button.dataset.id;
+
+    if (button.classList.contains('js-redeem')) {
+      redeemReward(id, button);
+    } else if (button.classList.contains('js-detail-reward')) {
+      openDetail(rewardsById[id]);
+    } else if (button.classList.contains('js-edit-reward')) {
+      window.rewardModal.openEdit(id, rewardsById[id]);
+    } else if (button.classList.contains('js-delete-reward')) {
+      deleteReward(id, button);
+    }
+  });
+
+  // event: filter
+  function setActiveChip() {
+    chipsEl.querySelectorAll('.rw-chip').forEach(function (chip) {
+      const active = chip.dataset.kategori === kategoriAktif;
+      chip.classList.remove(...(active ? CHIP_OFF : CHIP_ON).split(' '));
+      chip.classList.add(...(active ? CHIP_ON : CHIP_OFF).split(' '));
+    });
+  }
+
+  function syncUrl() {
+    const params = new URLSearchParams();
+    if (kategoriAktif) params.set('kategori', kategoriAktif);
+    if (maksInput.value.trim()) params.set('maks_poin', maksInput.value.trim());
+    const query = params.toString();
+    history.replaceState(null, '', query ? '?' + query : location.pathname);
+  }
+
+  chipsEl.addEventListener('click', function (event) {
+    const chip = event.target.closest('.rw-chip');
+    if (!chip) return;
+    kategoriAktif = chip.dataset.kategori;
+    setActiveChip();
+    syncUrl();
+    fetchRewards();
+  });
+
+  maksInput.addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () {
+      syncUrl();
+      fetchRewards();
+    }, SEARCH_DEBOUNCE_DELAY);
+  });
+
+  priceForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    clearTimeout(searchTimer);
+    syncUrl();
+    fetchRewards();
+  });
+
+  // event: modal tambah/ubah
+  const addButton = document.getElementById('btn-add-reward');
+  if (addButton) {
+    addButton.addEventListener('click', function () { window.rewardModal.openCreate(); });
+  }
+  // dikirim oleh modal setelah berhasil tambah atau ubah
+  document.addEventListener('rewards:changed', function () { fetchRewards({ silent: true }); });
+
+
+  {% for message in messages %}
+  showToast("{{ message|escapejs }}", "{{ message.tags|default:'info' }}");
+  {% endfor %}
+
+  // Mulai
+  setActiveChip();
+  fetchRewards();
+  fetchMe();
+})();
+</script>
+{% endblock %}

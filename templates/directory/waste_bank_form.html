@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>{% if waste_bank %}Edit Bank Sampah{% else %}Tambah Bank Sampah{% endif %} - Waste Whistle</title>
+    <link rel="stylesheet" href="{% static 'css/output_directory.css' %}">
+    <!-- Leaflet & Map Script Inclusions -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script defer src="{% static 'reporting/map.js' %}?v=4"></script>
+{% endblock meta %}
+
+{% block body %}
+    {% include 'topbar.html' %}
+    <main class="directory-form-page">
+        <section class="directory-hero">
+            <div class="directory-hero__copy max-w-[580px]">
+                <div class="flex items-center gap-2 text-[10px] font-bold">MANAJEMEN DIREKTORI</div>
+                <h1>{% if waste_bank %}Perbarui Bank Sampah{% else %}Tambah Bank Sampah{% endif %}</h1>
+                <p>{% if waste_bank %}Jaga keakuratan informasi lokasi komunitas ini agar masyarakat dapat menemukan dan mehubunginya dengan mudah.{% else %}Bantu masyarakat menemukan tempat terpercaya untuk menyetorkan sampah yang dapat didaur ulang.{% endif %}</p>
+            </div>
+            <span class="directory-status-pill"><span class="directory-dot directory-dot--green"></span>Akses Staf</span>
+        </section>
+
+        <section class="directory-layout" aria-label="Detail bank sampah">
+            <div class="directory-panel directory-panel--list">
+                <div class="directory-panel__header">
+                    <span class="directory-empty__icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M9 12h.01"/><path d="M15 12h.01"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2>Detail Lokasi</h2>
+                        <p>Bagikan informasi yang dibutuhkan pengunjung sebelum mereka datang.</p>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="directory-form-error-summary" role="alert">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post"
+                      action="{% if waste_bank %}{% url 'directory:edit_waste_bank' waste_bank.id %}{% else %}{% url 'directory:create_waste_bank' %}{% endif %}"
+                      class="directory-form">
+                    {% csrf_token %}
+                    <div class="directory-form-fields">
+                        {% for field in form %}
+                            {% if field.name != 'latitude' and field.name != 'longitude' %}
+                                <div class="directory-form-field{% if field.name == 'address' %} directory-form-field--full{% endif %}{% if field.errors %} directory-form-field--invalid{% endif %}">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}<span class="directory-form-help">{{ field.help_text }}</span>{% endif %}
+                                    {% for error in field.errors %}
+                                        <p class="directory-form-error">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Fitur Pilih Lokasi di Peta -->
+                        <div class="directory-form-field directory-form-field--full mt-2 pt-4 border-t border-[var(--directory-border)]">
+                            <label class="font-bold text-[var(--directory-ink)] text-sm">Lokasi di peta</label>
+                            <p id="map-help" class="text-xs text-[var(--directory-muted)] mb-3">Klik peta untuk memasang pin, lalu geser pin ke lokasi bank sampah. Kamu juga bisa mengisi koordinat di bawah peta.</p>
+                            
+                            <div class="relative z-0 overflow-hidden rounded-[14px] border border-[var(--directory-border)]">
+                                <div id="report-map" class="relative z-0 w-full bg-[#F2F8F4]" style="height: 360px;"
+                                     role="region" aria-label="Pilih lokasi di peta" aria-describedby="map-help map-status"
+                                     data-tile-url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png">
+                                    <p id="map-loading" class="p-4 text-xs text-[var(--directory-muted)]">Memuat peta… Koordinat juga dapat diisi secara manual.</p>
+                                </div>
+                                <div class="absolute top-3.5 left-3.5 flex flex-col bg-white rounded-xl shadow-md overflow-hidden z-10" role="group" aria-label="Kontrol zoom peta">
+                                    <button id="report-zoom-in" type="button" aria-label="Perbesar peta" aria-controls="report-map" class="w-8 h-8 flex items-center justify-center font-bold text-gray-700 bg-white border-b border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" disabled>+</button>
+                                    <button id="report-zoom-out" type="button" aria-label="Perkecil peta" aria-controls="report-map" class="w-8 h-8 flex items-center justify-center font-bold text-gray-700 bg-white disabled:opacity-50 disabled:cursor-not-allowed" disabled>&minus;</button>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3 mt-3">
+                                <button id="use-map-center" type="button" class="btn-secondary px-3 py-2 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed" disabled>Gunakan titik tengah peta</button>
+                                <p id="map-status" class="text-xs text-[var(--directory-muted)]" role="status" aria-live="polite">Belum ada titik dipilih.</p>
+                            </div>
+                            <p id="map-error" class="hidden mt-2 text-xs text-red-700" role="status"></p>
+                            <noscript><p class="mt-2 text-xs text-[var(--directory-muted)]">JavaScript tidak aktif. Isi latitude dan longitude secara manual.</p></noscript>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                                {% if form.latitude %}
+                                <div class="directory-form-field{% if form.latitude.errors %} directory-form-field--invalid{% endif %}">
+                                    <label for="{{ form.latitude.id_for_label }}">{{ form.latitude.label }}</label>
+                                    {{ form.latitude }}
+                                    {% if form.latitude.help_text %}<span class="directory-form-help">{{ form.latitude.help_text }}</span>{% endif %}
+                                    {% for error in form.latitude.errors %}<p class="directory-form-error">{{ error }}</p>{% endfor %}
+                                </div>
+                                {% endif %}
+                                {% if form.longitude %}
+                                <div class="directory-form-field{% if form.longitude.errors %} directory-form-field--invalid{% endif %}">
+                                    <label for="{{ form.longitude.id_for_label }}">{{ form.longitude.label }}</label>
+                                    {{ form.longitude }}
+                                    {% if form.longitude.help_text %}<span class="directory-form-help">{{ form.longitude.help_text }}</span>{% endif %}
+                                    {% for error in form.longitude.errors %}<p class="directory-form-error">{{ error }}</p>{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right-Aligned Action Buttons -->
+                    <div class="flex flex-wrap items-center justify-end gap-4 mt-6">
+                        <a class="text-sm font-semibold text-[#115D3F] hover:underline" href="{% url 'directory:show_directory' %}">Batal</a>
+                        <button class="btn-secondary py-3 px-6 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#115D3F]" type="submit">
+                            {% if waste_bank %}Simpan Perubahan{% else %}Tambah Bank Sampah{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    {% include 'footer.html' %}
+{% endblock body %}

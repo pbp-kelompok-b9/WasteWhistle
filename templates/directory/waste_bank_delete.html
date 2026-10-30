@@ -1,0 +1,23 @@
+<form class="directory-delete-form" method="post" action="{% url 'directory:delete_waste_bank' bank.id %}">
+    {% csrf_token %}
+    <button class="directory-bank-card__action directory-secondary-button p-2" type="button"
+        popovertarget="delete-confirm-{{ bank.id }}" aria-label="Delete {{ bank.name }}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6h18" />
+            <path d="M8 6V4h8v2" />
+            <path d="M19 6l-1 14H6L5 6" />
+            <path d="M10 11v5" />
+            <path d="M14 11v5" />
+        </svg>
+    </button>
+    <div id="delete-confirm-{{ bank.id }}" class="directory-delete-popover" popover>
+        <h3>Hapus {{ bank.name }}?</h3>
+        <p>Tindakan ini menghapus bank sampah tersebut secara permanen dari direktori.</p>
+        <div class="directory-delete-popover__actions">
+            <button class="directory-delete-popover__cancel" type="button" popovertarget="delete-confirm-{{ bank.id }}"
+                popovertargetaction="hide">Batal</button>
+            <button class="directory-delete-popover__confirm" type="submit">Hapus</button>
+        </div>
+    </div>
+</form>
