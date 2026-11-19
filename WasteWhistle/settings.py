@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'comment',
     'reporting.apps.ReportingConfig',
     'rewards',
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
