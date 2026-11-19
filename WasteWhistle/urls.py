@@ -32,3 +32,9 @@ urlpatterns = [
     path('comment/', include('comment.urls')),
     path('rewards/', include('rewards.urls')),
 ]
+
+urlpatterns += [
+    path("api/v1/", include("education.api_urls")),
+    path("api-auth/", include("rest_framework.urls")),
+] 
+
