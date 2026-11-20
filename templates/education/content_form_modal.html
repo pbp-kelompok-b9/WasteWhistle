@@ -6,10 +6,8 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
     </button>
 </div>
-<form class="education-admin-form" method="post"
-      action="{% if item %}{% url 'education_update' key item.pk %}{% else %}{% url 'education_create' key %}{% endif %}"
-      hx-post="{% if item %}{% url 'education_update' key item.pk %}{% else %}{% url 'education_create' key %}{% endif %}"
-      hx-target="#education-modal-content" hx-swap="innerHTML">
+<form class="education-admin-form" method="post" data-api-url="{{ api_url }}"
+      data-api-method="{% if item %}PUT{% else %}POST{% endif %}">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="education-admin-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
     {% for field in form %}

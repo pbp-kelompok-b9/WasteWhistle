@@ -74,6 +74,17 @@ function setupQuiz() {
         return { ok: response.ok, data: data };
     }
 
+    function responseMessage(data, fallback) {
+        if (data?.error) return data.error;
+        if (data?.detail) return data.detail;
+        if (data && typeof data === "object") {
+            const firstError = Object.values(data)[0];
+            if (Array.isArray(firstError)) return firstError.join(" ");
+            if (typeof firstError === "string") return firstError;
+        }
+        return fallback;
+    }
+
     /* Tampilkan soal yang sedang aktif */
     function showQuestion() {
         const question = questions[currentQuestion];
@@ -112,8 +123,9 @@ function setupQuiz() {
             });
 
             if (!result.ok) {
-                feedbackText.textContent = result.data.error ||
-                    "Jawaban tidak dapat dikirim. Coba lagi.";
+                feedbackText.textContent = responseMessage(
+                    result.data, "Jawaban tidak dapat dikirim. Coba lagi."
+                );
                 feedbackText.hidden = false;
                 hasAnswered = false;
                 binButtons.forEach(function (button) { button.disabled = false; });
@@ -180,8 +192,9 @@ function setupQuiz() {
             const result = await postJson(playArea.dataset.submitUrl, {});
 
             if (!result.ok) {
-                feedbackText.textContent = result.data.error ||
-                    "Hasil kuis tidak dapat disimpan. Muat ulang halaman dan coba lagi.";
+                feedbackText.textContent = responseMessage(
+                    result.data, "Hasil kuis tidak dapat disimpan. Muat ulang halaman dan coba lagi."
+                );
                 feedbackText.hidden = false;
                 nextButton.disabled = false;
                 nextButton.textContent = "Coba lagi";
@@ -316,23 +329,49 @@ function setupGuideSearch() {
 
     document.body.addEventListener("educationContentChanged", async function () {
         try {
-            const response = await fetch(window.location.href, { credentials: "same-origin" });
-            if (!response.ok) throw new Error("Gagal menyegarkan konten edukasi.");
-            const page = new DOMParser().parseFromString(await response.text(), "text/html");
-            ["decomposition", "myths-facts"].forEach(function (id) {
-                const current = document.getElementById(id);
-                const fresh = page.getElementById(id);
-                if (current && fresh) {
-                    current.replaceChildren(...fresh.childNodes);
-                    htmx.process(current);
-                }
-            });
-            const freshGuides = page.getElementById("guide-results");
-            if (freshGuides) {
-                resultsBox.replaceChildren(...freshGuides.childNodes);
-                htmx.process(resultsBox);
-                await loadGuides(searchInput.value.trim());
+            const urls = document.getElementById("education-api-urls").dataset;
+            const [decomposition, myths] = await Promise.all([
+                fetch(urls.decomposition).then(function (response) { return response.json(); }),
+                fetch(urls.myths).then(function (response) { return response.json(); })
+            ]);
+            const decompositionBox = document.getElementById("decomposition");
+            decompositionBox.querySelectorAll("article, .education-empty").forEach(function (node) { node.remove(); });
+            const decompositionItems = Array.isArray(decomposition) ? decomposition : decomposition.results;
+            if (decompositionItems.length === 0) {
+                const empty = document.createElement("p");
+                empty.className = "education-empty mt-3 text-[13px] text-[#6C7D75]";
+                empty.textContent = "Belum ada informasi yang tersedia.";
+                decompositionBox.append(empty);
             }
+            decompositionItems.forEach(function (info) {
+                const article = document.createElement("article");
+                article.className = "mt-3.5";
+                article.innerHTML = '<div class="grid grid-cols-[110px_minmax(0,1fr)_135px] items-center gap-3"><span class="text-[13px]"></span><div class="lifespan-track"><div class="lifespan-bar"></div></div><strong class="lifespan-years text-[12px]"></strong></div>';
+                article.querySelector("span").textContent = info.material_name;
+                const bar = article.querySelector(".lifespan-bar");
+                bar.classList.add("bar-" + info.bar_level);
+                bar.style.width = info.bar_percent + "%";
+                article.querySelector("strong").textContent = info.formatted_duration;
+                decompositionBox.append(article);
+            });
+            const mythSection = document.getElementById("myths-facts");
+            let grid = mythSection.querySelector(".myth-grid");
+            const mythItems = Array.isArray(myths) ? myths : myths.results;
+            mythSection.querySelectorAll(".education-empty").forEach(function (node) { node.remove(); });
+            if (mythItems.length === 0) {
+                const empty = document.createElement("p");
+                empty.className = "education-empty text-[13px] text-[#6C7D75]";
+                empty.textContent = "Belum ada mitos/fakta yang tersedia.";
+                mythSection.append(empty);
+            }
+            if (!grid) {
+                grid = document.createElement("div");
+                grid.className = "myth-grid grid grid-cols-3 gap-4";
+                mythSection.append(grid);
+            }
+            grid.replaceChildren(...mythItems.map(createMythCard));
+            await loadGuides(searchInput.value.trim());
+            document.body.dispatchEvent(new Event("educationContentRefreshed"));
         } catch (error) {
             console.error(error);
         }
@@ -347,6 +386,87 @@ function setupGuideSearch() {
         }, 250);
     });
 }
+
+function createMythCard(item) {
+    const label = document.createElement("label");
+    label.className = "flip-card relative block h-[210px]";
+    const toggle = document.createElement("input");
+    toggle.className = "flip-toggle absolute h-px w-px opacity-0";
+    toggle.type = "checkbox";
+    const front = document.createElement("span");
+    front.className = "flip-front flex flex-col items-center justify-center gap-3.5 border border-[#E2EDE6] bg-white text-center";
+    const statement = document.createElement("span");
+    statement.className = "text-[17px] font-bold leading-[1.3]";
+    statement.textContent = item.statement;
+    const hint = document.createElement("span");
+    hint.className = "text-[14px] text-[#6C7D75]";
+    hint.textContent = "Balik kartu untuk melihat jawaban";
+    front.append(statement, hint);
+    const back = document.createElement("span");
+    back.className = "flip-back flex flex-col gap-1.5 overflow-y-auto bg-[#0B3B2E] text-[13px] text-white";
+    const classification = document.createElement("strong");
+    classification.className = "text-[14px] text-[#B9F2CD]";
+    classification.textContent = item.is_myth ? "Mitos" : "Fakta";
+    const explanation = document.createElement("span");
+    explanation.className = "flip-explanation";
+    explanation.textContent = item.explanation;
+    back.append(classification, explanation);
+    if (item.source_url) {
+        const link = document.createElement("a");
+        link.className = "mt-auto font-semibold text-[#B9F2CD] underline underline-offset-2 hover:text-white";
+        link.href = item.source_url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "Pelajari lebih lanjut";
+        back.append(link);
+    }
+    label.append(toggle, front, back);
+    return label;
+}
+
+document.body.addEventListener("submit", async function (event) {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.dataset.apiUrl) return;
+    event.preventDefault();
+    const csrf = form.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+    const method = form.dataset.apiMethod;
+    let response;
+    try {
+        if (method === "DELETE") {
+            response = await fetch(form.dataset.apiUrl, { method: method, credentials: "same-origin", headers: { "X-CSRFToken": csrf } });
+        } else {
+            const data = Object.fromEntries(new FormData(form).entries());
+            delete data.csrfmiddlewaretoken;
+            response = await fetch(form.dataset.apiUrl, {
+                method: method, credentials: "same-origin",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": csrf },
+                body: JSON.stringify(data)
+            });
+        }
+        const payload = response.status === 204 ? {} : await response.json();
+        if (!response.ok) {
+            const errors = Object.entries(payload).map(function ([field, messages]) {
+                return field + ": " + (Array.isArray(messages) ? messages.join(" ") : messages);
+            }).join(" ");
+            const alert = document.createElement("div");
+            alert.className = "education-admin-errors";
+            alert.setAttribute("role", "alert");
+            alert.textContent = errors || "Perubahan tidak dapat disimpan.";
+            form.querySelector("[role=alert]")?.remove();
+            form.prepend(alert);
+            return;
+        }
+        document.getElementById("educationModal")?.close();
+        document.body.dispatchEvent(new Event("educationContentChanged"));
+        const status = document.getElementById("education-crud-status");
+        if (status) {
+            status.textContent = "Konten edukasi berhasil diperbarui.";
+            window.setTimeout(function () { status.textContent = ""; }, 3500);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 document.body.addEventListener("htmx:afterSwap", function (event) {
     if (event.detail.target?.id === "education-modal-content") {

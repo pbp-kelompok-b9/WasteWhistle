@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'comment',
     'reporting.apps.ReportingConfig',
     'rewards',
-    'rest_framework', 
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [

@@ -33,3 +33,9 @@ urlpatterns = [
     path('rewards/', include('rewards.urls')),
     path('api/v1/', include('rewards.api_urls')), 
 ]
+
+urlpatterns += [
+    path("api/v1/", include("education.api_urls")),
+    path("api-auth/", include("rest_framework.urls")),
+] 
+
