@@ -20,3 +20,7 @@ staticfiles/
 
 # --- Node.js & Tailwind CLI ---d
 npm-debug.log*
+
+# Postman local workspace config
+.postman/
+postman/globals/workspace.globals.yaml
