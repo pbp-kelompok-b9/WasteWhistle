@@ -21,12 +21,12 @@ def wastebank_list(request):
         wastebanks = WasteBank.objects.order_by("name", "id")
         name_query = request.query_params.get("name", "").strip()
         if name_query:
-                waste_bank_list = waste_bank_list.filter(
-                    Q(name__icontains=name_query)
-                    | Q(address__icontains=name_query)
-                    | Q(contact_number__icontains=name_query)
-                    | Q(email__icontains=name_query)
-                )
+            wastebanks = wastebanks.filter(
+                Q(name__icontains=name_query)
+                | Q(address__icontains=name_query)
+                | Q(contact_number__icontains=name_query)
+                | Q(email__icontains=name_query)
+            )
         serializer = WasteBankSerializer(
             wastebanks, many=True, context={"request": request},
         )
@@ -39,7 +39,7 @@ def wastebank_list(request):
 
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
 @authentication_classes([SessionAuthentication])
-@permission_classes([IsPortfolioOwnerOrReadOnly])
+@permission_classes([IsPortfolioOwnerOrStaffOrReadOnly])
 def wastebank_detail(request, wastebank_id):
     wastebank = get_object_or_404(
         WasteBank.objects, pk=wastebank_id,
