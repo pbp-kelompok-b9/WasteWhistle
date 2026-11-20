@@ -31,9 +31,12 @@ urlpatterns = [
     path('reporting/', include('reporting.urls')),
     path('comment/', include('comment.urls')),
     path('rewards/', include('rewards.urls')),
-]
 
-urlpatterns += [
+    # restful
+    path("comment-api/v1/", include("comment.api_urls")),
+    path('api/v1/', include('rewards.api_urls')),
     path("directory-api/v1/", include("directory.api_urls")),
     path("api-auth/", include("rest_framework.urls")),
+    path("api/v1/", include("education.api_urls")),
 ]
+

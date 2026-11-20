@@ -11,9 +11,7 @@
     <strong>{% if key == 'guide' %}{{ item.name }}{% elif key == 'decomposition' %}{{ item.material_name }}{% else %}{{ item.statement }}{% endif %}</strong>
     <p>Item ini akan dihapus dari halaman edukasi.</p>
 </div>
-<form method="post" action="{% url 'education_delete' key item.pk %}"
-      hx-post="{% url 'education_delete' key item.pk %}"
-      hx-target="#education-modal-content" hx-swap="innerHTML">
+<form method="post" data-api-url="{{ api_url }}" data-api-method="DELETE">
     {% csrf_token %}
     <div class="education-admin-actions">
         <button type="submit" class="education-admin-danger">Ya, hapus</button>

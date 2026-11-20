@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import IntegrityError, models, transaction
 from django.conf import settings
 from django.utils import timezone
 import math
@@ -88,6 +88,8 @@ class QuizQuestion(models.Model):
         return self.item.name
 
 class QuizAttempt(models.Model):
+    QUIZ_SIZE = 3
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -95,7 +97,10 @@ class QuizAttempt(models.Model):
         related_name="quiz_attempts"
     )
     attempt_date = models.DateField(default=timezone.localdate)
-    score = models.PositiveSmallIntegerField(default=0)
+    score = models.PositiveSmallIntegerField(null=True, blank=True)
+    question_ids = models.JSONField(default=list)
+    answers = models.JSONField(default=dict)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -105,3 +110,59 @@ class QuizAttempt(models.Model):
         ]
     def __str__(self):
         return f"{self.user} - {self.attempt_date}"
+
+    @classmethod
+    def start_daily(cls, user, attempt_date):
+        attempt = cls.objects.filter(user=user, attempt_date=attempt_date).first()
+        if attempt and attempt.score is not None:
+            return attempt
+
+        if attempt and attempt.has_valid_questions():
+            return attempt
+
+        question_ids = list(
+            QuizQuestion.objects.order_by("?").values_list("id", flat=True)[:cls.QUIZ_SIZE]
+        )
+        if len(question_ids) != cls.QUIZ_SIZE:
+            return None
+        question_ids = [str(question_id) for question_id in question_ids]
+
+        if attempt:
+            attempt.question_ids = question_ids
+            attempt.answers = {}
+            attempt.save(update_fields=["question_ids", "answers"])
+            return attempt
+
+        try:
+            with transaction.atomic():
+                return cls.objects.create(
+                    user=user,
+                    attempt_date=attempt_date,
+                    question_ids=question_ids,
+                )
+        except IntegrityError:
+            return cls.objects.get(user=user, attempt_date=attempt_date)
+
+    def has_valid_questions(self):
+        if (
+            not isinstance(self.question_ids, list)
+            or len(self.question_ids) != self.QUIZ_SIZE
+            or len(set(map(str, self.question_ids))) != self.QUIZ_SIZE
+        ):
+            return False
+        return QuizQuestion.objects.filter(pk__in=self.question_ids).count() == self.QUIZ_SIZE
+
+    def get_questions(self):
+        if not self.has_valid_questions():
+            return []
+        found = {
+            str(question.id): question
+            for question in QuizQuestion.objects.filter(
+                id__in=self.question_ids,
+            ).select_related("item")
+        }
+        return [
+            found[str(question_id)]
+            for question_id in self.question_ids
+            if str(question_id) in found
+        ]
