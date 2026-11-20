@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = "comment"
@@ -7,5 +7,5 @@ urlpatterns = [
     path("add/", views.add_comment_ajax, name="add"),
     path("edit/<int:pk>/", views.edit_comment_ajax, name="edit"),
     path("delete/<int:pk>/", views.delete_comment_ajax, name="delete"),
-    path("list/", views.list_user_comment, name="list")
+    path("list/", views.list_user_comment, name="list"),
 ]
