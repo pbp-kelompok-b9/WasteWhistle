@@ -62,7 +62,7 @@
                 <div
                     class="directory-list"
                     id="directory-results"
-                    data-api-url="{% url 'directory:get_waste_bank_json' %}"
+                    data-api-url="{% url 'api:wastebank-list' %}"
                     data-can-edit="{% if user.is_superuser or is_staff %}true{% else %}false{% endif %}"
                     data-can-delete="{% if user.is_superuser %}true{% else %}false{% endif %}"
                     data-csrf-token="{{ csrf_token }}"
@@ -248,7 +248,13 @@
             return card;
         }
 
-        function renderResults(banks, query) {
+        function renderResults(apiBanks, query) {
+            const banks = apiBanks.map((bank) => ({
+                pk: bank.id,
+                source: bank.is_osm ? "osm" : "manual",
+                is_manual: !bank.is_osm,
+                fields: bank,
+            }));
             directoryResults.replaceChildren();
             banks.forEach((bank, index) => directoryResults.appendChild(createDirectoryCard(bank, index)));
 
