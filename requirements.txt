@@ -3,4 +3,8 @@ gunicorn
 psycopg2-binary
 python-dotenv
 whitenoise
+<<<<<<< HEAD
 djangorestframework~=3.18.3
+=======
+djangorestframework~=3.18.3
+>>>>>>> 3d025ea (Menambahkan file api_views, api_urls, dan serializers, serta menambahkan path baru di urls project)
