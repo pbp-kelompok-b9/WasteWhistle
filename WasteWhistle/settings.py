@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'comment',
     'reporting.apps.ReportingConfig',
     'rewards',
-    'rest_framework', 'rest_framework.authtoken', 'corsheaders',
+    'rest_framework', 
 ]
 
 MIDDLEWARE = [
@@ -61,7 +61,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'WasteWhistle.urls'
@@ -158,9 +157,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-REST_FRAMEWORK = {
-     'DEFAULT_AUTHENTICATION_CLASSES': [
-         'rest_framework.authentication.SessionAuthentication',
-         'rest_framework.authentication.TokenAuthentication',
-     ],
- }
+
