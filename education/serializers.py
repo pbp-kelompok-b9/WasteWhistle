@@ -1,7 +1,9 @@
 from django.utils.html import strip_tags
 from rest_framework import serializers
 
-from education.models import WasteGuide, DecompositionInfo, MythOrFact, QuizAttempt, QuizQuestion
+from education.models import (
+    DecompositionInfo, MythOrFact, QuizAttempt, QuizQuestion, WasteGuide,
+)
 
 class WasteGuideSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,9 +34,10 @@ class DecompositionInfoSerializer(serializers.ModelSerializer):
     bar_level = serializers.SerializerMethodField()
 
     class Meta:
-        models = DecompositionInfo
+        model = DecompositionInfo
         fields = [
-            "id", "material_name", "estimated_days",
+            "id", "material_name", "estimated_days", "formatted_duration",
+            "bar_percent", "bar_level",
         ]
         read_only_fields = ["id"]
 
@@ -66,23 +69,30 @@ class MythOrFactSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Statement cannot be empty.")
         return value
     def validate_explanation(self, value):
-        return strip_tags(value)    
+        return strip_tags(value)
+
+    def validate_source_url(self, value):
+        return value.strip()
 
 class QuizQuestionSerializer(serializers.ModelSerializer):
-    item = WasteGuideSerializer(read_only=True)
+    item_name = serializers.CharField(source="item.name", read_only=True)
+
     class Meta:
         model = QuizQuestion
-        fields = [
-            "id", "item",
-        ]
-        read_only_fields = ["id"]
+        fields = ["id", "item_name"]
+
+
+class QuizAnswerInputSerializer(serializers.Serializer):
+    question_id = serializers.UUIDField()
+    answer = serializers.ChoiceField(choices=WasteGuide.CATEGORY_CHOICES)
 
 class QuizAttemptSerializer(serializers.ModelSerializer):
+    total = serializers.SerializerMethodField()
+
     class Meta:
         model = QuizAttempt
-        fields = [
-            "id", "user", "attempt_date", "score"
-        ]
-        read_only_fields = [
-            "id", "user", "attempt_date", "score"
-        ]
+        fields = ["id", "attempt_date", "score", "total"]
+        read_only_fields = fields
+
+    def get_total(self, obj):
+        return QuizAttempt.QUIZ_SIZE
