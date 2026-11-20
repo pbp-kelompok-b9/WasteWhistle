@@ -32,14 +32,14 @@ class IsPetugasOrReadOnly(permissions.BasePermission):
 
 class RewardViewSet(viewsets.ModelViewSet):
     """
-    GET    /api/v1/rewards/                 daftar hadiah (?kategori=&maks_poin=&tersedia=1)
-    POST   /api/v1/rewards/                 buat hadiah          (petugas)
-    GET    /api/v1/rewards/{id}/            detail hadiah
-    PUT    /api/v1/rewards/{id}/            ubah hadiah          (petugas)
-    PATCH  /api/v1/rewards/{id}/            ubah sebagian        (petugas)
-    DELETE /api/v1/rewards/{id}/            hapus hadiah         (petugas)
-    POST   /api/v1/rewards/{id}/redeem/     tukar poin dengan hadiah (login)
-    GET    /api/v1/rewards/me/              poin, level, voucher, riwayat milik user
+    GET    /reward-api/v1/rewards/                 daftar hadiah (?kategori=&maks_poin=&tersedia=1)
+    POST   /reward-api/v1/rewards/                 buat hadiah          (petugas)
+    GET    /reward-api/v1/rewards/{id}/            detail hadiah
+    PUT    /reward-api/v1/rewards/{id}/            ubah hadiah          (petugas)
+    PATCH  /reward-api/v1/rewards/{id}/            ubah sebagian        (petugas)
+    DELETE /reward-api/v1/rewards/{id}/            hapus hadiah         (petugas)
+    POST   /reward-api/v1/rewards/{id}/redeem/     tukar poin dengan hadiah (login)
+    GET    /reward-api/v1/rewards/me/              poin, level, voucher, riwayat milik user
     """
 
     serializer_class = RewardSerializer
