@@ -31,6 +31,7 @@ urlpatterns = [
     path('reporting/', include('reporting.urls')),
     path('comment/', include('comment.urls')),
     path('rewards/', include('rewards.urls')),
+    path('api/v1/', include('rewards.api_urls')), 
 ]
 
 urlpatterns += [

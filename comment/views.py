@@ -78,3 +78,13 @@ def delete_comment_ajax(request, pk):
 
     comment.delete()
     return JsonResponse({"message": "Komentar berhasil dihapus."}, status=200)
+
+@login_required
+def list_user_comment(request):
+    user_comment = Comment.objects.filter(user = request.user)
+    user_comment_count = Comment.objects.filter(user = request.user).count()
+    q = request.GET.get("q", "").strip()
+    user_comment_list = [{"username": comment.user.username} for comment in user_comment]
+    if user_comment_count > 0 and q:
+        return JsonResponse({"count": user_comment_count, "comment_list": user_comment_list})
+    return JsonResponse({"message": "Belum ada komen yang dibuat"})

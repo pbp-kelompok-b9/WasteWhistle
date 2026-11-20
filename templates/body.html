@@ -1,4 +1,4 @@
-{% load l10n %}
+{% load l10n static %}
 
 {% block extra_head %}
 <!-- Leaflet CSS for map styling -->
@@ -263,6 +263,10 @@
 {% block scripts %}
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Comment System JS -->
+<script src="{% static 'js/comments.js' %}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const username = "{{ username }}";
@@ -535,12 +539,10 @@ function bindReportPopup(marker, report) {
             Tandai Selesai
         </button>` : '';
 
-    // Check 1: Did the server-side Django template render a delete button in the sidebar feed item?
     const hasSidebarDeleteBtn = Boolean(
         reportId && document.querySelector(`.feed-item[data-id="${reportId}"] .delete-report-btn`)
     );
 
-    // Check 2: Extract reporter values from JSON object
     const reporterVal = fields.reporter ?? fields.reporter_id ?? fields.user ?? fields.user_id ?? report.reporter ?? report.reporter_id;
     const reporterUsername = fields.reporter_username || fields.username || (typeof reporterVal === 'object' ? reporterVal?.username : null) || (typeof report.reporter === 'object' ? report.reporter?.username : null);
 
@@ -660,7 +662,6 @@ async function markReportAsResolved(id, triggerBtn) {
 }
 
 function updateReportToResolvedUI(id) {
-    // 1. Update Sidebar Feed Item
     const feedItem = document.querySelector(`.feed-item[data-id="${id}"]`);
     if (feedItem) {
         feedItem.dataset.resolved = "true";
@@ -674,7 +675,6 @@ function updateReportToResolvedUI(id) {
         if (resolveBtn) resolveBtn.remove();
     }
 
-    // 2. Update Map Marker
     const markerData = reportMarkersMap[id];
     if (markerData) {
         const { marker, report } = markerData;
@@ -756,243 +756,6 @@ function removeReportFromUI(id) {
         totalStat.textContent = Math.max(0, (parseInt(totalStat.textContent, 10) || 0) - 1);
     }
 }
-
-// --- DROPDOWN CONTROLLER ---
-function toggleCommentDropdown(event, menuId) {
-    event.stopPropagation();
-    const targetMenu = document.getElementById(menuId);
-    if (!targetMenu) return;
-
-    const isCurrentlyHidden = targetMenu.classList.contains('hidden');
-
-    document.querySelectorAll('.comment-dropdown-menu').forEach(menu => {
-        menu.classList.add('hidden');
-        const article = menu.closest('article');
-        if (article) article.style.zIndex = '';
-    });
-
-    if (isCurrentlyHidden) {
-        targetMenu.classList.remove('hidden');
-        const parentArticle = targetMenu.closest('article');
-        if (parentArticle) parentArticle.style.zIndex = '40';
-    }
-}
-
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.dropdown-wrapper')) {
-        document.querySelectorAll('.comment-dropdown-menu').forEach(menu => {
-            menu.classList.add('hidden');
-            const article = menu.closest('article');
-            if (article) article.style.zIndex = '';
-        });
-    }
-});
-
-// --- AJAX COMMENT HANDLERS ---
-document.addEventListener('DOMContentLoaded', function() {
-    const addCommentForm = document.getElementById('add-comment-form');
-    const commentContainer = document.getElementById('comment-list-container');
-    const badgeCount = document.getElementById('comment-count-badge');
-
-    addCommentForm?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const textarea = document.getElementById('comment-content');
-        const content = textarea.value.trim();
-        if (!content) return;
-
-        const formData = new FormData(addCommentForm);
-
-        try {
-            const response = await fetch(addCommentForm.action, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: formData
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                textarea.value = '';
-                document.getElementById('empty-comments-notice')?.remove();
-
-                const deleteUrl = `/comment/delete/${data.id}/`;
-                const isStaff = Boolean(data.is_staff || data.is_superuser);
-                const staffBadgeHtml = isStaff 
-                    ? `<span class="text-[9px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-full bg-[#E7F0FE] text-[#1D4ED8]">Staff</span>` 
-                    : '';
-
-                const newCommentHtml = `
-                <article class="relative flex gap-3 sm:gap-3.5 p-3.5 sm:p-4 min-h-[85px] rounded-[16px] bg-[#F8FBF9] border border-[#E2EDE6] transition-colors duration-150 hover:bg-[#F0F6F2]" id="comment-${data.id}">
-                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full grid place-items-center text-white text-[11px] font-extrabold bg-gradient-to-br from-[#34C486] to-[#0E7A52] shrink-0">
-                        ${escapeHtml(data.username[0].toUpperCase())}
-                    </div>
-                    <div class="flex-1 min-w-0 flex flex-col gap-1">
-                        <div class="flex items-center justify-between gap-2 flex-wrap">
-                            <div class="comment-meta-info flex items-center gap-1.5 flex-wrap text-xs">
-                                <span class="font-bold text-[#101F19] text-[13px]">${escapeHtml(data.username)}</span>
-                                ${staffBadgeHtml}
-                                <span class="text-[11px] font-semibold text-[#8CA096]">· baru saja</span>
-                            </div>
-                            <div class="relative shrink-0 ml-auto dropdown-wrapper">
-                                <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-[#8CA096] hover:text-[#101F19] hover:bg-[#E2EDE6] transition-colors duration-150 cursor-pointer border-none bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[#11734F]" onclick="toggleCommentDropdown(event, 'comment-menu-${data.id}')" aria-label="Opsi komentar">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                                </button>
-                                <div id="comment-menu-${data.id}" class="hidden comment-dropdown-menu absolute right-0 top-8 z-50 min-w-[155px] p-1.5 bg-white border border-[#E2EDE6] rounded-[12px] shadow-[0_8px_24px_rgba(16,31,25,0.15)] origin-top-right">
-                                    <button type="button" class="edit-comment-btn flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold rounded-[8px] transition-colors duration-150 text-left border-none bg-transparent cursor-pointer text-[#2A3B33] hover:bg-[#F0F6F2] hover:text-[#101F19]" data-id="${data.id}">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
-                                        Edit Komentar
-                                    </button>
-                                    <form class="delete-comment-form" method="post" action="${deleteUrl}">
-                                        <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
-                                        <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold rounded-[8px] transition-colors duration-150 text-left border-none bg-transparent cursor-pointer text-[#E5484D] hover:bg-[#FDECEC] hover:text-[#DC2626]">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                                            Hapus Komentar
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="comment-text text-xs text-[#2A3B33] leading-relaxed break-words mt-0.5">${escapeHtml(data.content)}</p>
-                    </div>
-                </article>`;
-
-                commentContainer.insertAdjacentHTML('afterbegin', newCommentHtml);
-                updateBadgeCount(1);
-            } else {
-                alert(data.message || 'Gagal menambahkan komentar.');
-            }
-        } catch (err) {
-            console.error('Error adding comment:', err);
-        }
-    });
-
-    commentContainer?.addEventListener('click', function(e) {
-        const editBtn = e.target.closest('.edit-comment-btn');
-        if (editBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const commentId = editBtn.dataset.id;
-            const article = document.getElementById(`comment-${commentId}`);
-            if (!article) return;
-
-            document.querySelectorAll('.comment-dropdown-menu').forEach(menu => menu.classList.add('hidden'));
-            if (article) article.style.zIndex = '';
-
-            if (article.querySelector('.edit-comment-form')) return;
-
-            const commentTextEl = article.querySelector('.comment-text');
-            if (!commentTextEl) return;
-
-            const originalText = commentTextEl.textContent.trim();
-            commentTextEl.classList.add('hidden');
-
-            const editFormHtml = `
-                <form class="edit-comment-form flex flex-col gap-2.5 mt-2" data-id="${commentId}" action="/comment/edit/${commentId}/">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
-                    <textarea name="content" class="report-input text-xs p-3 rounded-[12px] min-h-[75px] focus:border-[#11734F]" required>${escapeHtml(originalText)}</textarea>
-                    <div class="flex items-center gap-2.5 justify-end mt-0.5">
-                        <button type="button" class="cancel-edit-btn px-4 py-2 text-xs font-bold rounded-full bg-[#E2EDE6] text-[#2A3B33] hover:bg-[#D4E3DA] transition-colors border-none cursor-pointer">Batal</button>
-                        <button type="submit" class="save-edit-btn px-5 py-2 text-xs font-extrabold rounded-full bg-[#11734F] text-white hover:bg-[#0E5E40] transition-colors border-none cursor-pointer shadow-sm">Simpan</button>
-                    </div>
-                </form>
-            `;
-
-            commentTextEl.insertAdjacentHTML('afterend', editFormHtml);
-            const textarea = article.querySelector('.edit-comment-form textarea');
-            if (textarea) {
-                textarea.focus();
-                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-            }
-            return;
-        }
-
-        const cancelBtn = e.target.closest('.cancel-edit-btn');
-        if (cancelBtn) {
-            e.preventDefault();
-            const editForm = cancelBtn.closest('.edit-comment-form');
-            const article = cancelBtn.closest('article');
-            if (editForm && article) {
-                editForm.remove();
-                const commentTextEl = article.querySelector('.comment-text');
-                if (commentTextEl) commentTextEl.classList.remove('hidden');
-            }
-            return;
-        }
-    });
-
-    commentContainer?.addEventListener('submit', async function(e) {
-        if (e.target.classList.contains('edit-comment-form')) {
-            e.preventDefault();
-            const form = e.target;
-            const article = form.closest('article');
-            const commentTextEl = article?.querySelector('.comment-text');
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    body: formData
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    if (commentTextEl) {
-                        commentTextEl.textContent = data.content;
-                        commentTextEl.classList.remove('hidden');
-                    }
-
-                    const metaContainer = article.querySelector('.comment-meta-info');
-                    if (metaContainer && !metaContainer.querySelector('.edited-badge')) {
-                        metaContainer.insertAdjacentHTML('beforeend', `<span class="edited-badge text-[10.5px] font-semibold italic text-[#8CA096]">(diedit)</span>`);
-                    }
-
-                    form.remove();
-                } else {
-                    alert(data.message || 'Gagal memperbarui komentar.');
-                }
-            } catch (err) {
-                console.error('Error updating comment:', err);
-            }
-            return;
-        }
-
-        if (e.target.classList.contains('delete-comment-form')) {
-            e.preventDefault();
-            const form = e.target;
-            const commentArticle = form.closest('article');
-
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    body: new FormData(form)
-                });
-
-                if (response.ok) {
-                    commentArticle?.remove();
-                    updateBadgeCount(-1);
-
-                    if (commentContainer.querySelectorAll('article').length === 0) {
-                        commentContainer.innerHTML = `
-                            <div id="empty-comments-notice" class="border-[1.5px] border-dashed border-[#C4E8D3] rounded-[16px] p-8 text-center text-xs font-semibold text-[#8CA096] bg-[#F8FBF9]">
-                                Belum ada komentar. Jadi yang pertama berdiskusi!
-                            </div>`;
-                    }
-                }
-            } catch (err) {
-                console.error('Error deleting comment:', err);
-            }
-            return;
-        }
-    });
-
-    function updateBadgeCount(change) {
-        if (!badgeCount) return;
-        const count = parseInt(badgeCount.textContent.trim()) || 0;
-        badgeCount.textContent = `${Math.max(0, count + change)} Komentar`;
-    }
-});
 
 function getCsrfToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
